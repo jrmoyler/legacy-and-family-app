@@ -1,5 +1,5 @@
 /**
- * Family Legacy — application entry point.
+ * A Cup of Compassion — application entry point.
  *
  * Responsibilities: hash routing, rendering, and event delegation.
  * Screen markup lives in src/screens.js; state lives in src/state.js.
@@ -7,13 +7,12 @@
 
 import { $, $$ } from './src/dom.js';
 import { screens } from './src/screens.js';
-import { sidebar, appbar, tabbar, overlays, hrefFor, hrefForProduct } from './src/components.js';
-import { PLANS, CATEGORIES, productById } from './src/data.js';
+import { sidebar, appbar, tabbar, overlays, hrefFor } from './src/components.js';
+import { BRAND, CATEGORIES, bookById, lessonById, productById } from './src/data.js';
 import {
-  state, loadState, saveState, toggleStep, toggleLesson,
+  state, loadState, saveState, toggleSection, toggleLesson,
   toggleCart, removeFromCart, addToLibrary,
 } from './src/state.js';
-import { playTriangle, pauseBars } from './src/icons.js';
 
 const view = $('#view');
 const sidebarEl = $('#sidebar');
@@ -28,14 +27,22 @@ const overlayRoot = $('#overlays');
 /** Screens reachable directly by URL. */
 const isScreen = (name) => Object.prototype.hasOwnProperty.call(screens, name);
 
+/** Routes of the form `#/<head>/<id>`, each with its own lookup and fallback. */
+const DETAIL_ROUTES = {
+  book: { key: 'book', lookup: bookById, fallback: 'series' },
+  lesson: { key: 'lesson', lookup: lessonById, fallback: 'read' },
+  product: { key: 'product', lookup: productById, fallback: 'shop' },
+};
+
 function parseHash() {
   const raw = location.hash.replace(/^#\/?/, '');
   if (!raw) return { screen: 'welcome' };
 
   const [head, ...rest] = raw.split('/');
-  if (head === 'product') {
+  const detail = DETAIL_ROUTES[head];
+  if (detail) {
     const id = decodeURIComponent(rest.join('/') || '');
-    return productById(id) ? { screen: 'product', product: id } : { screen: 'shop' };
+    return detail.lookup(id) ? { screen: head, [detail.key]: id } : { screen: detail.fallback };
   }
   return isScreen(head) ? { screen: head } : { screen: 'welcome' };
 }
@@ -43,12 +50,6 @@ function parseHash() {
 /** Navigate by screen id. The hashchange listener does the rendering. */
 function go(screen) {
   const next = hrefFor(screen);
-  if (location.hash === next) renderRoute();
-  else location.hash = next;
-}
-
-function goToProduct(id) {
-  const next = hrefForProduct(id);
   if (location.hash === next) renderRoute();
   else location.hash = next;
 }
@@ -68,13 +69,9 @@ function paint() {
 function renderRoute() {
   const route = parseHash();
   state.screen = route.screen;
+  if (route.book) state.activeBook = route.book;
+  if (route.lesson) state.activeLesson = route.lesson;
   if (route.product) state.activeProduct = route.product;
-
-  // The video only plays while its screen is open.
-  if (state.screen !== 'video') {
-    state.playing = false;
-    state.playingChapter = null;
-  }
 
   paint();
   window.scrollTo(0, 0);
@@ -97,27 +94,31 @@ function refresh() {
 }
 
 const TITLES = {
-  welcome: 'Family Legacy — Plant. Protect. Pass on.',
-  home: 'Your plan',
-  'guide-will': 'How to start your Will',
-  'guide-trust': 'How to start your Trust',
-  video: 'Protecting Our Legacy',
-  learn: 'Learn',
-  network: 'Our Network',
-  plans: 'Choose your plan',
-  checkout: 'Checkout',
-  'checkout-done': 'You’re protected',
-  shop: 'Marketplace',
+  welcome: `${BRAND.name} — ${BRAND.tagline}`,
+  home: 'Your reading',
+  series: 'The Series',
+  read: 'Read',
+  legacy: 'The Legacy Inventory',
+  shop: 'Shop',
   cart: 'Your cart',
+  checkout: 'Checkout',
+  'checkout-done': 'Thank you',
+  about: BRAND.author,
+  disclaimer: 'Disclaimers',
+  status: 'Production status',
 };
 
 function titleFor(screen) {
-  if (screen === 'product') {
-    const product = productById(state.activeProduct);
-    return `${product ? product.title : 'Product'} — Family Legacy`;
-  }
   if (screen === 'welcome') return TITLES.welcome;
-  return `${TITLES[screen] || 'Family Legacy'} — Family Legacy`;
+
+  const detail = {
+    book: () => bookById(state.activeBook)?.title,
+    lesson: () => lessonById(state.activeLesson)?.title,
+    product: () => productById(state.activeProduct)?.title,
+  }[screen];
+
+  const name = detail ? detail() : TITLES[screen];
+  return `${name || BRAND.name} — ${BRAND.name}`;
 }
 
 /* ==========================================================================
@@ -211,33 +212,6 @@ document.addEventListener('keydown', (event) => {
 });
 
 /* ==========================================================================
-   Video playback
-   ========================================================================== */
-
-/**
- * Toggle playback without re-rendering the screen — a full re-render would
- * restart the progress bar animation every time the user pauses.
- */
-function setPlaying(playing, chapterIndex = null) {
-  state.playing = playing;
-  if (!playing) state.playingChapter = null;
-  else if (chapterIndex !== null) state.playingChapter = chapterIndex;
-
-  const player = $('#player');
-  const button = $('#playBtn');
-  if (!player || !button) return;
-
-  player.classList.toggle('playing', state.playing);
-  button.innerHTML = state.playing ? pauseBars(24, '#1F3D2E') : playTriangle(30, '#1F3D2E');
-  button.setAttribute('aria-pressed', String(state.playing));
-  button.setAttribute('aria-label', `${state.playing ? 'Pause' : 'Play'} the presentation`);
-
-  $$('.chapter', view).forEach((el, i) => {
-    el.classList.toggle('playing', state.playing && state.playingChapter === i);
-  });
-}
-
-/* ==========================================================================
    Event delegation
    ========================================================================== */
 document.addEventListener('click', (event) => {
@@ -255,39 +229,27 @@ document.addEventListener('click', (event) => {
     closeSheet();
     return;
   }
-  if ((el = hit('[data-open-sheet]'))) {
-    openSheet(el.dataset.openSheet);
-    return;
-  }
-
   /* --- fire-and-forget feedback --- */
   if ((el = hit('[data-toast]'))) {
     toast(el.dataset.toast);
     return;
   }
 
-  /* --- guides --- */
-  if ((el = hit('[data-step]'))) {
-    const [kind, index] = el.dataset.step.split(':');
-    toggleStep(kind, Number(index));
+  /* --- the Legacy Inventory --- */
+  if ((el = hit('[data-section]'))) {
+    toast(toggleSection(el.dataset.section) ? 'Marked as gathered' : 'Unmarked');
     refresh();
     return;
   }
+  if (hit('[data-print]')) {
+    window.print();
+    return;
+  }
 
-  /* --- learn --- */
+  /* --- reading --- */
   if ((el = hit('[data-lesson]'))) {
-    if (toggleLesson(el.dataset.lesson)) toast('Marked as read');
+    toast(toggleLesson(el.dataset.lesson) ? 'Marked as read' : 'Marked as unread');
     refresh();
-    return;
-  }
-
-  /* --- video --- */
-  if ((el = hit('[data-chapter]'))) {
-    setPlaying(true, Number(el.dataset.chapter));
-    return;
-  }
-  if (hit('#playBtn')) {
-    setPlaying(!state.playing);
     return;
   }
 
@@ -298,17 +260,13 @@ document.addEventListener('click', (event) => {
     refresh();
     return;
   }
-  if ((el = hit('[data-checkout]'))) {
-    const plan = el.dataset.checkout;
-    if (!PLANS[plan]) return;
-    state.checkoutPlan = plan;
-    state.payMethod = 'card';
-    saveState();
+  if (hit('[data-checkout]')) {
+    if (!state.cart.length) return;
     go('checkout');
     return;
   }
 
-  /* --- marketplace --- */
+  /* --- shop --- */
   if ((el = hit('[data-cat]'))) {
     if (!CATEGORIES.includes(el.dataset.cat)) return;
     state.category = el.dataset.cat;
@@ -317,8 +275,7 @@ document.addEventListener('click', (event) => {
     return;
   }
   if ((el = hit('[data-cart-toggle]'))) {
-    const id = el.dataset.cartToggle;
-    toast(toggleCart(id) ? 'Added to cart' : 'Removed from cart');
+    toast(toggleCart(el.dataset.cartToggle) ? 'Added to cart' : 'Removed from cart');
     refresh();
     return;
   }
@@ -340,11 +297,7 @@ document.addEventListener('click', (event) => {
     const bought = state.cart.map(productById).filter(Boolean);
     if (!bought.length) return;
     addToLibrary(bought.map((p) => p.id));
-    $('#lib-copy').textContent = bought.length === 1
-      ? `${bought[0].title} is now saved to your library.`
-      : `${bought.length} items are now saved to your library.`;
-    refresh();
-    openSheet('library');
+    go('checkout-done');
     return;
   }
 
