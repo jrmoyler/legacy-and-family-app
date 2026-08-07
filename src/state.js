@@ -1,37 +1,41 @@
 /**
  * Application state, persisted to localStorage.
  *
- * Progress, cart, and library survive a reload. Anything ephemeral (which
- * screen is open, whether the video is playing) is deliberately not saved.
+ * Reading progress, inventory progress, cart, and library survive a reload.
+ * Anything ephemeral (which screen is open) is deliberately not saved.
+ *
+ * Note what is NOT here: no inventory *answers*. The Legacy Inventory records
+ * only which sections you have worked through, never what you own, hold, or
+ * are insured for (Bible §9, Handoff §6). Adding value fields to this file
+ * would turn the app into a data-privacy obligation.
  */
 
-import { PRODUCTS, CATEGORIES, PLANS } from './data.js';
+import { PRODUCTS, CATEGORIES, INVENTORY } from './data.js';
 
-const STORAGE_KEY = 'family-legacy:v1';
+const STORAGE_KEY = 'cup-of-compassion:v1';
 
 const defaults = () => ({
-  willSteps: [false, false, false, false, false],
-  trustSteps: [false, false, false, false, false],
+  inventoryDone: [],
   lessonsRead: [],
-  cart: ['wills-guide', 'gen-wealth'],
+  cart: [],
   library: [],
   payMethod: 'card',
-  checkoutPlan: 'trust249',
-  category: 'Best sellers',
+  category: 'Books',
 });
 
 export const state = {
   ...defaults(),
   /* ephemeral — never persisted */
   screen: 'welcome',
-  activeProduct: 'wills-guide',
-  playing: false,
-  playingChapter: null,
+  activeBook: 'benefit',
+  activeLesson: 'forty-seconds',
+  activeProduct: 'first-three',
 };
 
-const isValidProduct = (id) => PRODUCTS.some((p) => p.id === id);
-const asBoolArray = (value, len) =>
-  Array.from({ length: len }, (_, i) => Boolean(Array.isArray(value) && value[i]));
+const isValidProduct = (id) => PRODUCTS.some((p) => p.id === id && p.buyable && !p.free);
+const isValidSection = (id) => INVENTORY.some((s) => s.id === id);
+const strings = (value, keep) =>
+  (Array.isArray(value) ? value.filter((v) => typeof v === 'string' && keep(v)) : []);
 
 /** Read persisted state, ignoring anything malformed or stale. */
 export function loadState() {
@@ -43,13 +47,11 @@ export function loadState() {
   }
   if (!saved || typeof saved !== 'object') return;
 
-  state.willSteps = asBoolArray(saved.willSteps, 5);
-  state.trustSteps = asBoolArray(saved.trustSteps, 5);
-  state.lessonsRead = Array.isArray(saved.lessonsRead) ? saved.lessonsRead.filter((v) => typeof v === 'string') : [];
-  state.cart = Array.isArray(saved.cart) ? saved.cart.filter(isValidProduct) : state.cart;
-  state.library = Array.isArray(saved.library) ? saved.library.filter(isValidProduct) : [];
-  if (['card', 'monthly', 'church'].includes(saved.payMethod)) state.payMethod = saved.payMethod;
-  if (PLANS[saved.checkoutPlan]) state.checkoutPlan = saved.checkoutPlan;
+  state.inventoryDone = strings(saved.inventoryDone, isValidSection);
+  state.lessonsRead = strings(saved.lessonsRead, () => true);
+  state.cart = strings(saved.cart, isValidProduct);
+  state.library = strings(saved.library, isValidProduct);
+  if (['card', 'invoice'].includes(saved.payMethod)) state.payMethod = saved.payMethod;
   if (CATEGORIES.includes(saved.category)) state.category = saved.category;
 }
 
@@ -62,13 +64,11 @@ export function saveState() {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify({
-        willSteps: state.willSteps,
-        trustSteps: state.trustSteps,
+        inventoryDone: state.inventoryDone,
         lessonsRead: state.lessonsRead,
         cart: state.cart,
         library: state.library,
         payMethod: state.payMethod,
-        checkoutPlan: state.checkoutPlan,
         category: state.category,
       }),
     );
@@ -111,11 +111,16 @@ export function addToLibrary(ids) {
   saveState();
 }
 
-export function toggleStep(guide, index) {
-  const steps = guide === 'will' ? state.willSteps : state.trustSteps;
-  steps[index] = !steps[index];
+export const sectionDone = (id) => state.inventoryDone.includes(id);
+
+export function toggleSection(id) {
+  const wasDone = sectionDone(id);
+  state.inventoryDone = wasDone
+    ? state.inventoryDone.filter((v) => v !== id)
+    : [...state.inventoryDone, id];
   saveState();
+  return !wasDone;
 }
 
-/** Completed "first steps" — the will guide drives the home progress ring. */
-export const firstStepsDone = () => state.willSteps.filter(Boolean).length;
+/** Inventory sections gathered — drives the home progress ring. */
+export const inventoryProgress = () => state.inventoryDone.length;
