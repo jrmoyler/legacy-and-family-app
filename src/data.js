@@ -104,6 +104,21 @@ export const BOOK_STATUS = {
   drafting: { label: 'Being written', tone: 'neutral' },
 };
 
+/**
+ * Where the built book files live. One EPUB per book, filed under the series
+ * name and the number printed on that book's own cover — so a file can be
+ * matched to a cover without opening it, even while the numbering is still
+ * unsettled (Bible §0.1, §2). The number in a filename is the cover's claim,
+ * not a series number this app asserts.
+ *
+ * A book's `epub` is its built file where one exists and null where it does
+ * not. Nothing in the app links to these paths: the finished books are sold,
+ * and a static host serves whatever sits in this folder to anyone who asks for
+ * it. They are the fulfilment masters. The app reports which are on hand and
+ * hands out none of them.
+ */
+export const EPUB_DIR = './assets/books/';
+
 export const BOOKS = [
   {
     id: 'benefit',
@@ -111,6 +126,7 @@ export const BOOKS = [
     seriesLabel: 'Series 1',
     title: 'The Benefit of Having Compassion',
     designId: 'DAHPs1e2Od0',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.epub`,
     pages: 16,
     words: '≈4,200 words',
     status: 'ready',
@@ -138,6 +154,10 @@ export const BOOKS = [
     seriesLabel: 'Series 2',
     title: 'Are You Born in Compassion or Nurtured in It?',
     designId: 'DAHPtMCqeWs',
+    /* The delivered EPUB was truncated mid-file: cover art and the package
+       document survive, all ten chapter files do not. Left null rather than
+       shipping a book that no reader can open. See STATUS_GROUPS §files. */
+    epub: null,
     pages: 8,
     words: '≈1,600 words',
     status: 'bundle-only',
@@ -163,6 +183,7 @@ export const BOOKS = [
     seriesLabel: null,
     title: 'Compassion and Legacy',
     designId: 'DAHPxYb83RQ',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-03-Compassion-and-Legacy.epub`,
     pages: 7,
     words: '≈1,800 words',
     status: 'bundle-only',
@@ -189,6 +210,7 @@ export const BOOKS = [
     seriesLabel: null,
     title: 'Compassion or Confusion?',
     designId: 'DAHPpCDXy-s',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-04-Compassion-or-Confusion.epub`,
     pages: 6,
     words: null,
     status: 'drafting',
@@ -211,6 +233,7 @@ export const BOOKS = [
     seriesLabel: null,
     title: 'Compassion and Companionship',
     designId: 'DAHQDC0Itq0',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-06-Compassion-and-Companionship.epub`,
     pages: 17,
     words: null,
     status: 'layout',
@@ -236,6 +259,7 @@ export const BOOKS = [
     seriesLabel: null,
     title: 'Compassion, Commitment, and Confinement',
     designId: 'DAHPpbNcwyE',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-05-Compassion-and-Commitment.epub`,
     pages: 9,
     words: '≈1,200 words',
     status: 'layout',
@@ -258,6 +282,21 @@ export const BOOKS = [
 ];
 
 export const bookById = (id) => BOOKS.find((b) => b.id === id);
+
+/**
+ * Which books have a built EPUB and which do not. Derived rather than written
+ * out, so the production status screen cannot drift from what is actually on
+ * disk: adding or removing a book's `epub` moves it between these two lists and
+ * rewrites that screen in the same edit.
+ */
+export const BOOKS_WITH_EPUB = BOOKS.filter((b) => b.epub);
+export const BOOKS_WITHOUT_EPUB = BOOKS.filter((b) => !b.epub);
+
+/** Closes a sentence without doubling punctuation — two book titles end in "?". */
+const endStop = (line) => (/[.?!]$/.test(line) ? line : `${line}.`);
+
+/** "Title · Title · Title", full-stopped, for the status screen. */
+const titleList = (books) => endStop(books.map((b) => b.title).join(' · '));
 
 /* ==========================================================================
    Shop catalogue (Handoff §5 pricing, §7 build order; Bible §9)
@@ -749,6 +788,20 @@ export const STATUS_GROUPS = [
       'Written releases from everyone quoted in Are You Born in Compassion or Nurtured in It? — these are commercial products now.',
       'Written releases from the living people named in Compassion and Companionship. Until those exist, this app describes that book without naming them.',
       'Whether @acupofcompassion is actually claimed on Instagram and Facebook. It appears in the canonical footer text but is deliberately not linked anywhere in this app.',
+    ],
+  },
+  {
+    id: 'files',
+    title: 'Built book files',
+    severity: 'open',
+    intro: `The EPUB masters live in assets/books/, one file per book, named for the number printed on that book’s own cover. ${BOOKS_WITH_EPUB.length} of the ${BOOKS.length} are on hand. Nothing in the app links to them — they are the files a fulfilment step would hand to a buyer, not downloads this app gives away.`,
+    items: [
+      `On hand: ${titleList(BOOKS_WITH_EPUB)}`,
+      `No file yet: ${titleList(BOOKS_WITHOUT_EPUB)}`,
+      'The file delivered for Are You Born in Compassion or Nurtured in It? was truncated. Its package document and cover art are intact, but all ten chapter files, the navigation document, the TOC, and the stylesheet are cut off the end, so no reader can open it. It was not committed. Rebuild and re-export it.',
+      'That gap blocks the three-book collection as an ePub: the set is The Benefit of Having Compassion, Are You Born in Compassion or Nurtured in It?, and Compassion and Legacy, and one third of it has no file.',
+      'File 04 is a genuine standalone Compassion or Confusion? manuscript, which the Canva design DAHPpCDXy-s never was. It does not on its own close the Confusion gap above — the numbering and the retirement of that design are still open.',
+      'Filenames carry cover numbers, not settled series numbers. Renaming them is part of whatever numbering scheme gets locked, not a separate job.',
     ],
   },
   {
