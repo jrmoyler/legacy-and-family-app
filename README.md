@@ -32,8 +32,10 @@ source.
 | `src/components.js` | Sidebar, app bar, tab bar, sheets, toast, brand footer |
 | `src/state.js` | State + localStorage persistence |
 | `src/data.js` | Brand, books, catalogue, reading, inventory, production status |
+| `src/covers.js` | Typographic cover art — one per book and product |
 | `src/icons.js` | Inline SVG icons and the cup-and-heart brand mark |
 | `src/dom.js` | `esc()` and small DOM helpers |
+| `assets/` | PWA icons and the link-preview image |
 | `manifest.webmanifest` | Installable-app metadata |
 | `vercel.json` | Clean URLs, caching, security headers |
 
@@ -57,6 +59,12 @@ Hash-based, so every screen is linkable and the browser Back button works:
 #/about       #/disclaimer #/status
 #/book/<book-id>       #/lesson/<lesson-id>       #/product/<product-id>
 ```
+
+Scroll position is remembered per route and restored on Back and Forward only,
+so returning to the series lands on the book you clicked while a fresh
+navigation always starts at the top. Route changes scroll instantly —
+`scroll-behavior: smooth` is right for an in-page anchor and wrong for a page
+that should already be at the top when it appears.
 
 Unknown routes fall back to the welcome screen; an unknown detail id falls
 back to that section's index.
@@ -135,10 +143,57 @@ Palette and type follow Bible §6.
 The Bible specifies Times + Helvetica; those govern the **print interiors**.
 The app uses their screen-optimised counterparts — Spectral (serif) and DM Sans
 (sans) — with Georgia and system-sans fallbacks if the font CDN is unreachable.
+Those fallbacks are declared as `@font-face` rules carrying `size-adjust` and
+ascent/descent overrides, so the first paint sits on the same metrics as the
+webfont and nothing reflows when it arrives.
 
 Scripture styling matches the print spec: italic serif with a gold small-caps
 reference line. Callouts are centred bold-italic purple on cream with a gold
 left border.
+
+## Cover art
+
+There is no cover photography and no illustration budget, and every book and
+product used to render the same purple tile with the same cup mark — six
+different books, one indistinguishable thumbnail. `src/covers.js` builds a
+typographic cover instead: a colour field, one geometric motif, and the title
+set in the series serif.
+
+Six fields (plum, night, teal, mauve, gold, cream) and five motifs (arc, rules,
+split, halo, ladder) are assigned to fixed pairs per id, so a title keeps the
+same cover everywhere it appears and between visits. Every field is drawn from
+the Bible §6 palette; the variety comes from which colour leads.
+
+The two light fields are pitched so that even the darkest gradient stop clears
+4.5:1 against the title, the kicker, and the imprint line — the obvious deep
+gold (`#8A6C18`) puts the imprint line at 2.2:1, and was rejected for it.
+
+Below the two-column shop breakpoint each cover is about 165px wide, where its
+own title would land directly above the card's title at nearly the same size.
+There, the type is dropped and the field, motif, and mark identify it alone.
+
+## Accessibility
+
+Audited with axe-core across all 14 routes at 390px and 1440px: no violations.
+Specifically:
+
+- **Focus** is a 3px deep-plum ring, which holds up on cream, gold, and teal;
+  anything sitting on a dark plum field inverts it to gold.
+- **The payment options** are a real radiogroup — arrow keys move within it,
+  Tab moves past it, and only the checked option is in the tab order. The shop
+  filter chips take arrow keys too.
+- **Checkout fields carry visible labels.** A placeholder is not a label: it
+  vanishes on the first keystroke and leaves anyone returning to a half-filled
+  form with nothing to read.
+- **Filtering the shop is announced** through a live region, since it silently
+  redraws a grid.
+- **Touch targets**: buttons are at least 52px tall, the inventory ticks reach
+  48px through a transparent extension, and "Remove" in the cart is padded out
+  from a bare 12px word.
+- **Motion** is removed wholesale under `prefers-reduced-motion`, and nothing
+  that fades or rises in is left invisible when it is.
+- **Hover lifts are gated behind `@media (hover: hover)`** so a tap on a phone
+  does not leave a card latched in its hover state.
 
 ## Local preview
 

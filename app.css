@@ -40,9 +40,9 @@
   --on-dark: #F3ECDC;
   --on-dark-soft: #CFC1DB;
 
-  /* type */
-  --serif: 'Spectral', Georgia, 'Times New Roman', serif;
-  --sans: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  /* type — the metric-matched fallbacks are declared below the token block */
+  --serif: 'Spectral', 'Spectral fallback', Georgia, 'Times New Roman', serif;
+  --sans: 'DM Sans', 'DM Sans fallback', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
   /* shape */
   --radius-sm: 14px;
@@ -55,10 +55,40 @@
   --sidebar-w: 264px;
   --tabbar-h: calc(66px + env(safe-area-inset-bottom));
 
-  /* elevation */
-  --lift-sm: 0 10px 22px -16px rgba(42, 26, 56, .40);
-  --lift: 0 14px 30px -20px rgba(42, 26, 56, .45);
-  --lift-lg: 0 20px 40px -22px rgba(35, 20, 48, .60);
+  /* elevation — a hairline plus a spread, so cards read as paper on paper */
+  --lift-sm: 0 1px 1px rgba(42, 26, 56, .04), 0 10px 22px -16px rgba(42, 26, 56, .40);
+  --lift: 0 1px 2px rgba(42, 26, 56, .05), 0 14px 30px -20px rgba(42, 26, 56, .45);
+  --lift-lg: 0 2px 4px rgba(35, 20, 48, .07), 0 20px 40px -22px rgba(35, 20, 48, .60);
+
+  /* motion — one easing curve and three durations across the whole app */
+  --ease: cubic-bezier(.22, .61, .36, 1);
+  --ease-out: cubic-bezier(.16, 1, .3, 1);
+  --fast: .14s;
+  --mid: .22s;
+  --slow: .34s;
+}
+
+/* Metric-matched fallbacks.
+   The webfonts come from a CDN, so for the first paint — and permanently, if
+   that CDN is blocked — the app renders in Georgia and the system sans. Those
+   have larger x-heights than Spectral and DM Sans, which reflows every heading
+   the moment the real fonts land. Adjusting the fallbacks to sit on the same
+   metrics keeps the swap invisible. */
+@font-face {
+  font-family: 'Spectral fallback';
+  src: local('Georgia'), local('Times New Roman'), local('Times');
+  size-adjust: 95%;
+  ascent-override: 100%;
+  descent-override: 24%;
+  line-gap-override: 0%;
+}
+@font-face {
+  font-family: 'DM Sans fallback';
+  src: local('Helvetica Neue'), local('Helvetica'), local('Arial');
+  size-adjust: 100%;
+  ascent-override: 100%;
+  descent-override: 22%;
+  line-gap-override: 0%;
 }
 
 @media (min-width: 720px) {
@@ -87,11 +117,18 @@ body {
   font-size: 16px;
   line-height: 1.5;
   color: var(--ink);
-  background: var(--cream);
+  /* A cream page with a trace of paper tooth. The grain is a 4px SVG tile at
+     3% opacity — enough to stop large cream fields reading as flat digital
+     white, invisible as texture. */
+  background-color: var(--cream);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='.035'/%3E%3C/svg%3E");
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow-wrap: break-word;
+  /* Belt and braces with the JS scroll reset: never let a rubber-band scroll
+     on iOS chain up to the document behind an open sheet. */
+  overscroll-behavior-y: none;
 }
 
 body.no-scroll { overflow: hidden; }
@@ -115,18 +152,39 @@ input, textarea, select { font: inherit; color: inherit; }
 a { color: inherit; text-decoration: none; }
 p a, .about-copy a { text-decoration: underline; }
 
+/* Focus: a deep plum ring, which holds up on cream, on gold, and on teal.
+   Dark bands invert it to gold — see the block below. */
 :focus-visible {
-  outline: 2px solid var(--gold);
+  outline: 3px solid var(--plum-800);
   outline-offset: 2px;
-  border-radius: 6px;
+  border-radius: 8px;
 }
 
+/* Anything sitting on a dark plum field: plum-on-plum is not a focus ring. */
+.sidebar :focus-visible,
+.dark-head :focus-visible,
+#screen-welcome :focus-visible,
+.progress-card:focus-visible,
+.free-card:focus-visible,
+.featured-card:focus-visible,
+.bundle-hero:focus-visible,
+.consult-card :focus-visible,
+.done-body .btn-dark:focus-visible,
+.btn-dark:focus-visible,
+.cart-btn:focus-visible,
+.sheet .btn-dark:focus-visible {
+  outline-color: var(--gold-soft);
+}
+
+/* Motion is scenery, never the message: it all goes, and nothing that fades
+   or slides in is left invisible when it does. */
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
     animation-duration: .001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -203,6 +261,15 @@ p a, .about-copy a { text-decoration: underline; }
   to { opacity: 1; transform: none; }
 }
 
+/* A short rise on arrival, so a route change reads as a page turn rather than
+   a repaint. Only on full navigation — `refresh()` re-renders in place after a
+   tick or a cart change, and must not blink. */
+@keyframes screen-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+.screen.enter { animation: screen-in var(--slow) var(--ease-out) both; }
+
 /* Centred content column. Every screen section sits inside one of these so
    text never runs edge-to-edge on a wide monitor. */
 .shell {
@@ -262,22 +329,27 @@ p a, .about-copy a { text-decoration: underline; }
   align-items: center;
   justify-content: center;
 }
+/* The name is three words and the sidebar is 264px, so it wraps. Balanced
+   wrapping keeps it two even lines instead of an orphaned "Compassion". */
 .side-brand .name {
   font-family: var(--serif);
   font-weight: 600;
-  font-size: 19px;
+  font-size: 18px;
   color: #F5EFE3;
   display: block;
-  line-height: 1.15;
+  line-height: 1.2;
+  text-wrap: balance;
 }
 .side-brand .tag {
   display: block;
   font-family: var(--serif);
-  font-size: 9.5px;
-  letter-spacing: 1.4px;
+  font-size: 9px;
+  letter-spacing: 1.1px;
+  line-height: 1.5;
   text-transform: uppercase;
   color: var(--teal-light);
-  margin-top: 4px;
+  margin-top: 5px;
+  text-wrap: balance;
 }
 
 .side-nav { display: grid; gap: 3px; }
@@ -295,12 +367,25 @@ p a, .about-copy a { text-decoration: underline; }
   color: #C4B4D2;
   transition: background .15s, color .15s;
 }
-.side-link:hover { background: rgba(255, 255, 255, .07); color: #E9E1D3; }
+@media (hover: hover) {
+  .side-link:hover { background: rgba(255, 255, 255, .07); color: #E9E1D3; }
+}
 .side-link .stroke { stroke: currentColor; transition: stroke .15s; }
 .side-link[aria-current="page"] {
   background: rgba(176, 141, 46, .16);
   color: #F5EFE3;
   box-shadow: inset 0 0 0 1px rgba(176, 141, 46, .32);
+}
+/* A gold marker on the current page, so the state survives at a glance and
+   does not rest on a tint difference alone. */
+.side-link[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -16px; top: 50%;
+  width: 3px; height: 22px;
+  margin-top: -11px;
+  border-radius: 0 3px 3px 0;
+  background: var(--gold-soft);
 }
 .side-link .badge {
   margin-left: auto;
@@ -348,7 +433,13 @@ p a, .about-copy a { text-decoration: underline; }
   background: rgba(246, 241, 228, .93);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid transparent;
+  transition: border-color var(--mid), box-shadow var(--mid);
+}
+/* Flat against the top of the page, lifted once content runs under it. */
+.appbar.scrolled {
+  border-bottom-color: var(--line);
+  box-shadow: 0 8px 20px -18px rgba(42, 26, 56, .8);
 }
 @media (min-width: 900px) { .appbar { display: none; } }
 
@@ -407,6 +498,18 @@ p a, .about-copy a { text-decoration: underline; }
 .tab .stroke { stroke: #6E6478; transition: stroke .15s; }
 .tab[aria-current="page"] { color: var(--plum-800); }
 .tab[aria-current="page"] .stroke { stroke: var(--plum-800); }
+/* Colour alone is a weak current-page signal at 11px on a small screen. */
+.tab[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  top: -9px; left: 50%;
+  width: 22px; height: 3px;
+  margin-left: -11px;
+  border-radius: 0 0 3px 3px;
+  background: var(--gold);
+}
+.tab:active { transform: scale(.94); }
+.tab { transition: color .15s, transform var(--fast) var(--ease); }
 
 .tab .cart-dot {
   position: absolute;
@@ -439,9 +542,12 @@ p a, .about-copy a { text-decoration: underline; }
   padding: 15px 20px;
   font-weight: 700;
   font-size: 15.5px;
-  transition: transform .12s, filter .15s, box-shadow .15s;
+  /* Buttons carry real words, so they never shrink below a comfortable
+     thumb target however short the label is. */
+  min-height: 52px;
+  transition: transform var(--fast) var(--ease), filter var(--fast), box-shadow var(--mid) var(--ease);
 }
-.btn:active { transform: scale(.985); filter: brightness(.96); }
+.btn:active { transform: scale(.985); filter: brightness(.96); transition-duration: .06s; }
 
 .btn-gold {
   background: linear-gradient(180deg, var(--gold-soft) 0%, var(--gold) 100%);
@@ -477,6 +583,40 @@ p a, .about-copy a { text-decoration: underline; }
   border-radius: var(--radius);
   box-shadow: var(--lift-sm);
 }
+
+/* --- lift and press ---------------------------------------------------
+   Every tappable surface in the app shares one hover lift and one press.
+   The lift is gated behind a real pointer: on a touch screen `:hover`
+   latches after a tap and leaves a card floating until you tap elsewhere.
+   The press is not gated — it is the only feedback a finger gets. */
+.quick-tile, .feature-card, .free-card, .featured-card, .lesson, .prod-card,
+.book-row, .bundle-hero, .progress-card, .market-cta, .cart-item {
+  transition: transform var(--fast) var(--ease), box-shadow var(--mid) var(--ease);
+}
+@media (hover: hover) {
+  .quick-tile:hover, .lesson:hover, .book-row:hover, .cart-item:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--lift);
+  }
+  .feature-card:hover, .free-card:hover, .prod-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--lift-lg);
+  }
+  .featured-card:hover, .bundle-hero:hover, .progress-card:hover, .market-cta:hover {
+    transform: translateY(-2px);
+  }
+  .prod-card:hover .cover, .book-row:hover .cover { filter: brightness(1.06); }
+}
+
+.quick-tile:active, .lesson:active, .book-row:active, .prod-card:active,
+.feature-card:active, .free-card:active, .featured-card:active,
+.bundle-hero:active, .progress-card:active, .market-cta:active,
+.cat-chip:active, .pay-opt:active {
+  transform: scale(.988);
+  transition-duration: .06s;
+}
+
+.cover { transition: filter var(--mid) var(--ease); }
 
 .pill {
   display: inline-flex;
@@ -707,10 +847,24 @@ p a, .about-copy a { text-decoration: underline; }
 }
 
 .scripture {
-  border: 1px solid rgba(255, 255, 255, .14);
-  border-radius: var(--radius-lg);
-  background: rgba(255, 255, 255, .04);
-  padding: 28px;
+  position: relative;
+  border: 1px solid rgba(208, 172, 76, .30);
+  border-left: 3px solid var(--gold);
+  border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+  background: rgba(255, 255, 255, .05);
+  padding: 30px 30px 28px;
+}
+/* An opening quote mark set in the series serif, sized as ornament. */
+.scripture::before {
+  content: "“";
+  position: absolute;
+  top: -6px; right: 20px;
+  font-family: var(--serif);
+  font-size: 84px;
+  line-height: 1;
+  color: var(--gold);
+  opacity: .22;
+  pointer-events: none;
 }
 .scripture p {
   font-family: var(--serif);
@@ -802,6 +956,17 @@ p a, .about-copy a { text-decoration: underline; }
 }
 .ring { position: relative; width: 96px; height: 96px; flex: none; }
 .ring svg { transform: rotate(-90deg); }
+/* The arc draws itself in on arrival, then animates between values when a
+   section is ticked. `--arc` is the offset for the current percentage. */
+.ring-arc {
+  stroke-dashoffset: var(--arc);
+  animation: ring-draw .9s var(--ease-out) both;
+  transition: stroke-dashoffset .5s var(--ease-out);
+}
+@keyframes ring-draw {
+  from { stroke-dashoffset: var(--full); }
+  to { stroke-dashoffset: var(--arc); }
+}
 .ring .pct {
   position: absolute;
   inset: 0;
@@ -890,38 +1055,46 @@ p a, .about-copy a { text-decoration: underline; }
 .market-cta .t { display: block; font-family: var(--serif); font-weight: 700; font-size: 18px; }
 .market-cta .s { display: block; font-size: 13px; font-weight: 600; opacity: .84; margin-top: 3px; line-height: 1.4; }
 
-.quick-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
+/* Three across is too tight for "About Pamela / And the movement" on a 360px
+   phone, so the tiles run as rows until there is width for a real grid. */
+.quick-grid { display: grid; gap: 12px; }
+@media (min-width: 460px) { .quick-grid { grid-template-columns: repeat(3, 1fr); } }
+
 .quick-tile {
   background: var(--card);
   border-radius: var(--radius-sm);
-  padding: 20px 12px 18px;
+  padding: 16px 18px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   box-shadow: var(--lift-sm);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--ink);
-  text-align: center;
   line-height: 1.3;
-  transition: transform .12s, box-shadow .15s;
 }
+@media (min-width: 460px) {
+  .quick-tile {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 12px 18px;
+    font-size: 13px;
+    text-align: center;
+  }
 .quick-tile:active { transform: scale(.97); }
 @media (hover: hover) {
   .quick-tile:hover { transform: translateY(-2px); box-shadow: var(--lift); }
 }
 .quick-tile .icon-tile {
   width: 44px; height: 44px;
+  flex: none;
   border-radius: 13px;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+.quick-tile .qt-body { min-width: 0; }
 .it-gold { background: #F2E6C9; }
 .it-teal { background: #DDE9E9; }
 
@@ -933,7 +1106,6 @@ p a, .about-copy a { text-decoration: underline; }
   background: var(--card);
   display: flex;
   flex-direction: column;
-  transition: transform .12s, box-shadow .15s;
 }
 .feature-card:active { transform: scale(.99); }
 @media (hover: hover) {
@@ -998,7 +1170,6 @@ p a, .about-copy a { text-decoration: underline; }
   background: linear-gradient(150deg, #3E2354 0%, var(--plum-900) 100%);
   color: var(--on-dark);
   box-shadow: var(--lift);
-  transition: transform .12s, box-shadow .15s;
 }
 .free-card:active { transform: scale(.99); }
 @media (hover: hover) {
@@ -1049,18 +1220,31 @@ p a, .about-copy a { text-decoration: underline; }
   color: var(--gold-ink);
   transition: background .2s, color .2s;
 }
+/* The visible circle is 40px, but the button reaches 48px on every side via a
+   transparent border so a thumb has somewhere to land. */
 .step-check {
   flex: none;
   align-self: center;
-  width: 26px; height: 26px;
+  width: 40px; height: 40px;
   border-radius: 50%;
   border: 1.5px solid var(--line);
+  background-clip: padding-box;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background .2s, border-color .2s;
+  transition: background var(--mid) var(--ease), border-color var(--mid), transform var(--fast);
 }
-.step-check svg { opacity: 0; transition: opacity .2s; }
+.step-check { position: relative; }
+.step-check::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 48px; height: 48px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+}
+.step-check:active { transform: scale(.9); }
+.step-check svg { opacity: 0; transform: scale(.6); transition: opacity var(--mid), transform var(--mid) var(--ease-out); }
 
 /* --------------------------------------------------------------------------
    12. Reading (lesson body)
@@ -1068,6 +1252,9 @@ p a, .about-copy a { text-decoration: underline; }
 .read-layout { display: grid; gap: 26px; padding-top: 26px; }
 @media (min-width: 1000px) {
   .read-layout { grid-template-columns: 1.5fr .8fr; align-items: start; }
+  /* The rail is a third the height of the article. Sticking it keeps "keep
+     going" reachable at the end of a long read instead of scrolled past. */
+  .read-layout > :last-child { position: sticky; top: 26px; }
 }
 
 .tag-row { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 20px; }
@@ -1099,7 +1286,12 @@ p a, .about-copy a { text-decoration: underline; }
   color: var(--teal-deep);
   margin-top: 30px;
 }
-.prose h3 {
+/* A small-caps section label. It is an `h2` rather than an `h3` because it is
+   the first level under the page title — the styling is what is small here,
+   not the rank. */
+.prose h3,
+.prose h2.label {
+  font-family: var(--sans);
   font-size: 14px;
   font-weight: 700;
   letter-spacing: .1em;
@@ -1230,7 +1422,6 @@ p a, .about-copy a { text-decoration: underline; }
   position: relative;
   overflow: hidden;
   margin-top: 22px;
-  transition: transform .12s, box-shadow .15s;
 }
 .featured-card:active { transform: scale(.99); }
 @media (hover: hover) {
@@ -1277,7 +1468,6 @@ p a, .about-copy a { text-decoration: underline; }
   gap: 15px;
   width: 100%;
   box-shadow: var(--lift-sm);
-  transition: transform .12s, box-shadow .15s;
 }
 .lesson:active { transform: scale(.99); }
 @media (hover: hover) {
@@ -1448,8 +1638,16 @@ p a, .about-copy a { text-decoration: underline; }
 .pay-opt .t { display: block; font-weight: 700; font-size: 15px; color: var(--ink); }
 .pay-opt .s { display: block; font-size: 12.5px; color: var(--muted-2); margin-top: 4px; line-height: 1.45; }
 
-.field-wrap { display: grid; gap: 11px; margin-top: 18px; }
+.field-wrap { display: grid; gap: 14px; margin-top: 18px; }
 .field-wrap .split { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
+.field-row { display: grid; gap: 6px; }
+.field-label {
+  font-size: 12.5px;
+  font-weight: 700;
+  letter-spacing: .04em;
+  color: var(--ink-soft);
+}
+.field-hint { font-size: 12px; color: var(--muted); }
 .field {
   width: 100%;
   background: var(--card);
@@ -1571,7 +1769,6 @@ p a, .about-copy a { text-decoration: underline; }
   background: linear-gradient(150deg, #3E2354 0%, var(--plum-900) 100%);
   color: var(--on-dark);
   box-shadow: var(--lift-lg);
-  transition: transform .12s;
 }
 .bundle-hero:active { transform: scale(.99); }
 @media (hover: hover) {
@@ -1626,6 +1823,15 @@ p a, .about-copy a { text-decoration: underline; }
   overflow-x: auto;
   padding: 22px 0 4px;
   scrollbar-width: none;
+  /* The chips run off the right edge on a phone, where the row otherwise
+     reads as a complete set of three. The fade says there is more. Above the
+     width where all four fit, there is nothing to hint at, so it is removed
+     rather than left to dim a chip for no reason. */
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 30px), transparent 100%);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 30px), transparent 100%);
+}
+@media (min-width: 620px) {
+  .cat-chips { -webkit-mask-image: none; mask-image: none; }
 }
 .cat-chips::-webkit-scrollbar { display: none; }
 .cat-chip {
@@ -1674,9 +1880,11 @@ p a, .about-copy a { text-decoration: underline; }
   align-items: center;
   justify-content: center;
 }
+.prod-cover { position: relative; }
 .prod-cover .badge {
   position: absolute;
-  top: 10px; left: 10px;
+  top: 10px; right: 10px;
+  z-index: 1;
   font-size: 9px;
   font-weight: 800;
   letter-spacing: 1.3px;
@@ -1685,14 +1893,7 @@ p a, .about-copy a { text-decoration: underline; }
   color: #2A2113;
   border-radius: 12px;
   padding: 4px 9px;
-}
-.prod-cover .kind {
-  position: absolute;
-  bottom: 9px; left: 11px;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .8px;
-  color: rgba(246, 239, 223, .85);
+  box-shadow: 0 4px 10px -4px rgba(0, 0, 0, .45);
 }
 .prod-info { padding: 14px; display: flex; flex-direction: column; flex: 1; }
 .prod-info .t { font-weight: 700; font-size: 14.5px; line-height: 1.35; color: var(--ink); }
@@ -1719,29 +1920,31 @@ p a, .about-copy a { text-decoration: underline; }
    -------------------------------------------------------------------------- */
 .product-layout { display: grid; gap: 26px; padding-top: 26px; align-items: start; }
 @media (min-width: 900px) {
-  .product-layout { grid-template-columns: .9fr 1.1fr; gap: 40px; }
+  .product-layout { grid-template-columns: .85fr 1.15fr; gap: 40px; }
   .product-layout .media { position: sticky; top: 26px; }
+  /* The cover is capped, so centre it rather than leave a dead strip
+     between it and the buying column. */
+  .product-layout .pd-cover { margin-inline: auto; }
 }
 
+/* The cover is portrait, like the book it stands for. On a wide screen it is
+   capped so it does not tower over the buying column beside it. */
 .pd-cover {
-  position: relative;
   border-radius: var(--radius-lg);
   overflow: hidden;
-  background: linear-gradient(170deg, #3A2150 0%, #241531 100%);
-  aspect-ratio: 4 / 3;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  max-width: 340px;
   box-shadow: var(--lift-lg);
 }
-.pd-cover .cap {
-  position: absolute;
-  left: 22px; bottom: 16px;
-  font-size: 10.5px;
-  letter-spacing: 1.8px;
-  text-transform: uppercase;
-  color: rgba(246, 239, 223, .7);
+@media (max-width: 899px) { .pd-cover { max-width: 260px; margin-inline: auto; } }
+
+.book-cover-rail {
+  max-width: 250px;
+  margin: 0 0 18px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--lift);
 }
+@media (max-width: 999px) { .book-cover-rail { max-width: 190px; } }
 
 .pd-rating {
   display: flex;
@@ -1803,24 +2006,22 @@ p a, .about-copy a { text-decoration: underline; }
   align-items: center;
   box-shadow: var(--lift-sm);
 }
-.cart-item .thumb {
-  flex: none;
-  width: 54px; height: 54px;
-  border-radius: 14px;
-  background: linear-gradient(160deg, #3E2354, var(--plum-900));
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--serif);
-  font-weight: 700;
-  font-size: 19px;
-  color: var(--gold-soft);
-}
+.cart-item .cover { box-shadow: var(--lift-sm); }
 .cart-item .who { flex: 1; min-width: 0; }
 .cart-item .t { display: block; font-weight: 700; font-size: 15px; color: var(--ink); line-height: 1.35; }
 .cart-item .k { display: block; font-size: 12px; color: var(--muted-2); margin-top: 4px; font-weight: 600; }
 .cart-item .side { text-align: right; flex: none; }
 .cart-item .p { display: block; font-family: var(--serif); font-weight: 700; font-size: 17px; color: var(--plum-800); }
+.cart-item .rm {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--danger);
+  /* A destructive control gets a real target, not a 12px word. */
+  padding: 8px 2px 6px;
+  margin-top: 2px;
+  border-radius: 8px;
+}
+.cart-item .rm:hover { text-decoration: underline; }
 .cart-item .rm { font-size: 12.5px; font-weight: 700; color: var(--danger); margin-top: 6px; }
 @media (hover: hover) {
   .cart-item .rm:hover { text-decoration: underline; }
@@ -1852,14 +2053,40 @@ p a, .about-copy a { text-decoration: underline; }
 }
 
 .cart-empty {
-  padding: 60px 24px;
+  padding: 64px 24px 72px;
   text-align: center;
-  font-family: var(--serif);
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.65;
 }
-.cart-empty .btn { width: auto; min-width: 240px; margin-top: 24px; }
+.cart-empty .ec-mark {
+  width: 68px; height: 68px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  background: #F2E6C9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cart-empty .ec-t {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(22px, 1.4vw + 18px, 28px);
+  color: var(--ink);
+}
+.cart-empty .ec-s {
+  font-family: var(--serif);
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--muted);
+  margin: 10px auto 0;
+  max-width: 40ch;
+}
+.cart-empty .ec-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 26px;
+}
+.cart-empty .btn { min-width: 220px; }
 
 /* --------------------------------------------------------------------------
    20. Sheets, dialogs, toast
@@ -1984,6 +2211,8 @@ p a, .about-copy a { text-decoration: underline; }
   justify-content: center;
   box-shadow: var(--lift-sm);
 }
+.book-row > svg:last-child { flex: none; align-self: center; }
+.book-row .cover { box-shadow: var(--lift-sm); }
 .book-row .body { flex: 1; min-width: 0; }
 .book-row .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 7px; }
 .book-row .num {
@@ -2059,15 +2288,22 @@ p a, .about-copy a { text-decoration: underline; }
 
 .quick-tile small {
   display: block;
-  font-size: 11.5px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--muted);
-  margin-top: 4px;
+  margin-top: 3px;
 }
+@media (min-width: 460px) { .quick-tile small { font-size: 11.5px; margin-top: 4px; } }
 
 /* --------------------------------------------------------------------------
    23. The Legacy Inventory
    -------------------------------------------------------------------------- */
+
+/* The worksheet is a document, not a dashboard. At the full 1140px shell the
+   tick control ends up a metre from the section it belongs to, and the prompt
+   lines run past a comfortable measure. It gets its own narrower column. */
+#screen-legacy .shell { max-width: 880px; }
+
 .privacy-band {
   display: flex;
   align-items: flex-start;
@@ -2103,11 +2339,15 @@ p a, .about-copy a { text-decoration: underline; }
 .inv-head .body { flex: 1; min-width: 0; }
 .inv-head .t { display: block; font-family: var(--serif); font-weight: 700; font-size: 18px; color: var(--plum-800); }
 .inv-head .s { display: block; font-size: 13px; color: var(--muted); margin-top: 4px; }
-/* Bigger than the guide checkboxes were — this one is the main control here. */
-.inv-head .step-check { width: 40px; height: 40px; }
 .inv-card.done .step-num { background: var(--plum-800); color: #F5EFE3; }
 .inv-card.done .step-check { background: var(--gold); border-color: var(--gold); }
-.inv-card.done .step-check svg { opacity: 1; }
+.inv-card.done .step-check svg { opacity: 1; transform: none; }
+/* A ticked section steps forward from the ones still to do. */
+.inv-card {
+  border: 1px solid transparent;
+  transition: border-color var(--mid), background var(--mid);
+}
+.inv-card.done { border-color: rgba(176, 141, 46, .35); background: #FFFCF3; }
 
 .inv-prompts { display: grid; gap: 10px; margin-top: 16px; }
 .inv-prompts li {
@@ -2269,16 +2509,171 @@ p a, .about-copy a { text-decoration: underline; }
 .prod-card.pending .prod-cover { filter: saturate(.5); }
 .prod-card.pending .prod-info .p { color: var(--muted); font-size: 13px; }
 
-.prod-cover .mark, .pd-cover .mark { display: flex; }
+/* The mark sits behind the cover copy, not on top of it. */
 .feature-cover .cover-mark {
   position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  opacity: .5;
+  top: 26px; right: 24px;
+  opacity: .34;
 }
 
 /* --------------------------------------------------------------------------
-   26. Print — the Legacy Inventory is meant to leave the screen
+   26. Cover art
+   Typographic covers, one per title. The colour field and the motif carry the
+   identity at thumbnail size; the type takes over from `cover-md` up.
+   Custom properties (--cv-*) are set inline per item by src/covers.js.
+   -------------------------------------------------------------------------- */
+.cover {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  flex: none;
+  background: linear-gradient(158deg, var(--cv-from) 0%, var(--cv-to) 100%);
+  color: var(--cv-ink);
+  isolation: isolate;
+}
+
+.cover-xs { width: 54px; aspect-ratio: 3 / 4; border-radius: 9px; }
+.cover-sm { width: 68px; aspect-ratio: 3 / 4; border-radius: 10px; }
+.cover-md { width: 100%; aspect-ratio: 3 / 4; }
+.cover-lg { width: 100%; aspect-ratio: 3 / 4; border-radius: var(--radius-lg); }
+
+/* Hairline frame, a nod to the printed interiors. */
+.cv-frame {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  opacity: .22;
+  pointer-events: none;
+}
+.cover-lg .cv-frame { inset: 14px; border-radius: 6px; }
+.cover-xs .cv-frame, .cover-sm .cv-frame { inset: 5px; border-radius: 3px; }
+
+/* --- motifs: one geometric gesture each, drawn from the accent --- */
+.cv-motif { position: absolute; inset: 0; pointer-events: none; }
+
+.mo-arc .cv-motif::before {
+  content: "";
+  position: absolute;
+  right: -28%; bottom: -34%;
+  width: 116%; aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid var(--cv-accent);
+  opacity: .34;
+}
+.mo-halo .cv-motif::before {
+  content: "";
+  position: absolute;
+  top: -22%; right: -18%;
+  width: 92%; aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--cv-accent) 0%, transparent 68%);
+  opacity: .34;
+}
+.mo-rules .cv-motif {
+  background:
+    linear-gradient(var(--cv-accent), var(--cv-accent)) 0 22% / 100% 2px no-repeat,
+    linear-gradient(var(--cv-accent), var(--cv-accent)) 0 28% / 100% 2px no-repeat,
+    linear-gradient(var(--cv-accent), var(--cv-accent)) 0 34% / 100% 2px no-repeat;
+  opacity: .40;
+}
+.mo-split .cv-motif {
+  background: linear-gradient(202deg, transparent 46%, var(--cv-accent) 46%, var(--cv-accent) 54%, transparent 54%);
+  opacity: .28;
+}
+.mo-ladder .cv-motif {
+  background: repeating-linear-gradient(90deg, var(--cv-accent) 0 1.5px, transparent 1.5px 11px);
+  opacity: .26;
+}
+
+.cv-mark {
+  position: absolute;
+  top: 13px; left: 14px;
+  display: flex;
+  opacity: .92;
+}
+.cover-lg .cv-mark { top: 24px; left: 26px; }
+.cover-xs .cv-mark, .cover-sm .cv-mark {
+  inset: 0;
+  top: auto; left: 50%;
+  transform: translateX(-50%);
+  bottom: 26%;
+  opacity: .95;
+}
+
+/* --- the type block --- */
+.cv-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px 17px 20px;
+  text-align: left;
+}
+.cover-lg .cv-text { padding: 30px 30px 32px; }
+
+.cv-kicker {
+  font-family: var(--serif);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--cv-accent);
+}
+.cv-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.16;
+  margin-top: 7px;
+  color: var(--cv-ink);
+  /* Long titles must not push the imprint line out of the cover. */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cover-lg .cv-title { font-size: 30px; -webkit-line-clamp: 5; }
+.cv-rule {
+  width: 26px; height: 2px;
+  margin-top: 11px;
+  background: var(--cv-accent);
+  opacity: .9;
+}
+.cover-lg .cv-rule { width: 44px; margin-top: 16px; }
+.cv-foot {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--cv-soft);
+  margin-top: 9px;
+}
+.cover-lg .cv-foot { font-size: 10px; letter-spacing: 2px; margin-top: 14px; }
+
+/* Title size tracks the cover's own width, not the viewport — the same
+   component sits in a 220px grid card and a 360px detail column. */
+@supports (container-type: inline-size) {
+  .cover-md, .cover-lg { container-type: inline-size; }
+  .cover-md .cv-title { font-size: clamp(14px, 7.6cqw, 22px); }
+  .cover-lg .cv-title { font-size: clamp(20px, 8.4cqw, 34px); }
+}
+
+/* Two shop cards across a phone leaves each cover about 165px wide, where the
+   cover's own title lands directly above the card's title at nearly the same
+   size. The field, the motif and the mark still identify it; the type goes. */
+@media (max-width: 619px) {
+  .prod-card .cv-text { display: none; }
+  .prod-card .cv-mark {
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   27. Print — the Legacy Inventory is meant to leave the screen
    -------------------------------------------------------------------------- */
 @media print {
   .sidebar, .appbar, .tabbar, #tabbar, .no-print,
@@ -2286,7 +2681,21 @@ p a, .about-copy a { text-decoration: underline; }
 
   body { background: #fff; color: #000; }
   .main { padding-bottom: 0; }
-  .shell { max-width: none; padding-inline: 0; }
+  .shell, #screen-legacy .shell { max-width: none; padding-inline: 0; }
+
+  /* Nothing prints a solid dark field. Browsers drop backgrounds by default,
+     which would leave cream text on white — so the ink is restated too. */
+  .dark-head, .cover, .progress-card, .free-card, .featured-card,
+  .bundle-hero, .consult-card, .feature-cover {
+    background: none !important;
+    box-shadow: none !important;
+    color: #000 !important;
+    border: 1px solid #999;
+  }
+  .dark-head h1, .dark-head .lede, .dark-head .eyebrow,
+  .cv-title, .cv-kicker, .cv-foot { color: #000 !important; }
+  .cv-motif, .cv-mark, .dark-head .glow, .cover-mark { display: none !important; }
+  .cover { aspect-ratio: auto; min-height: 0; }
 
   .inv-card {
     box-shadow: none;

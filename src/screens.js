@@ -20,6 +20,7 @@ import {
 import {
   backButton, brandFooter, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
 } from './components.js';
+import { cover, coverMini } from './covers.js';
 import {
   cupMarkOnDark, chevron, goldCheck, bigCheck,
   starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon,
@@ -81,10 +82,10 @@ screens.home = () => {
       <a class="progress-card span-all" href="${hrefFor('legacy')}">
         <span class="ring" aria-hidden="true">
           <svg width="96" height="96" viewBox="0 0 96 96">
-            <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="7"/>
-            <circle cx="48" cy="48" r="40" fill="none" stroke="#B08D2E" stroke-width="7" stroke-linecap="round"
-              stroke-dasharray="${circumference}" stroke-dashoffset="${circumference * (1 - pct / 100)}"
-              style="transition:stroke-dashoffset .5s"/>
+            <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.20)" stroke-width="7"/>
+            <circle class="ring-arc" cx="48" cy="48" r="40" fill="none" stroke="#D0AC4C" stroke-width="7" stroke-linecap="round"
+              stroke-dasharray="${circumference}"
+              style="--arc:${circumference * (1 - pct / 100)};--full:${circumference}"/>
           </svg>
           <span class="pct">${pct}<small>%</small></span>
         </span>
@@ -108,9 +109,9 @@ screens.home = () => {
       </a>
 
       <div class="quick-grid span-all">
-        <a class="quick-tile" href="${hrefFor('read')}"><span class="icon-tile it-gold">${bookIcon(22, '#96771F', 1.9)}</span>Free reading<small>${read} of ${LESSON_TOTAL} read</small></a>
-        <a class="quick-tile" href="${hrefFor('shop')}"><span class="icon-tile it-teal">${cartIcon(22, '#23636A', 1.9)}</span>The shop<small>Books, sets &amp; kits</small></a>
-        <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile it-gold">${peopleIcon(22, '#96771F', 1.9)}</span>About Pamela<small>And the movement</small></a>
+        ${quickTile(hrefFor('read'), 'it-gold', bookIcon(22, '#96771F', 1.9), 'Free reading', `${read} of ${LESSON_TOTAL} read`)}
+        ${quickTile(hrefFor('shop'), 'it-teal', cartIcon(22, '#23636A', 1.9), 'The shop', 'Books, sets & kits')}
+        ${quickTile(hrefFor('about'), 'it-gold', peopleIcon(22, '#96771F', 1.9), 'About Pamela', 'And the movement')}
       </div>
 
       ${featuredLessonCard()}
@@ -125,6 +126,12 @@ screens.home = () => {
     <div class="screen-foot"></div>
   </div>`;
 };
+
+const quickTile = (href, tone, icon, label, sub) => `
+  <a class="quick-tile" href="${href}">
+    <span class="icon-tile ${tone}" aria-hidden="true">${icon}</span>
+    <span class="qt-body">${esc(label)}<small>${esc(sub)}</small></span>
+  </a>`;
 
 function featuredLessonCard() {
   const lesson = FEATURED_LESSON;
@@ -162,13 +169,13 @@ screens.series = () => `
       ${BOOKS.map(bookRow).join('')}
     </div>
 
-    <aside class="note-card">
+    <div class="note-card" role="note">
       <span class="note-icon" aria-hidden="true">${shieldIcon('#96771F')}</span>
       <span>
         <span class="t">A note on the numbering</span>
         <span class="s">The covers are mid-renumbering, and more than one currently claims the same slot. Rather than guess, the series is listed here by title, and numbers appear only where they are settled. <a href="${hrefFor('status')}">See what is still open</a></span>
       </span>
-    </aside>
+    </div>
     <div class="screen-foot"></div>
   </div>`;
 
@@ -176,9 +183,7 @@ function bookRow(book) {
   const status = BOOK_STATUS[book.status];
   return `
   <a class="book-row" href="${hrefForBook(book.id)}">
-    <span class="book-cover" aria-hidden="true">
-      ${cupMarkOnDark(38)}
-    </span>
+    ${coverMini(book)}
     <span class="body">
       <span class="meta">
         ${book.seriesLabel ? `<span class="num">${esc(book.seriesLabel)}</span>` : ''}
@@ -225,30 +230,34 @@ screens.book = () => {
       </div>` : ''}
 
       <div class="prose">
-        <h3>What is inside</h3>
+        <h2 class="label">What is inside</h2>
         <ul>${book.spine.map((line) => `<li>${esc(line)}</li>`).join('')}</ul>
       </div>
 
       ${book.scriptures.length ? `
       <div class="prose">
-        <h3>Scripture, KJV throughout</h3>
+        <h2 class="label">Scripture, KJV throughout</h2>
         <p>${book.scriptures.map(esc).join(' · ')}</p>
       </div>` : ''}
 
       ${book.wellnessNote ? disclaimerNote('wellness') : ''}
       ${book.legalNote ? disclaimerNote('legal') : ''}
       ${book.rightsNote ? `
-      <aside class="note-card">
+      <div class="note-card" role="note">
         <span class="note-icon" aria-hidden="true">${shieldIcon('#96771F')}</span>
         <span>
           <span class="t">Written releases pending</span>
           <span class="s">This book tells the stories of living people by name. Until each of them has signed a release, the names stay out of everything published about it — including this page.</span>
         </span>
-      </aside>` : ''}
+      </div>` : ''}
       <div class="screen-foot"></div>
     </div>
 
     <div>
+      <div class="book-cover-rail">
+        ${cover(book, { kicker: book.seriesLabel || 'A Cup of Compassion', size: 'lg' })}
+      </div>
+
       ${product ? `
       <div class="aside-card">
         <span class="cap">Available now</span>
@@ -297,13 +306,13 @@ function disclaimerNote(kind) {
       s: `${LEGAL_POSITIONING} Everything here is education. The documents themselves are drawn up by a licensed attorney in your own state.`,
     };
   return `
-  <aside class="note-card">
+  <div class="note-card" role="note">
     <span class="note-icon" aria-hidden="true">${shieldIcon('#96771F')}</span>
     <span>
       <span class="t">${esc(copy.t)}</span>
       <span class="s">${esc(copy.s)} <a href="${hrefFor('disclaimer')}">Read the full disclaimers</a></span>
     </span>
-  </aside>`;
+  </div>`;
 }
 
 screens.read = () => {
@@ -364,7 +373,7 @@ screens.lesson = () => {
 
       <div class="prose">
         ${lesson.body.map((p) => `<p>${esc(p)}</p>`).join('')}
-        <h3>Try this</h3>
+        <h2 class="label">Try this</h2>
         <ul>${lesson.practice.map((p) => `<li>${esc(p)}</li>`).join('')}</ul>
       </div>
 
@@ -524,9 +533,8 @@ screens.shop = () => {
       ${visible.map((p) => `
       <a class="prod-card ${p.buyable ? '' : 'pending'}" href="${hrefForProduct(p.id)}">
         <span class="prod-cover">
+          ${cover(p, { kicker: p.kind, foot: p.free ? 'Free · A Cup of Compassion' : 'A Cup of Compassion' })}
           ${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ''}
-          <span class="mark" aria-hidden="true">${cupMarkOnDark(46)}</span>
-          <span class="kind">${esc(p.kind)}</span>
         </span>
         <span class="prod-info">
           <span class="t">${esc(p.title)}</span>
@@ -559,8 +567,7 @@ screens.product = () => {
   <div class="shell product-layout">
     <div class="media">
       <div class="pd-cover">
-        <span class="mark" aria-hidden="true">${cupMarkOnDark(96)}</span>
-        <span class="cap">${esc(product.kind.toLowerCase())}</span>
+        ${cover(product, { kicker: product.kind, size: 'lg' })}
       </div>
     </div>
 
@@ -577,7 +584,7 @@ screens.product = () => {
 
       ${included.length ? `
       <div class="prose">
-        <h3>What is in it</h3>
+        <h2 class="label">What is in it</h2>
         <ul>${included.map((b) => `<li>${esc(b.title)}</li>`).join('')}</ul>
       </div>` : ''}
 
@@ -617,6 +624,23 @@ function productActions(product, { owned, carted }) {
   </div>`;
 }
 
+/**
+ * An empty cart is a dead end unless it offers a way on. Both routes out of
+ * here are free, which is the point worth making.
+ */
+const emptyCart = (line) => `
+  <div class="shell">
+    <div class="cart-empty">
+      <span class="ec-mark" aria-hidden="true">${cartIcon(30, '#B08D2E', 1.8)}</span>
+      <p class="ec-t">Your cart is empty</p>
+      <p class="ec-s">${esc(line)}</p>
+      <div class="ec-actions">
+        <a class="btn btn-dark btn-auto" href="${hrefFor('shop')}">Browse the shop</a>
+        <a class="btn btn-ghost btn-auto" href="${hrefFor('read')}">Read the series free</a>
+      </div>
+    </div>
+  </div>`;
+
 screens.cart = () => {
   const items = state.cart.map(productById).filter(Boolean);
   const subtotal = items.reduce((sum, p) => sum + p.price, 0);
@@ -636,7 +660,7 @@ screens.cart = () => {
     <div class="cart-items">
       ${items.map((p) => `
       <div class="cart-item">
-        <span class="thumb" aria-hidden="true">${cupMarkOnDark(24)}</span>
+        ${coverMini(p, 'xs')}
         <span class="who">
           <span class="t">${esc(p.title)}</span>
           <span class="k">${esc(p.kind)}</span>
@@ -648,7 +672,7 @@ screens.cart = () => {
       </div>`).join('')}
     </div>
 
-    <aside class="summary">
+    <div class="summary">
       <div class="cart-summary">
         <div class="subtotal-row">
           <span class="l">Subtotal</span>
@@ -657,14 +681,9 @@ screens.cart = () => {
         <button class="btn btn-gold" data-checkout>Checkout · ${money(subtotal)}</button>
         <p class="fine">Instant download · 30-day money-back guarantee</p>
       </div>
-    </aside>
-  </div>` : `
-  <div class="shell">
-    <div class="cart-empty">
-      Your cart is empty.<br>The reading is free either way.
-      <a class="btn btn-dark" href="${hrefFor('shop')}">Browse the shop</a>
     </div>
-  </div>`}
+  </div>` : `
+  ${emptyCart('The reading is free either way — and so is the Legacy Inventory.')}`}
   <div class="screen-foot"></div>`;
 };
 
@@ -676,16 +695,31 @@ const PAY_OPTIONS = [
   { id: 'invoice', title: 'Church or organisation invoice', sub: 'For group licences — we send an invoice, nothing is due today' },
 ];
 
+/**
+ * A labelled field. A placeholder alone is not a label: it vanishes the moment
+ * someone types, and it leaves anyone using a screen reader or coming back to
+ * a half-filled form with nothing to read.
+ */
+const field = ({ id, label, hint = '', ...attrs }) => {
+  const rest = Object.entries(attrs).map(([k, v]) => ` ${k}="${esc(v)}"`).join('');
+  return `
+  <p class="field-row">
+    <label class="field-label" for="${esc(id)}">${esc(label)}</label>
+    <input class="field" id="${esc(id)}" name="${esc(id)}"${rest}>
+    ${hint ? `<span class="field-hint">${esc(hint)}</span>` : ''}
+  </p>`;
+};
+
 const payDetails = () => {
   if (state.payMethod === 'card') {
     return `
     <div class="field-wrap">
-      <input class="field" inputmode="numeric" autocomplete="cc-number" placeholder="Card number" aria-label="Card number">
+      ${field({ id: 'cc-number', label: 'Card number', inputmode: 'numeric', autocomplete: 'cc-number', placeholder: '1234 5678 9012 3456' })}
       <div class="split">
-        <input class="field" inputmode="numeric" autocomplete="cc-exp" placeholder="MM / YY" aria-label="Expiry date">
-        <input class="field" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC" aria-label="Security code">
+        ${field({ id: 'cc-exp', label: 'Expiry', inputmode: 'numeric', autocomplete: 'cc-exp', placeholder: 'MM / YY' })}
+        ${field({ id: 'cc-csc', label: 'Security code', inputmode: 'numeric', autocomplete: 'cc-csc', placeholder: 'CVC' })}
       </div>
-      <input class="field" autocomplete="cc-name" placeholder="Name on card" aria-label="Name on card">
+      ${field({ id: 'cc-name', label: 'Name on card', autocomplete: 'cc-name', placeholder: 'As printed on the card' })}
     </div>`;
   }
   return '<p class="pay-note">Tell us the organisation and the number of copies and we will send an invoice by email. Nothing is charged today.</p>';
@@ -705,12 +739,7 @@ screens.checkout = () => {
         <h1>Nothing to check out</h1>
       </div>
     </header>
-    <div class="shell">
-      <div class="cart-empty">
-        Your cart is empty.
-        <a class="btn btn-dark" href="${hrefFor('shop')}">Browse the shop</a>
-      </div>
-    </div>`;
+    ${emptyCart('Nothing to pay for — add something from the shop first.')}`;
   }
 
   return `
@@ -746,6 +775,7 @@ screens.checkout = () => {
         ${PAY_OPTIONS.map((opt) => `
         <button class="pay-opt" role="radio"
                 aria-checked="${state.payMethod === opt.id}"
+                tabindex="${state.payMethod === opt.id ? 0 : -1}"
                 data-pay="${opt.id}"
                 data-focus-key="pay-${opt.id}">
           <span class="radio" aria-hidden="true"><i></i></span>
