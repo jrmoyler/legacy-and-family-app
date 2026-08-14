@@ -36,6 +36,20 @@ source.
 | `src/dom.js` | `esc()` and small DOM helpers |
 | `manifest.webmanifest` | Installable-app metadata |
 | `vercel.json` | Clean URLs, caching, security headers |
+| `assets/books/` | Built EPUB masters, one per book — see its own README |
+
+## The book files
+
+`assets/books/` holds the built EPUB for each book, mapped to its book record
+by the `epub` field in `src/data.js`. Five of the six are present; the file
+delivered for *Are You Born in Compassion or Nurtured in It?* was truncated and
+has to be re-exported. The Production status screen derives its on-hand and
+missing lists from that field.
+
+Nothing in the app links to these files. They are fulfilment masters, and the
+finished books are sold — but a static host serves whatever is in the folder to
+anyone who asks for its URL. `assets/books/README.md` covers what that means
+and what real gating would take.
 
 ## Screens
 
