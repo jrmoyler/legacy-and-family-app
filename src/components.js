@@ -103,4 +103,7 @@ export const overlays = () => join([
     <button class="btn btn-dark" data-close-sheet data-then="home">Back to home</button>
   </div>`,
   '<div class="toast" id="toast" role="status" aria-live="polite"></div>',
+  /* For changes that are obvious on screen and silent otherwise — filtering
+     the shop redraws a grid nobody is told about. */
+  '<p class="sr-only" id="live" role="status" aria-live="polite"></p>',
 ]);
