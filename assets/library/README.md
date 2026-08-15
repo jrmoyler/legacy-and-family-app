@@ -30,5 +30,4 @@ To test complete downloads from a deployed app (not just the committed files), a
 python3 tools/verify_library_assets.py --root . --base-url https://your-deployment.example
 ```
 
-The `Publishing library integrity` GitHub Action runs the offline and full local HTTP-download
-checks for every library-related pull request.
+Run the same command before each release or after changing any publishing asset.
