@@ -16,3 +16,19 @@ sha256sum -c SHA256SUMS.txt
 ```
 
 `catalog.json` provides the same hashes, byte counts, and public app paths for deployment checks.
+
+For the complete release audit—catalog order, all 16 checksums and byte counts, EPUB package
+structure, PDF parsing, and the app's PDF/EPUB links—run:
+
+```sh
+python3 tools/verify_library_assets.py --root .
+```
+
+To test complete downloads from a deployed app (not just the committed files), add its URL:
+
+```sh
+python3 tools/verify_library_assets.py --root . --base-url https://your-deployment.example
+```
+
+The `Publishing library integrity` GitHub Action runs the offline and full local HTTP-download
+checks for every library-related pull request.

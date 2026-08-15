@@ -1,0 +1,33 @@
+name: Publishing library integrity
+
+on:
+  pull_request:
+    paths:
+      - 'assets/library/**'
+      - 'src/data.js'
+      - 'src/screens.js'
+      - 'tools/verify_library_assets.py'
+      - '.github/workflows/library-integrity.yml'
+  push:
+    branches:
+      - claude/legacy-app-migration-mobile-0sk4cg
+    paths:
+      - 'assets/library/**'
+      - 'src/data.js'
+      - 'src/screens.js'
+      - 'tools/verify_library_assets.py'
+
+jobs:
+  verify-library:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate catalog, checksums, PDF structure, and EPUB structure
+        run: python3 tools/verify_library_assets.py --root . --report /tmp/library-audit.json
+      - name: Verify full HTTP downloads of all 16 editions
+        shell: bash
+        run: |
+          python3 -m http.server 4173 --directory . >/tmp/library-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          python3 tools/verify_library_assets.py --root . --base-url http://127.0.0.1:4173
