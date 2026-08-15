@@ -13,6 +13,7 @@ import argparse
 import hashlib
 import json
 import shutil
+import struct
 import subprocess
 import sys
 import urllib.error
@@ -34,6 +35,9 @@ EXPECTED_IDS = [
     "legacy-inventory-workbook",
 ]
 PDF_MAGIC = b"%PDF-"
+JPEG_MAGIC = b"\xff\xd8"
+SOF_MARKERS = {0xC0, 0xC1, 0xC2, 0xC3, 0xC5, 0xC6, 0xC7, 0xC9, 0xCA, 0xCB, 0xCD, 0xCE, 0xCF}
+MIN_COVER_WIDTH = {"image": 1600, "thumb": 640}
 
 
 class VerificationError(Exception):
@@ -146,6 +150,65 @@ def downloaded_digest(base_url: str, asset_path: str, expected_size: int) -> dic
     return {"status": response.status, "bytes": size, "sha256": hasher.hexdigest(), "contentType": response.headers.get("Content-Type", "")}
 
 
+def cover_details(path: Path) -> dict[str, Any]:
+    """Read a JPEG's dimensions straight from its start-of-frame marker."""
+    data = path.read_bytes()
+    if data[:2] != JPEG_MAGIC:
+        fail(f"{path.name}: cover is not a JPEG.")
+    offset = 2
+    while offset + 9 < len(data):
+        if data[offset] != 0xFF:
+            offset += 1
+            continue
+        marker = data[offset + 1]
+        if marker in SOF_MARKERS:
+            height, width = struct.unpack(">HH", data[offset + 5:offset + 9])
+            return {"width": width, "height": height}
+        if marker == 0xD8 or 0xD0 <= marker <= 0xD9:
+            offset += 2
+            continue
+        offset += 2 + struct.unpack(">H", data[offset + 2:offset + 4])[0]
+    fail(f"{path.name}: cover has no readable JPEG frame header.")
+
+
+def verify_covers(catalog: dict[str, Any], library: Path, base_url: str | None) -> list[dict[str, Any]]:
+    """Check the cover previews extracted from the EPUBs by extract_library_covers.py."""
+    covers = catalog.get("covers")
+    if not isinstance(covers, list) or [entry.get("id") for entry in covers] != EXPECTED_IDS:
+        fail("catalog.json covers must list one entry per title, in catalog order.")
+
+    reports: list[dict[str, Any]] = []
+    for cover in covers:
+        report: dict[str, Any] = {"id": cover["id"], "title": cover["title"], "renditions": {}}
+        for rendition in ("image", "thumb"):
+            entry = cover.get(rendition)
+            if not isinstance(entry, dict) or not str(entry.get("path", "")).startswith("/assets/library/covers/"):
+                fail(f"{cover['id']}: invalid {rendition} cover entry.")
+            path = library / entry["path"].removeprefix("/assets/library/")
+            if not path.is_file():
+                fail(f"{cover['id']}: {rendition} cover is missing: {entry['path']}")
+            actual_size = path.stat().st_size
+            if actual_size != entry.get("bytes"):
+                fail(f"{path.name}: {actual_size} bytes; catalog requires {entry.get('bytes')}.")
+            actual_sha = digest_file(path)
+            if actual_sha != entry.get("sha256"):
+                fail(f"{path.name}: cover checksum does not match the catalog.")
+            details = cover_details(path)
+            if rendition == "image" and (details["width"], details["height"]) != (cover.get("width"), cover.get("height")):
+                fail(f"{path.name}: cover is {details['width']}x{details['height']}; catalog says {cover.get('width')}x{cover.get('height')}.")
+            if details["width"] < MIN_COVER_WIDTH[rendition]:
+                fail(f"{path.name}: cover is only {details['width']}px wide; {MIN_COVER_WIDTH[rendition]}px is the minimum.")
+            item = {"path": entry["path"], "bytes": actual_size, "sha256": actual_sha, **details}
+            if base_url:
+                download = downloaded_digest(base_url, entry["path"], actual_size)
+                if download["sha256"] != actual_sha:
+                    fail(f"{path.name}: HTTP download checksum differs from the committed cover.")
+                item["download"] = download
+            report["renditions"][rendition] = item
+        reports.append(report)
+    return reports
+
+
 def verify(root: Path, base_url: str | None) -> dict[str, Any]:
     library = root / "assets" / "library"
     catalog = json.loads((library / "catalog.json").read_text(encoding="utf-8"))
@@ -197,6 +260,9 @@ def verify(root: Path, base_url: str | None) -> dict[str, Any]:
 
     if report["editionCount"] != 16 or set(manifest) != expected_manifest_paths:
         fail("The catalog and checksum manifest must describe exactly 16 editions.")
+
+    report["covers"] = verify_covers(catalog, library, base_url)
+    report["coverCount"] = 2 * len(report["covers"])
     return report
 
 

@@ -6,63 +6,84 @@
  * measured on a wide monitor.
  */
 
-import { esc } from './dom.js';
+import { esc, join } from './dom.js';
 import {
   BRAND, BOOKS, BOOK_STATUS, bookById,
-  PRODUCTS, CATEGORIES, productById,
+  PRODUCTS, CATEGORIES, productById, BOOK_PRODUCTS, titlesForProduct,
+  FORMATS, FORMAT_SHORT, DEFAULT_FORMAT,
   LESSONS, FEATURED_LESSON, LESSON_TOTAL, lessonById,
   INVENTORY, INVENTORY_PRIVACY, STATUS_GROUPS,
   ABOUT_AUTHOR, PERSONAL_INVITATION, LEGAL_POSITIONING,
+  TOOLS, NETWORK, NETWORK_NOTE, SOCIAL_LINKS,
 } from './data.js';
 import {
-  state, inventoryProgress, sectionDone, hasReadLesson, inCart, inLibrary,
+  state, inventoryProgress, sectionDone, hasReadLesson,
+  inCart, inLibrary, isSaved, formatFor,
 } from './state.js';
 import {
-  backButton, brandFooter, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
+  backButton, brandFooter, coverArt, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
 } from './components.js';
 import {
-  cupMarkOnDark, chevron, goldCheck, bigCheck,
+  cupMark, cupMarkOnDark, chevron, goldCheck, bigCheck,
   starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon,
+  mailIcon, externalIcon, downloadIcon, bookmarkIcon, shelfIcon,
 } from './icons.js';
 
 export const screens = {};
 
 const money = (n) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
 
-const editionDownloadPanel = (editions, heading = 'Download editions') => {
+/* --------------------------------------------------------------------------
+   Downloads
+   -------------------------------------------------------------------------- */
+
+/**
+ * The two download links, shown according to the format the reader chose. The
+ * format is a preference, not a lock: `both` is the default, and a reader who
+ * picked one format still sees the other listed as available.
+ */
+const downloadLinks = (assets, format) => join([
+  format !== 'epub' && `<a class="download-link" href="${esc(assets.pdf)}" download>PDF <small>print edition</small></a>`,
+  format !== 'pdf' && `<a class="download-link" href="${esc(assets.epub)}" download>EPUB <small>e-reader edition</small></a>`,
+]);
+
+const editionDownloadPanel = (editions, heading = 'Download editions', format = DEFAULT_FORMAT) => {
   if (!editions.length) return '';
   return `
   <section class="download-panel" aria-label="${esc(heading)}">
-    <span class="cap">PDF and EPUB included</span>
+    <span class="cap">${format === 'both' ? 'PDF and EPUB included' : `${esc(FORMAT_SHORT[format])} selected`}</span>
     <h2>${esc(heading)}</h2>
-    <p class="download-intro">Choose PDF for print and fixed layout, or EPUB for comfortable reading on an e-reader or phone.</p>
+    <p class="download-intro">${format === 'both'
+      ? 'Choose PDF for print and fixed layout, or EPUB for comfortable reading on an e-reader or phone.'
+      : 'Showing the format you chose. Every title is available in both, so you can switch at any time.'}</p>
     <div class="download-list">
       ${editions.map(({ title, assets }) => `
       <div class="download-row">
         <span class="download-title">${esc(title)}</span>
-        <span class="download-actions">
-          <a class="download-link" href="${esc(assets.pdf)}" download>PDF <small>print edition</small></a>
-          <a class="download-link" href="${esc(assets.epub)}" download>EPUB <small>e-reader edition</small></a>
-        </span>
+        <span class="download-actions">${downloadLinks(assets, format)}</span>
       </div>`).join('')}
     </div>
   </section>`;
 };
 
-const editionsForProduct = (product) => {
-  const editions = [];
-  if (product.book) {
-    const book = bookById(product.book);
-    if (book?.assets) editions.push({ title: book.title, assets: book.assets });
+/** Publications that carry download files, for a product's download panel. */
+const editionsForProduct = (product) =>
+  titlesForProduct(product).filter(({ assets }) => assets?.pdf && assets?.epub);
+
+/** Publications that carry cover art, for a product's cover preview. */
+const coversForProduct = (product) =>
+  titlesForProduct(product).filter(({ assets }) => assets?.cover);
+
+/** A stack of up to three covers — one title shows one, a set shows its spread. */
+const coverStack = (product, sizes = '120px') => {
+  const covers = coversForProduct(product).slice(0, 3);
+  if (!covers.length) {
+    return `<span class="cover-fallback" aria-hidden="true">${cupMarkOnDark(46)}</span>`;
   }
-  if (product.assets) editions.push({ title: product.title, assets: product.assets });
-  (product.includes || []).map(bookById).filter(Boolean).forEach((book) => {
-    if (book.assets) editions.push({ title: book.title, assets: book.assets });
-  });
-  (product.includesProducts || []).map(productById).filter(Boolean).forEach((includedProduct) => {
-    if (includedProduct.assets) editions.push({ title: includedProduct.title, assets: includedProduct.assets });
-  });
-  return editions;
+  return `
+  <span class="cover-stack cover-stack-${covers.length}">
+    ${covers.map(({ title, assets }) => `<span class="cover-slot">${coverArt(assets, title, sizes)}</span>`).join('')}
+  </span>`;
 };
 
 /* ==========================================================================
@@ -74,11 +95,11 @@ screens.welcome = () => `
       <div class="brand-row">
         <span class="brand-mark">${cupMarkOnDark(32)}</span>
         <span>
-          <span class="name">${esc(BRAND.name)}</span>
+          <span class="name">${esc(BRAND.app)}</span>
           <span class="tag">${esc(BRAND.tagline)}</span>
         </span>
       </div>
-      <p class="welcome-eyebrow">A series by ${esc(BRAND.author)}</p>
+      <p class="welcome-eyebrow">${esc(BRAND.appFull)} · a series by ${esc(BRAND.author)}</p>
       <h1 class="welcome-h1">Compassion should not end with today.</h1>
       <p class="welcome-copy">Six short books on what compassion is, where it comes from, and how to write it down so it outlives you. Plus the Legacy Inventory — free, printable, and yours alone.</p>
       <div class="welcome-actions">
@@ -102,13 +123,14 @@ screens.home = () => {
   const pct = Math.round((done / total) * 100);
   const circumference = 2 * Math.PI * 40;
   const read = state.lessonsRead.length;
+  const saved = state.library.length + state.saved.length;
 
   return `
   <div class="shell">
     <header class="page-head">
       <div>
         <p class="bless">${esc(BRAND.blessing)}</p>
-        <h1>${esc(BRAND.name)}</h1>
+        <h1>${esc(BRAND.app)}</h1>
       </div>
       <span class="avatar-tile" aria-hidden="true">${cupMarkOnDark(26)}</span>
     </header>
@@ -146,7 +168,9 @@ screens.home = () => {
       <div class="quick-grid span-all">
         <a class="quick-tile" href="${hrefFor('read')}"><span class="icon-tile it-gold">${bookIcon(22, '#96771F', 1.9)}</span>Free reading<small>${read} of ${LESSON_TOTAL} read</small></a>
         <a class="quick-tile" href="${hrefFor('shop')}"><span class="icon-tile it-teal">${cartIcon(22, '#23636A', 1.9)}</span>The shop<small>Books, sets &amp; kits</small></a>
-        <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile it-gold">${peopleIcon(22, '#96771F', 1.9)}</span>About Pamela<small>And the movement</small></a>
+        <a class="quick-tile" href="${hrefFor('library')}"><span class="icon-tile it-gold">${shelfIcon(22, '#96771F', 1.9)}</span>My Library<small>${saved} saved &amp; bought</small></a>
+        <a class="quick-tile" href="${hrefFor('network')}"><span class="icon-tile it-teal">${peopleIcon(22, '#23636A', 1.9)}</span>Network<small>${NETWORK.length} people to call</small></a>
+        <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile it-gold">${cupMark(22)}</span>About Pamela<small>And the movement</small></a>
       </div>
 
       ${featuredLessonCard()}
@@ -210,10 +234,11 @@ screens.series = () => `
 
 function bookRow(book) {
   const status = BOOK_STATUS[book.status];
+  const product = PRODUCTS.find((p) => p.book === book.id && p.buyable);
   return `
   <a class="book-row" href="${hrefForBook(book.id)}">
-    <span class="book-cover" aria-hidden="true">
-      ${cupMarkOnDark(38)}
+    <span class="book-cover">
+      ${book.assets?.cover ? coverArt(book.assets, book.title, '(min-width: 720px) 96px, 74px') : cupMarkOnDark(38)}
     </span>
     <span class="body">
       <span class="meta">
@@ -223,6 +248,7 @@ function bookRow(book) {
       </span>
       <span class="t">${esc(book.title)}</span>
       <span class="s">${esc(book.blurb)}</span>
+      ${product ? `<span class="row-price">${money(product.price)} on its own · PDF or EPUB</span>` : ''}
     </span>
     ${chevron('#7A6114')}
   </a>`;
@@ -285,13 +311,20 @@ screens.book = () => {
     </div>
 
     <div>
-      ${book.assets ? editionDownloadPanel([{ title: book.title, assets: book.assets }], 'Download this book') : ''}
+      ${book.assets?.cover ? `
+      <figure class="cover-figure">
+        <a href="${esc(book.assets.cover)}" target="_blank" rel="noopener noreferrer">
+          ${coverArt(book.assets, book.title, '(min-width: 900px) 380px, 90vw')}
+        </a>
+        <figcaption>Cover art · <a href="${esc(book.assets.cover)}" target="_blank" rel="noopener noreferrer">view full size</a></figcaption>
+      </figure>` : ''}
+      ${book.assets ? editionDownloadPanel([{ title: book.title, assets: book.assets }], 'Download this book', product ? formatFor(product.id) : DEFAULT_FORMAT) : ''}
       ${product ? `
-      <div class="aside-card"${book.assets ? ' style="margin-top:16px"' : ''}>
-        <span class="cap">Available now</span>
+      <div class="aside-card" style="margin-top:16px">
+        <span class="cap">Available on its own</span>
         <h2>${money(product.price)}</h2>
-        <p>${esc(product.note)}</p>
-        <a class="btn btn-gold" href="${hrefForProduct(product.id)}">See it in the shop</a>
+        <p>${esc(product.note)}. Buy this book by itself, or as part of a set — the choice of PDF or EPUB is yours either way.</p>
+        <a class="btn btn-gold" href="${hrefForProduct(product.id)}">Buy this book</a>
       </div>` : `
       <div class="aside-card">
         <span class="cap">${esc(status.label)}</span>
@@ -562,7 +595,7 @@ screens.shop = () => {
       <a class="prod-card ${p.buyable ? '' : 'pending'}" href="${hrefForProduct(p.id)}">
         <span class="prod-cover">
           ${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ''}
-          <span class="mark" aria-hidden="true">${cupMarkOnDark(46)}</span>
+          ${coverStack(p, '(min-width: 1100px) 240px, (min-width: 620px) 30vw, 44vw')}
           <span class="kind">${esc(p.kind)}</span>
         </span>
         <span class="prod-info">
@@ -572,15 +605,43 @@ screens.shop = () => {
         </span>
       </a>`).join('')}
     </div>
+
+    ${state.category === 'Books' ? '' : singleBooksStrip()}
     <div class="screen-foot"></div>
   </div>`;
 };
+
+/**
+ * The six books, sold one at a time. Sets are the headline offer, so the
+ * single editions get their own strip on every other tab of the shop rather
+ * than being findable only under "Books".
+ */
+function singleBooksStrip() {
+  return `
+  <section class="singles">
+    <div class="section-row">
+      <h2>Or buy a single book</h2>
+      <span class="count">${BOOK_PRODUCTS.length} editions</span>
+    </div>
+    <p class="singles-lede">Every book in the series is sold on its own in both PDF and EPUB — pick the format when you buy.</p>
+    <div class="singles-row">
+      ${BOOK_PRODUCTS.map((p) => `
+      <a class="single-card" href="${hrefForProduct(p.id)}">
+        <span class="single-cover">${coverStack(p, '120px')}</span>
+        <span class="t">${esc(p.title)}</span>
+        <span class="p">${money(p.price)}</span>
+      </a>`).join('')}
+    </div>
+  </section>`;
+}
 
 screens.product = () => {
   const product = productById(state.activeProduct);
   const owned = inLibrary(product.id);
   const carted = inCart(product.id);
   const included = (product.includes || []).map(bookById).filter(Boolean);
+  const covers = coversForProduct(product);
+  const format = formatFor(product.id);
 
   return `
   <header class="dark-head">
@@ -595,10 +656,24 @@ screens.product = () => {
 
   <div class="shell product-layout">
     <div class="media">
+      ${covers.length ? `
+      <figure class="pd-cover-figure">
+        <a class="pd-cover-link" href="${esc(covers[0].assets.cover)}" target="_blank" rel="noopener noreferrer">
+          ${coverArt(covers[0].assets, covers[0].title, '(min-width: 900px) 420px, 88vw')}
+        </a>
+        <figcaption>${covers.length > 1 ? `${covers.length} titles in this set · ` : ''}<a href="${esc(covers[0].assets.cover)}" target="_blank" rel="noopener noreferrer">View the cover full size</a></figcaption>
+      </figure>
+      ${covers.length > 1 ? `
+      <div class="cover-strip" aria-label="Covers included in this set">
+        ${covers.map(({ title, assets }) => `
+        <a class="cover-chip" href="${esc(assets.cover)}" target="_blank" rel="noopener noreferrer" title="${esc(title)}">
+          ${coverArt(assets, title, '92px')}
+        </a>`).join('')}
+      </div>` : ''}` : `
       <div class="pd-cover">
         <span class="mark" aria-hidden="true">${cupMarkOnDark(96)}</span>
         <span class="cap">${esc(product.kind.toLowerCase())}</span>
-      </div>
+      </div>`}
     </div>
 
     <div>
@@ -607,9 +682,15 @@ screens.product = () => {
         <span class="note">${product.buyable ? esc(product.note) : esc(product.status)}</span>
       </div>
 
+      ${formatPicker(product, format)}
+
       ${productActions(product, { owned, carted })}
 
-      ${editionDownloadPanel(editionsForProduct(product), product.includes?.length || product.includesProducts?.length ? 'Files included in this set' : 'Download editions')}
+      ${editionDownloadPanel(
+        editionsForProduct(product),
+        product.includes?.length || product.includesProducts?.length ? 'Files included in this set' : 'Download editions',
+        format,
+      )}
 
       <h2 class="about-cap">About this</h2>
       <p class="about-copy">${esc(product.about)}</p>
@@ -627,6 +708,42 @@ screens.product = () => {
   </div>`;
 };
 
+/**
+ * Which file format the reader wants. Shown for anything with real download
+ * files behind it — the free workbook included, since a printable PDF and a
+ * phone-friendly EPUB are genuinely different things to want.
+ */
+function formatPicker(product, format) {
+  if (!editionsForProduct(product).length) return '';
+  return `
+  <section class="format-picker">
+    <h2 class="format-cap">Which format would you like?</h2>
+    <div class="format-opts" role="radiogroup" aria-label="File format">
+      ${FORMATS.map((option) => `
+      <button class="format-opt" role="radio"
+              aria-checked="${format === option.id}"
+              data-format="${esc(option.id)}"
+              data-format-product="${esc(product.id)}"
+              data-focus-key="format-${esc(option.id)}">
+        <span class="radio" aria-hidden="true"><i></i></span>
+        <span>
+          <span class="t">${esc(option.label)}</span>
+          <span class="s">${esc(option.sub)}</span>
+        </span>
+      </button>`).join('')}
+    </div>
+  </section>`;
+}
+
+/** The save-for-later control, on every product the reader can actually get. */
+const saveButton = (product) => {
+  const saved = isSaved(product.id);
+  return `
+  <button class="btn btn-ghost btn-save" data-save="${esc(product.id)}" data-focus-key="save" aria-pressed="${saved}">
+    ${bookmarkIcon(15, '#4A2A63', saved ? '#4A2A63' : 'none')}${saved ? 'Saved to My Library' : 'Save for later'}
+  </button>`;
+};
+
 function productActions(product, { owned, carted }) {
   if (!product.buyable) {
     return `
@@ -641,17 +758,17 @@ function productActions(product, { owned, carted }) {
         ? `<a class="btn btn-gold" href="${hrefFor(product.goTo)}">Open the worksheet</a>`
         : '<button class="btn btn-gold" data-toast="Check your email — the download is on its way.">Get it free</button>'}
       <div class="row2">
-        <a class="btn btn-ghost" href="${hrefFor('read')}">Read the series free</a>
+        ${saveButton(product)}
         <a class="btn btn-ghost" href="${hrefFor('shop')}">Back to the shop</a>
       </div>
     </div>`;
   }
   return `
   <div class="pd-actions">
-    <button class="btn btn-gold" data-buy="${esc(product.id)}" data-focus-key="buy">${owned ? 'In your library ✓' : 'Buy now'}</button>
+    <button class="btn btn-gold" data-buy="${esc(product.id)}" data-focus-key="buy">${owned ? 'In your library ✓' : `Buy now · ${FORMAT_SHORT[formatFor(product.id)]}`}</button>
     <div class="row2">
       <button class="btn btn-dark" data-cart-toggle="${esc(product.id)}" data-focus-key="cart-toggle" aria-pressed="${carted}">${carted ? 'In your cart ✓' : 'Add to cart'}</button>
-      <a class="btn btn-ghost" href="${hrefFor('read')}">Read free first</a>
+      ${saveButton(product)}
     </div>
   </div>`;
 }
@@ -675,10 +792,14 @@ screens.cart = () => {
     <div class="cart-items">
       ${items.map((p) => `
       <div class="cart-item">
-        <span class="thumb" aria-hidden="true">${cupMarkOnDark(24)}</span>
+        <span class="thumb">${coverStack(p, '64px')}</span>
         <span class="who">
           <span class="t">${esc(p.title)}</span>
           <span class="k">${esc(p.kind)}</span>
+          <span class="fmt">
+            ${esc(FORMAT_SHORT[formatFor(p.id)])}
+            <a href="${hrefForProduct(p.id)}">Change format</a>
+          </span>
         </span>
         <span class="side">
           <span class="p">${money(p.price)}</span>
@@ -767,10 +888,10 @@ screens.checkout = () => {
       <section class="order-card">
         ${items.map((p) => `
         <div class="row1">
-          <span class="t">${esc(p.title)}</span>
+          <span class="t">${esc(p.title)} <small>${esc(FORMAT_SHORT[formatFor(p.id)])}</small></span>
           <span class="p">${money(p.price)}</span>
         </div>`).join('')}
-        <p class="s">Delivered as ePub and PDF, downloadable straight after payment and yours to keep.</p>
+        <p class="s">Downloadable straight after payment and yours to keep, in the format you chose for each title.</p>
         <ul class="check-list">
           <li>${goldCheck}Instant download, no account needed</li>
           <li>${goldCheck}Free updates as the books are expanded</li>
@@ -821,13 +942,197 @@ screens['checkout-done'] = () => `
   <div class="shell done-body">
     <span class="done-badge" aria-hidden="true">${bigCheck(38)}</span>
     <h2>It’s in your library.</h2>
-    <p>Your download link is on its way by email. While you wait — the Legacy Inventory is free, and it is the one thing in this whole series your family will thank you for.</p>
+    <p>Every title you bought is waiting in My Library, in the format you chose, ready to download now. A copy of the link is on its way by email too.</p>
     <div class="done-actions">
+      <a class="btn btn-gold" href="${hrefFor('library')}">Open My Library</a>
       <a class="btn btn-dark" href="${hrefFor('legacy')}">Open the Legacy Inventory</a>
       <a class="btn btn-ghost" href="${hrefFor('read')}">Keep reading</a>
     </div>
     <p class="signoff">${esc(BRAND.closing)} — ${esc(BRAND.blessing)}</p>
   </div>`;
+
+/* ==========================================================================
+   Tools — My Library and the Network
+   ========================================================================== */
+screens.tools = () => `
+  <div class="shell">
+    <header class="page-head">
+      <div>
+        <p class="bless">Yours, and the people around it</p>
+        <h1>Tools</h1>
+      </div>
+      <span class="count">${TOOLS.length} tools</span>
+    </header>
+
+    <div class="tools-grid">
+      ${TOOLS.map((tool) => `
+      <a class="tool-card" href="${hrefFor(tool.id)}">
+        <span class="icon-tile it-gold">${tool.icon(24, '#96771F', 1.9)}</span>
+        <span class="t">${esc(tool.label)}</span>
+        <span class="s">${esc(tool.blurb)}</span>
+        <span class="go">Open ${chevron('#7A6114')}</span>
+      </a>`).join('')}
+    </div>
+    <div class="screen-foot"></div>
+  </div>`;
+
+/**
+ * My Library: everything the reader has bought or saved, with the downloads
+ * attached. Purchases come first because they are the things with files behind
+ * them; saved items are a shortlist, and are labelled as such.
+ */
+screens.library = () => {
+  const owned = state.library.map(productById).filter(Boolean);
+  const saved = state.saved.map(productById).filter(Boolean);
+  const freebies = PRODUCTS.filter((p) => p.free && p.buyable && !isSaved(p.id));
+
+  return `
+  <header class="dark-head">
+    <span class="glow" aria-hidden="true"></span>
+    <div class="shell">
+      ${backButton('tools', 'Tools')}
+      <p class="eyebrow">Tools</p>
+      <h1>My Library</h1>
+      <p class="lede">Everything you have bought or saved, in one place, with both file formats a click away.</p>
+    </div>
+  </header>
+
+  <div class="shell">
+    <div class="section-row">
+      <h2>Purchased</h2>
+      <span class="count">${owned.length} item${owned.length === 1 ? '' : 's'}</span>
+    </div>
+    ${owned.length
+      ? `<div class="lib-list">${owned.map((p) => libraryRow(p, 'owned')).join('')}</div>`
+      : `<div class="lib-empty">
+           Nothing bought yet. The six books are sold on their own or as a set — and everything on the Read tab is free.
+           <a class="btn btn-dark" href="${hrefFor('shop')}">Browse the shop</a>
+         </div>`}
+
+    <div class="section-row">
+      <h2>Saved</h2>
+      <span class="count">${saved.length} item${saved.length === 1 ? '' : 's'}</span>
+    </div>
+    ${saved.length
+      ? `<div class="lib-list">${saved.map((p) => libraryRow(p, 'saved')).join('')}</div>`
+      : '<p class="lib-hint">Nothing saved yet. Use “Save for later” on any book, set, or free download and it will wait for you here.</p>'}
+
+    ${freebies.length ? `
+    <div class="section-row">
+      <h2>Free for everyone</h2>
+      <span class="count">${freebies.length} item${freebies.length === 1 ? '' : 's'}</span>
+    </div>
+    <div class="lib-list">${freebies.map((p) => libraryRow(p, 'free')).join('')}</div>` : ''}
+
+    <p class="lib-note">This library lives in this browser, not on a server — the same as everything else the app remembers. Clearing your browser data clears it, and the files themselves stay downloadable either way.</p>
+    <div class="screen-foot"></div>
+  </div>`;
+};
+
+function libraryRow(product, kind) {
+  const format = formatFor(product.id);
+  const editions = editionsForProduct(product);
+  const label = { owned: 'Purchased', saved: 'Saved', free: 'Free' }[kind];
+
+  return `
+  <article class="lib-row">
+    <a class="lib-cover" href="${hrefForProduct(product.id)}">${coverStack(product, '96px')}</a>
+    <div class="lib-body">
+      <span class="meta">
+        <span class="tag tag-${kind === 'owned' ? 'gold' : 'neutral'}">${esc(label)}</span>
+        <span class="k">${esc(product.kind)}</span>
+      </span>
+      <a class="t" href="${hrefForProduct(product.id)}">${esc(product.title)}</a>
+      <span class="s">${esc(product.note)}${editions.length ? ` · ${esc(FORMAT_SHORT[format])} selected` : ''}</span>
+      ${editions.length ? `
+      <div class="lib-downloads">
+        ${editions.map(({ title, assets }) => `
+        <span class="lib-download">
+          ${editions.length > 1 ? `<span class="lib-download-title">${esc(title)}</span>` : ''}
+          <span class="download-actions">${downloadLinks(assets, format)}</span>
+        </span>`).join('')}
+      </div>` : `<p class="lib-hint">${esc(product.about)}</p>`}
+    </div>
+    <div class="lib-side">
+      ${kind === 'owned'
+        // Owning it already keeps it on this page, so there is nothing to save.
+        ? `<span class="lib-owned">${downloadIcon(16, '#23636A')} Yours to keep</span>`
+        : `<button class="rm" data-save="${esc(product.id)}" aria-pressed="${isSaved(product.id)}">
+             ${isSaved(product.id) ? 'Remove from saved' : 'Save'}<span class="sr-only"> ${esc(product.title)}</span>
+           </button>`}
+    </div>
+  </article>`;
+}
+
+/**
+ * The network: the people around the series, with the one contact detail each
+ * of them gave. Headshots are placeholders until the photos arrive — see
+ * assets/network/README.md and the `headshot` field in data.js.
+ */
+screens.network = () => `
+  <header class="dark-head">
+    <span class="glow" aria-hidden="true"></span>
+    <div class="shell">
+      ${backButton('tools', 'Tools')}
+      <p class="eyebrow">Tools</p>
+      <h1>Network</h1>
+      <p class="lede">The people Pamela works alongside — what each one does, and how to reach them directly.</p>
+    </div>
+  </header>
+
+  <div class="shell">
+    <div class="net-grid">
+      ${NETWORK.map(networkCard).join('')}
+    </div>
+
+    <aside class="note-card">
+      <span class="note-icon" aria-hidden="true">${shieldIcon('#96771F')}</span>
+      <span>
+        <span class="t">How to read this page</span>
+        <span class="s">${esc(NETWORK_NOTE)} <a href="${hrefFor('disclaimer')}">Read the full disclaimers</a></span>
+      </span>
+    </aside>
+    ${brandFooter()}
+    <div class="screen-foot"></div>
+  </div>`;
+
+function networkCard(person) {
+  const initials = person.name.split(/[\s-]+/).filter(Boolean).slice(0, 2)
+    .map((part) => part[0].toUpperCase()).join('');
+
+  return `
+  <article class="net-card">
+    <span class="net-shot">
+      ${person.headshot
+        ? `<img src="${esc(person.headshot)}" width="160" height="160" loading="lazy" decoding="async" alt="${esc(person.name)}">`
+        : `<span class="net-initials" aria-hidden="true">${esc(initials)}</span>
+           <span class="net-shot-note">Headshot to come</span>`}
+    </span>
+    <span class="net-name">${esc(person.name)}</span>
+    <span class="net-title">${esc(person.title)}</span>
+    ${person.org ? `<span class="net-org">${esc(person.org)}</span>` : ''}
+    <p class="net-note">${esc(person.note)}</p>
+
+    <div class="net-links">
+      ${person.email ? `
+      <a class="net-link" href="mailto:${esc(person.email)}">
+        ${mailIcon(15, '#4A2A63')}<span>${esc(person.email)}</span>
+      </a>` : ''}
+      ${person.website ? `
+      <a class="net-link" href="${esc(person.website)}" target="_blank" rel="noopener noreferrer">
+        ${externalIcon(15, '#4A2A63')}<span>${esc(person.website.replace(/^https?:\/\//i, ''))}</span>
+      </a>` : ''}
+      ${(person.socials || []).map((link) => `
+      <a class="net-link" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">
+        ${externalIcon(15, '#4A2A63')}<span>${esc(link.label)} · ${esc(link.handle)}</span>
+      </a>`).join('')}
+    </div>
+
+    <button class="btn btn-ghost btn-auto" data-vcard="${esc(person.id)}">
+      ${downloadIcon(15, '#4A2A63')}Export contact card
+    </button>
+  </article>`;
+}
 
 /* ==========================================================================
    About
@@ -876,7 +1181,24 @@ screens.about = () => `
         <span class="cap">Get in touch</span>
         <h2>Contact</h2>
         <p><a href="mailto:${esc(BRAND.email)}">${esc(BRAND.email)}</a><br>${esc(BRAND.site)}</p>
-        <p class="hint">${esc(BRAND.social)} — not yet confirmed claimed, so it is printed here and linked nowhere.</p>
+        <div class="social-row">
+          ${SOCIAL_LINKS.map((link) => `
+          <a class="social-link" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">
+            ${externalIcon(15, '#4A2A63')}
+            <span>
+              <span class="t">${esc(link.label)}</span>
+              <span class="s">${esc(link.handle)}</span>
+            </span>
+          </a>`).join('')}
+        </div>
+        <p class="hint">Every platform above is Pamela’s own and confirmed by her. She answers her email too.</p>
+      </div>
+
+      <div class="aside-card" style="margin-top:16px">
+        <span class="cap">Who else can help</span>
+        <h2>The network</h2>
+        <p>A planner, an identity-protection specialist, a licensed insurance agent, and a business consultant — the people Pamela works alongside, with direct contact details for each.</p>
+        <a class="btn btn-ghost" href="${hrefFor('network')}">Open the Network</a>
       </div>
     </div>
   </div>`;

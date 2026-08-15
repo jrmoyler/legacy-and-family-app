@@ -19,13 +19,26 @@
  *    do not prepare legal documents, we help families arrive prepared.
  */
 
-import { homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon } from './icons.js';
+import {
+  homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon, peopleIcon, shelfIcon,
+} from './icons.js';
 
 /* ==========================================================================
    Brand (Bible §1, §6, §7)
    ========================================================================== */
 
+/**
+ * Two names live here, and they are not interchangeable.
+ *
+ * `app` is the product the reader opens: the Compassion Hub. `name` is the
+ * publishing imprint and book series the Hub carries — A Cup of Compassion —
+ * and it stays on every book footer, disclaimer, and copyright line, because
+ * that is what is printed inside the editions themselves.
+ */
 export const BRAND = {
+  app: 'Compassion Hub',
+  appBy: 'by Cup of Compassion',
+  appFull: 'Compassion Hub by Cup of Compassion',
   name: 'A Cup of Compassion',
   tagline: 'Build it. Document it. Pass it on.',
   author: 'Pamela Foster-Grear',
@@ -37,6 +50,31 @@ export const BRAND = {
   closing: 'Keep on giving. Keep on being.',
   blessing: 'Blessings.',
 };
+
+/**
+ * Pamela's platforms, supplied and confirmed by her directly — which is what
+ * the app was waiting on before linking any of them (Bible §11).
+ */
+export const SOCIAL_LINKS = [
+  {
+    id: 'instagram',
+    label: 'Instagram',
+    handle: '@familykeepers',
+    url: 'https://www.instagram.com/familykeepers/',
+  },
+  {
+    id: 'tiktok',
+    label: 'TikTok',
+    handle: '@pamelafostergrear',
+    url: 'https://www.tiktok.com/@pamelafostergrear?_r=1&_t=ZT-98gpo4iN0ZB',
+  },
+  {
+    id: 'youtube',
+    label: 'YouTube',
+    handle: '@acupofcompassion7490',
+    url: 'https://youtube.com/@acupofcompassion7490?si=qkfTArSfOUSsmA-u',
+  },
+];
 
 /** The canonical footer that appears on every book (Bible §1). */
 export const FOOTER_LINE = `${BRAND.site} | ${BRAND.email} | ${BRAND.social}`;
@@ -67,6 +105,26 @@ export const TABS = [
   { id: 'shop', label: 'Shop', icon: cartIcon },
 ];
 
+/**
+ * Tools: the two screens that are about the reader's own material and the
+ * people around it, rather than about the series. They hang off one button in
+ * the sidebar and one tab on a phone.
+ */
+export const TOOLS = [
+  {
+    id: 'library',
+    label: 'My Library',
+    icon: shelfIcon,
+    blurb: 'Everything you have saved or bought, with both file formats ready to download.',
+  },
+  {
+    id: 'network',
+    label: 'Network',
+    icon: peopleIcon,
+    blurb: 'The people Pamela works alongside, and how to reach each of them directly.',
+  },
+];
+
 /** Which nav tab should read as current for a given screen. */
 export const TAB_OF = {
   home: 'home',
@@ -80,7 +138,31 @@ export const TAB_OF = {
   cart: 'shop',
   checkout: 'shop',
   'checkout-done': 'shop',
+  tools: 'tools',
+  library: 'tools',
+  network: 'tools',
 };
+
+/* ==========================================================================
+   File formats
+   ========================================================================== */
+
+/**
+ * Every paid title ships as both a PDF and an EPUB, and the reader says which
+ * one they actually want before they buy. `both` is the default because it
+ * costs the same and covers the reader who prints at home and reads on a phone.
+ */
+export const FORMATS = [
+  { id: 'both', label: 'Both formats', sub: 'PDF and EPUB — recommended' },
+  { id: 'pdf', label: 'PDF only', sub: 'Fixed layout, best for printing' },
+  { id: 'epub', label: 'EPUB only', sub: 'Reflowable, best for e-readers and phones' },
+];
+
+export const DEFAULT_FORMAT = 'both';
+export const FORMAT_IDS = FORMATS.map((f) => f.id);
+export const formatById = (id) => FORMATS.find((f) => f.id === id);
+/** Short form for cart lines and library rows. */
+export const FORMAT_SHORT = { both: 'PDF + EPUB', pdf: 'PDF', epub: 'EPUB' };
 
 /* ==========================================================================
    The books and their verified download editions
@@ -93,9 +175,20 @@ export const BOOK_STATUS = {
   drafting: { label: 'Being written', tone: 'neutral' },
 };
 
+/**
+ * Every publication is addressed by one slug. The two download editions and
+ * the two cover renditions all hang off it, so a title can never end up with
+ * a PDF from one book and a cover from another.
+ *
+ * The covers are the production cover art lifted out of the EPUBs at
+ * 1600 x 2560 by tools/extract_library_covers.py, with a 640px thumbnail for
+ * grids. Both are listed with checksums in assets/library/catalog.json.
+ */
 const bookAssets = (slug) => ({
   epub: `/assets/library/epub/${slug}.epub`,
   pdf: `/assets/library/pdf/${slug}.pdf`,
+  cover: `/assets/library/covers/${slug}.jpg`,
+  coverThumb: `/assets/library/covers/thumbs/${slug}.jpg`,
 });
 
 export const BOOKS = [
@@ -363,6 +456,35 @@ export const PRODUCTS = [
 
 export const productById = (id) => PRODUCTS.find((p) => p.id === id);
 
+/** Every buyable book, in series order — the six individual editions. */
+export const BOOK_PRODUCTS = BOOKS
+  .map((book) => PRODUCTS.find((p) => p.book === book.id))
+  .filter(Boolean);
+
+/**
+ * The publications a product delivers, each with its downloads and cover art.
+ * One title for a single book or workbook; every included title for a set.
+ * Drives both the download panel and the cover previews.
+ */
+export function titlesForProduct(product) {
+  const titles = [];
+  const add = (title, assets) => {
+    if (assets && !titles.some((t) => t.assets.pdf === assets.pdf)) titles.push({ title, assets });
+  };
+
+  if (product.book) {
+    const book = bookById(product.book);
+    if (book) add(book.title, book.assets);
+  }
+  add(product.title, product.assets);
+  (product.includes || []).map(bookById).filter(Boolean)
+    .forEach((book) => add(book.title, book.assets));
+  (product.includesProducts || []).map(productById).filter(Boolean)
+    .forEach((included) => add(included.title, included.assets));
+
+  return titles;
+}
+
 /* ==========================================================================
    Free reading (drawn from the content spines, Bible §8)
    ========================================================================== */
@@ -614,6 +736,72 @@ export const INVENTORY = [
 ];
 
 /* ==========================================================================
+   The network
+   ========================================================================== */
+
+/**
+ * The people around the series, each with one way to reach them — the email
+ * or the website they gave, and nothing they did not.
+ *
+ * `headshot` is deliberately null on every entry. Drop a photo into
+ * assets/network/ (see the README there for the sizes) and set the path here;
+ * until then the card renders a lettered placeholder tile in its place, so the
+ * grid keeps its shape either way.
+ */
+export const NETWORK = [
+  {
+    id: 'pamella-grear',
+    name: 'Pamella Grear',
+    title: 'Compassion Legacy Planner',
+    org: BRAND.name,
+    email: 'acupofcompassion@gmail.com',
+    website: null,
+    headshot: null,
+    socials: SOCIAL_LINKS,
+    note: 'Author of the series and the person behind the Legacy Inventory.',
+  },
+  {
+    id: 'j-douglas-bailey',
+    name: 'J. Douglas Bailey',
+    title: 'Identity Protection',
+    org: null,
+    email: 'JLJJ7@yahoo.com',
+    website: null,
+    headshot: null,
+    socials: [],
+    note: 'Identity protection — safeguarding the records a family plan depends on.',
+  },
+  {
+    id: 'james-mann',
+    name: 'James Mann',
+    title: 'Licensed Insurance Agent',
+    org: 'Mann Insurance Group',
+    email: null,
+    website: 'http://www.manninsurancegroup.com',
+    headshot: null,
+    socials: [],
+    note: 'Licensed insurance agent — policies, beneficiaries, and final expense cover.',
+  },
+  {
+    id: 'john-ross-moyler',
+    name: 'John-Ross Moyler',
+    title: 'AI & Business Consultant',
+    org: 'Collective AI',
+    email: null,
+    website: 'https://collectiveai.info',
+    headshot: null,
+    socials: [],
+    note: 'AI and business consulting — the systems side of building something that lasts.',
+  },
+];
+
+export const networkById = (id) => NETWORK.find((person) => person.id === id);
+
+/** Nobody on this page prepares legal documents either (Bible §7). */
+export const NETWORK_NOTE =
+  'These are independent professionals, listed so you can reach them directly. A Cup of Compassion does not employ them, take a commission on their work, or prepare legal documents itself — and listing someone here is an introduction, not an endorsement of any product they sell.';
+
+/* ==========================================================================
    Library status
    ========================================================================== */
 
@@ -624,9 +812,10 @@ export const STATUS_GROUPS = [
     severity: 'fixed-in-text',
     intro: 'Every A Cup of Compassion book is now included in the app in both PDF and EPUB editions, alongside the two companion workbooks.',
     items: [
-      'Six individual books, each with a PDF and an EPUB edition.',
+      'Six individual books, each with a PDF and an EPUB edition, each sold on its own as well as inside the sets.',
       'The Companion Workbook in a 28-page printable PDF and a reflowable EPUB edition.',
       'The Legacy Inventory Workbook in a 10-page printable PDF and a reflowable EPUB edition.',
+      'Production cover art for all eight titles at 1600 × 2560, extracted from the EPUB masters and served with a 640px thumbnail.',
       'All download files have a published checksum in the library catalog so damaged or incomplete copies can be detected immediately.',
     ],
   },
@@ -638,7 +827,8 @@ export const STATUS_GROUPS = [
     items: [
       'Keep the education-only legal framing and disclaimer wherever legacy-planning material is promoted.',
       'Retain the traditional-use wellness framing in Book 1 and avoid presenting it as medical advice.',
-      'Confirm any future social-media links before adding them to the app.',
+      'Pamela’s Instagram, TikTok, and YouTube links are confirmed by her and now linked from the app. Confirm any further platform before adding it.',
+      'Everyone on the Network page is listed with the contact detail they supplied. Re-confirm before changing or adding an entry.',
     ],
   },
 ];

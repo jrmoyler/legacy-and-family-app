@@ -10,7 +10,7 @@
  * would turn the app into a data-privacy obligation.
  */
 
-import { PRODUCTS, CATEGORIES, INVENTORY } from './data.js';
+import { PRODUCTS, CATEGORIES, INVENTORY, FORMAT_IDS, DEFAULT_FORMAT } from './data.js';
 
 const STORAGE_KEY = 'cup-of-compassion:v1';
 
@@ -19,6 +19,8 @@ const defaults = () => ({
   lessonsRead: [],
   cart: [],
   library: [],
+  saved: [],
+  formats: {},
   payMethod: 'card',
   category: 'Books',
 });
@@ -30,12 +32,25 @@ export const state = {
   activeBook: 'benefit',
   activeLesson: 'forty-seconds',
   activeProduct: 'first-three',
+  toolsOpen: false,
 };
 
 const isValidProduct = (id) => PRODUCTS.some((p) => p.id === id && p.buyable && !p.free);
+/** Anything buyable can be saved for later, including the free downloads. */
+const isSavableProduct = (id) => PRODUCTS.some((p) => p.id === id && p.buyable);
 const isValidSection = (id) => INVENTORY.some((s) => s.id === id);
 const strings = (value, keep) =>
   (Array.isArray(value) ? value.filter((v) => typeof v === 'string' && keep(v)) : []);
+
+/** Format choices, dropping any entry whose product or format no longer exists. */
+function formatMap(value) {
+  if (!value || typeof value !== 'object') return {};
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      ([id, format]) => isValidProduct(id) && FORMAT_IDS.includes(format),
+    ),
+  );
+}
 
 /** Read persisted state, ignoring anything malformed or stale. */
 export function loadState() {
@@ -51,6 +66,8 @@ export function loadState() {
   state.lessonsRead = strings(saved.lessonsRead, () => true);
   state.cart = strings(saved.cart, isValidProduct);
   state.library = strings(saved.library, isValidProduct);
+  state.saved = strings(saved.saved, isSavableProduct);
+  state.formats = formatMap(saved.formats);
   if (['card', 'invoice'].includes(saved.payMethod)) state.payMethod = saved.payMethod;
   if (CATEGORIES.includes(saved.category)) state.category = saved.category;
 }
@@ -68,6 +85,8 @@ export function saveState() {
         lessonsRead: state.lessonsRead,
         cart: state.cart,
         library: state.library,
+        saved: state.saved,
+        formats: state.formats,
         payMethod: state.payMethod,
         category: state.category,
       }),
@@ -90,6 +109,24 @@ export function toggleLesson(id) {
 
 export const inCart = (id) => state.cart.includes(id);
 export const inLibrary = (id) => state.library.includes(id);
+export const isSaved = (id) => state.saved.includes(id);
+
+/** Which file format a title is bought and downloaded in. */
+export const formatFor = (id) => state.formats[id] || DEFAULT_FORMAT;
+
+export function setFormat(id, format) {
+  if (!FORMAT_IDS.includes(format)) return DEFAULT_FORMAT;
+  state.formats[id] = format;
+  saveState();
+  return format;
+}
+
+export function toggleSaved(id) {
+  const wasSaved = isSaved(id);
+  state.saved = wasSaved ? state.saved.filter((v) => v !== id) : [...state.saved, id];
+  saveState();
+  return !wasSaved;
+}
 
 export function toggleCart(id) {
   const wasInCart = inCart(id);
@@ -108,6 +145,8 @@ export function addToLibrary(ids) {
     if (!state.library.includes(id)) state.library.push(id);
   }
   state.cart = state.cart.filter((id) => !ids.includes(id));
+  // Owning something supersedes having saved it, so it lists once, not twice.
+  state.saved = state.saved.filter((id) => !ids.includes(id));
   saveState();
 }
 

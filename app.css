@@ -1,5 +1,5 @@
 /* ==========================================================================
-   A Cup of Compassion — design system + application styles
+   Compassion Hub by Cup of Compassion — design system + application styles
    Responsive web app: single column on phones, sidebar shell on desktop.
 
    Palette and type follow the series Design & Information Bible §6. The
@@ -868,7 +868,7 @@ p a, .about-copy a { text-decoration: underline; }
 
 .quick-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 12px;
 }
 .quick-tile {
@@ -2018,6 +2018,13 @@ p a, .about-copy a { text-decoration: underline; }
   color: var(--muted);
   margin-top: 7px;
 }
+.book-row .row-price {
+  display: block;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--plum-800);
+  margin-top: 9px;
+}
 
 .gap-note {
   margin-top: 26px;
@@ -2285,7 +2292,541 @@ p a, .about-copy a { text-decoration: underline; }
 }
 
 /* --------------------------------------------------------------------------
-   26. Print — the Legacy Inventory is meant to leave the screen
+   26. Cover art
+
+   Every cover is 5:8 (1600 x 2560). Slots declare that ratio themselves so a
+   grid never reflows as the images decode.
+   -------------------------------------------------------------------------- */
+.cover-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  background: var(--plum-900);
+}
+
+.cover-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+
+/**
+ * A single cover, or a set's titles fanned out. Slots are sized by height and
+ * hold the 5:8 ratio themselves, so a whole cover is always visible — a book
+ * cover with its title cropped off is worse than a smaller one.
+ */
+.cover-stack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.cover-slot {
+  flex: none;
+  aspect-ratio: 5 / 8;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 8px 18px -10px rgba(20, 10, 30, .7);
+}
+/* One title fills the frame's height. */
+.cover-stack-1 .cover-slot { height: 100%; max-width: 100%; }
+/* Two and three overlap, and are sized as a share of the frame's width so the
+   fan can never spill out of the card it sits in: n·w − (n−1)·overlap = 100%. */
+.cover-stack-2 .cover-slot { width: 56%; }
+.cover-stack-3 .cover-slot { width: 44%; }
+.cover-stack-2 .cover-slot + .cover-slot { margin-left: -12%; }
+.cover-stack-3 .cover-slot + .cover-slot { margin-left: -16%; }
+.cover-stack .cover-slot:nth-child(2) { z-index: 1; }
+.cover-stack .cover-slot:nth-child(3) { z-index: 2; }
+
+/* Product detail: the full-resolution preview and the set's other covers. */
+.pd-cover-figure { display: block; }
+.pd-cover-link {
+  display: block;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: var(--lift-lg);
+  aspect-ratio: 5 / 8;
+  max-height: 62vh;
+  margin-inline: auto;
+  width: fit-content;
+}
+.pd-cover-link .cover-art { width: auto; height: 100%; }
+.pd-cover-figure figcaption,
+.cover-figure figcaption {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.pd-cover-figure figcaption a,
+.cover-figure figcaption a { color: var(--gold-ink); text-decoration: underline; }
+
+.cover-figure {
+  display: block;
+  margin-bottom: 18px;
+}
+.cover-figure > a {
+  display: block;
+  border-radius: var(--radius);
+  overflow: hidden;
+  box-shadow: var(--lift);
+  aspect-ratio: 5 / 8;
+  max-height: 460px;
+  width: fit-content;
+  margin-inline: auto;
+}
+.cover-figure .cover-art { width: auto; height: 100%; }
+
+.cover-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+  justify-content: center;
+}
+.cover-chip {
+  width: 52px;
+  aspect-ratio: 5 / 8;
+  border-radius: 7px;
+  overflow: hidden;
+  box-shadow: var(--lift-sm);
+  transition: transform .12s;
+}
+.cover-chip:hover { transform: translateY(-2px); }
+
+/* Cards that carry cover art rather than the cup mark. */
+.prod-cover { aspect-ratio: 1 / 1; padding: 16px 16px 28px; }
+.prod-cover .cover-stack,
+.prod-cover .cover-fallback { height: 100%; }
+
+/* The series list: a 5:8 slot so the whole cover reads at thumbnail size. */
+.book-cover { width: 66px; height: 106px; overflow: hidden; }
+.book-cover .cover-art { border-radius: 10px; }
+@media (min-width: 720px) {
+  .book-cover { width: 78px; height: 125px; }
+}
+
+/* The cart thumbnail carries cover art, so it takes the covers' 5:8 shape and
+   drops the plum tile behind it. */
+.cart-item .thumb {
+  width: 54px;
+  height: 86px;
+  border-radius: 0;
+  background: none;
+}
+
+/* --------------------------------------------------------------------------
+   27. Format choice
+   -------------------------------------------------------------------------- */
+.format-picker { margin-top: 22px; }
+.format-cap {
+  font-family: var(--serif);
+  font-size: 17px;
+  color: var(--plum-800);
+  margin-bottom: 12px;
+}
+.format-opts { display: grid; gap: 10px; }
+@media (min-width: 620px) {
+  .format-opts { grid-template-columns: repeat(3, 1fr); }
+}
+.format-opt {
+  background: var(--card);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  width: 100%;
+  box-shadow: var(--lift-sm);
+  border: 1.5px solid transparent;
+  transition: border-color .15s;
+}
+.format-opt .radio {
+  flex: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  border: 2px solid #C6BCA6;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color .15s;
+}
+.format-opt .radio i {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--plum-800);
+  transform: scale(0);
+  transition: transform .15s;
+}
+.format-opt[aria-checked="true"] { border-color: var(--plum-800); }
+.format-opt[aria-checked="true"] .radio { border-color: var(--plum-800); }
+.format-opt[aria-checked="true"] .radio i { transform: scale(1); }
+.format-opt .t { display: block; font-weight: 700; font-size: 14px; color: var(--ink); }
+.format-opt .s { display: block; font-size: 12px; color: #78716C; margin-top: 3px; line-height: 1.4; }
+
+.btn-save { display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+.cart-item .fmt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal-deep);
+  margin-top: 6px;
+}
+.cart-item .fmt a { color: var(--gold-ink); text-decoration: underline; font-weight: 600; }
+.order-card .row1 .t small {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--teal-deep);
+  margin-top: 3px;
+}
+
+/* Single books, offered alongside the sets. */
+.singles { margin-top: 34px; }
+.singles-lede {
+  font-family: var(--serif);
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  margin-bottom: 16px;
+}
+.singles-row {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (min-width: 720px) { .singles-row { grid-template-columns: repeat(6, minmax(0, 1fr)); } }
+.single-card {
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  text-align: center;
+  transition: transform .12s;
+}
+.single-card:hover { transform: translateY(-3px); }
+.single-cover {
+  width: 100%;
+  aspect-ratio: 5 / 8;
+  display: block;
+}
+.single-card .t {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 12.5px;
+  line-height: 1.3;
+  color: var(--ink);
+}
+.single-card .p { font-weight: 800; font-size: 12.5px; color: var(--plum-800); }
+
+/* --------------------------------------------------------------------------
+   28. Tools: the sidebar group, My Library, and the Network
+   -------------------------------------------------------------------------- */
+.side-tools { text-align: left; }
+.side-tools .caret {
+  margin-left: auto;
+  display: flex;
+  transition: transform .15s;
+}
+.side-tools .caret.open { transform: rotate(90deg); }
+.side-sub { display: grid; gap: 2px; margin: 2px 0 2px 18px; }
+/* `display: grid` would otherwise beat the browser's own [hidden] rule. */
+.side-sub[hidden] { display: none; }
+.side-sublink {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 11px;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: #B3A2C4;
+  transition: background .15s, color .15s;
+}
+.side-sublink:hover { background: rgba(255, 255, 255, .07); color: #E9E1D3; }
+.side-sublink .stroke { stroke: currentColor; }
+.side-sublink[aria-current="page"] {
+  background: rgba(176, 141, 46, .16);
+  color: #F5EFE3;
+  box-shadow: inset 0 0 0 1px rgba(176, 141, 46, .32);
+}
+
+.side-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.side-social a {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--teal-light);
+}
+.side-social a:hover { color: #F5EFE3; text-decoration: underline; }
+
+.tools-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 4px;
+}
+@media (min-width: 720px) { .tools-grid { grid-template-columns: repeat(2, 1fr); } }
+.tool-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: var(--lift-sm);
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  transition: transform .12s, box-shadow .15s;
+}
+.tool-card:hover { transform: translateY(-2px); box-shadow: var(--lift); }
+.tool-card .icon-tile {
+  width: 46px; height: 46px;
+  border-radius: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 4px;
+}
+.tool-card .t { font-family: var(--serif); font-weight: 700; font-size: 19px; color: var(--plum-800); }
+.tool-card .s { font-size: 13.5px; line-height: 1.55; color: var(--ink-soft); }
+.tool-card .go {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 800;
+  color: var(--gold-ink);
+  margin-top: 4px;
+}
+
+/* My Library */
+.lib-list { display: grid; gap: 14px; }
+.lib-row {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--lift-sm);
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+@media (min-width: 760px) {
+  .lib-row { grid-template-columns: 88px minmax(0, 1fr) auto; }
+}
+.lib-cover {
+  display: block;
+  width: 100%;
+  aspect-ratio: 5 / 8;
+}
+.lib-body { min-width: 0; }
+.lib-body .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.lib-body .meta .k { font-size: 11.5px; font-weight: 700; color: #78716C; }
+.lib-body .t {
+  display: block;
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.3;
+  color: var(--ink);
+  margin-top: 8px;
+}
+.lib-body .t:hover { text-decoration: underline; }
+.lib-body .s { display: block; font-size: 12.5px; font-weight: 600; color: #78716C; margin-top: 5px; }
+.lib-downloads { display: grid; gap: 10px; margin-top: 12px; }
+.lib-download { display: grid; gap: 6px; }
+.lib-download-title { font-size: 12px; font-weight: 700; color: var(--ink-soft); }
+.lib-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  grid-column: 1 / -1;
+}
+@media (min-width: 760px) {
+  .lib-side { grid-column: auto; align-items: flex-end; text-align: right; }
+}
+.lib-owned {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--teal-deep);
+}
+.lib-side .rm { font-size: 12.5px; font-weight: 700; color: var(--gold-ink); }
+.lib-side .rm:hover { text-decoration: underline; }
+
+.lib-empty {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 28px 22px;
+  text-align: center;
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+  box-shadow: var(--lift-sm);
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+}
+.lib-hint {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--muted);
+  margin-top: 8px;
+}
+.lib-note {
+  margin-top: 28px;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--cream-deep);
+  font-size: 13px;
+  line-height: 1.6;
+  color: #6E6650;
+}
+
+/* Network */
+.net-grid {
+  display: grid;
+  gap: 16px;
+  padding-top: 4px;
+}
+@media (min-width: 640px) { .net-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1060px) { .net-grid { grid-template-columns: repeat(4, 1fr); } }
+/* Flex column with the export button pushed to the foot, so a row of cards
+   lines its buttons up however much text each person's entry carries. */
+.net-card {
+  background: var(--card);
+  border-radius: var(--radius);
+  padding: 22px 20px;
+  box-shadow: var(--lift-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+  text-align: center;
+}
+/* The photo slot holds its shape whether or not a headshot has arrived. */
+.net-shot {
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(165deg, var(--plum-700) 0%, var(--plum-950) 100%);
+  border: 2px solid rgba(176, 141, 46, .45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  margin-bottom: 10px;
+}
+.net-shot img { width: 100%; height: 100%; object-fit: cover; }
+.net-initials {
+  font-family: var(--serif);
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--gold-soft);
+  line-height: 1;
+}
+.net-shot-note {
+  font-size: 8.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(243, 236, 220, .62);
+}
+.net-name { font-family: var(--serif); font-weight: 700; font-size: 18px; color: var(--plum-800); }
+.net-title { font-size: 12.5px; font-weight: 700; color: var(--gold-ink); }
+.net-org {
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: var(--teal-deep);
+}
+.net-note {
+  font-family: var(--serif);
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  margin: 8px 0 4px;
+}
+.net-links { display: grid; gap: 7px; width: 100%; margin: 6px 0 12px; }
+.net-card .net-links { align-self: stretch; }
+.net-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--plum-800);
+  overflow-wrap: anywhere;
+  text-align: left;
+  transition: border-color .15s, background .15s;
+}
+.net-link svg { flex: none; }
+.net-link:hover { border-color: var(--gold); background: #FBF6EA; }
+.net-card .btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: auto;
+  font-size: 13.5px;
+  padding-inline: 14px;
+  white-space: nowrap;
+}
+
+/* Social links on the About screen and in the book footer. */
+.social-row { display: grid; gap: 8px; margin-top: 14px; }
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  transition: border-color .15s, background .15s;
+}
+.social-link:hover { border-color: var(--gold); background: #FBF6EA; }
+.social-link .t { display: block; font-size: 13px; font-weight: 700; color: var(--plum-800); }
+.social-link .s { display: block; font-size: 11.5px; font-weight: 600; color: var(--muted); margin-top: 2px; }
+
+.brand-foot .social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: center;
+  margin-top: 10px;
+}
+.brand-foot .social a {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--gold-ink);
+  text-decoration: underline;
+}
+
+/* --------------------------------------------------------------------------
+   29. Print — the Legacy Inventory is meant to leave the screen
    -------------------------------------------------------------------------- */
 @media print {
   .sidebar, .appbar, .tabbar, #tabbar, .no-print,
