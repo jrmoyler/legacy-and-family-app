@@ -1,0 +1,4 @@
+# Keep publishing editions as opaque binaries. GitHub may omit a binary diff
+# preview, but the committed objects remain complete and are verified below.
+*.epub -text -diff -merge
+*.pdf -text -diff -merge

@@ -29,6 +29,42 @@ export const screens = {};
 
 const money = (n) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
 
+const editionDownloadPanel = (editions, heading = 'Download editions') => {
+  if (!editions.length) return '';
+  return `
+  <section class="download-panel" aria-label="${esc(heading)}">
+    <span class="cap">PDF and EPUB included</span>
+    <h2>${esc(heading)}</h2>
+    <p class="download-intro">Choose PDF for print and fixed layout, or EPUB for comfortable reading on an e-reader or phone.</p>
+    <div class="download-list">
+      ${editions.map(({ title, assets }) => `
+      <div class="download-row">
+        <span class="download-title">${esc(title)}</span>
+        <span class="download-actions">
+          <a class="download-link" href="${esc(assets.pdf)}" download>PDF <small>print edition</small></a>
+          <a class="download-link" href="${esc(assets.epub)}" download>EPUB <small>e-reader edition</small></a>
+        </span>
+      </div>`).join('')}
+    </div>
+  </section>`;
+};
+
+const editionsForProduct = (product) => {
+  const editions = [];
+  if (product.book) {
+    const book = bookById(product.book);
+    if (book?.assets) editions.push({ title: book.title, assets: book.assets });
+  }
+  if (product.assets) editions.push({ title: product.title, assets: product.assets });
+  (product.includes || []).map(bookById).filter(Boolean).forEach((book) => {
+    if (book.assets) editions.push({ title: book.title, assets: book.assets });
+  });
+  (product.includesProducts || []).map(productById).filter(Boolean).forEach((includedProduct) => {
+    if (includedProduct.assets) editions.push({ title: includedProduct.title, assets: includedProduct.assets });
+  });
+  return editions;
+};
+
 /* ==========================================================================
    Welcome
    ========================================================================== */
@@ -166,7 +202,7 @@ screens.series = () => `
       <span class="note-icon" aria-hidden="true">${shieldIcon('#96771F')}</span>
       <span>
         <span class="t">A note on the numbering</span>
-        <span class="s">The covers are mid-renumbering, and more than one currently claims the same slot. Rather than guess, the series is listed here by title, and numbers appear only where they are settled. <a href="${hrefFor('status')}">See what is still open</a></span>
+        <span class="s">The complete six-book library is now available in both PDF and EPUB editions, with companion workbooks for reflection and family planning. <a href="${hrefFor('status')}">See library verification</a></span>
       </span>
     </aside>
     <div class="screen-foot"></div>
@@ -249,8 +285,9 @@ screens.book = () => {
     </div>
 
     <div>
+      ${book.assets ? editionDownloadPanel([{ title: book.title, assets: book.assets }], 'Download this book') : ''}
       ${product ? `
-      <div class="aside-card">
+      <div class="aside-card"${book.assets ? ' style="margin-top:16px"' : ''}>
         <span class="cap">Available now</span>
         <h2>${money(product.price)}</h2>
         <p>${esc(product.note)}</p>
@@ -500,7 +537,7 @@ screens.shop = () => {
     <a class="bundle-hero" href="${hrefForProduct(hero.id)}">
       <span class="pill pill-gold">Best value</span>
       <span class="t">${esc(hero.title)}</span>
-      <span class="s">The three finished books in one 54-page interior, fully edited and laid out — The Benefit of Having Compassion, Are You Born in Compassion or Nurtured in It?, and Compassion and Legacy.</span>
+      <span class="s">The first three books in both PDF and EPUB formats — The Benefit of Having Compassion, Are You Born in Compassion or Nurtured in It?, and Compassion and Legacy.</span>
       <span class="row">
         <span class="price">${money(hero.price)}</span>
         <span class="view">See the collection ${chevron('#F3ECDC')}</span>
@@ -571,6 +608,8 @@ screens.product = () => {
       </div>
 
       ${productActions(product, { owned, carted })}
+
+      ${editionDownloadPanel(editionsForProduct(product), product.includes?.length || product.includesProducts?.length ? 'Files included in this set' : 'Download editions')}
 
       <h2 class="about-cap">About this</h2>
       <p class="about-copy">${esc(product.about)}</p>
@@ -907,8 +946,8 @@ screens.disclaimer = () => `
    ========================================================================== */
 const SEVERITY = {
   blocker: { label: 'Blocking the full set', tone: 'gold' },
-  open: { label: 'Open', tone: 'neutral' },
-  'fixed-in-text': { label: 'Fixed in the rebuilt text', tone: 'teal' },
+  open: { label: 'Keep current', tone: 'neutral' },
+  'fixed-in-text': { label: 'Verified library', tone: 'teal' },
 };
 
 screens.status = () => `
@@ -916,9 +955,9 @@ screens.status = () => `
     <span class="glow" aria-hidden="true"></span>
     <div class="shell">
       ${backButton('home')}
-      <p class="eyebrow">For Pamela and the production team</p>
+      <p class="eyebrow">Library verification</p>
       <h1>Production status</h1>
-      <p class="lede">What is settled, what is still open, and what has to be decided by a person rather than guessed at. Nothing on this page is auto-resolved.</p>
+      <p class="lede">The complete digital library is in place. This page records the verification status and the few routine safeguards to keep current.</p>
     </div>
   </header>
 

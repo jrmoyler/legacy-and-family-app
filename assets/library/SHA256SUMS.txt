@@ -1,0 +1,16 @@
+49104c3fd8f3ae758e973ce57e24ecc01cec461fc9be10894f3c9d2132fefeaa  epub/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.epub
+6ed2fb1b9d105c417721aeff796f537c7ed2dd059056d2587be075e657f30655  epub/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.epub
+54a1e59c56b7a2de064a4288b765905d089a2bbe1ea676b6ec7a4584ffdcb3aa  epub/A-Cup-of-Compassion-03-Compassion-and-Legacy.epub
+1bbd3c607434bea811306d066d6848586ed40101cf233c99af7b052e9073e2c8  epub/A-Cup-of-Compassion-04-Compassion-or-Confusion.epub
+c34d1dc70e4e67b61e833341d364b99dda35a125f3bde0e73951bfd33232dca6  epub/A-Cup-of-Compassion-05-Compassion-and-Commitment.epub
+a5abb4d98ebec1be6421f51c0b6afc7bb19dab60b5e8b8391eef0e4cf1eb7df8  epub/A-Cup-of-Compassion-06-Compassion-and-Companionship.epub
+3b8e8eaf184f9d7c8319c13e47092207dff8e4c03e43388ea416e7331255bd06  epub/A-Cup-of-Compassion-Companion-Workbook.epub
+5aee2fbe86345556dbcd164cf09d35216a655479f1dea9f5a6074d02283b95d9  epub/A-Cup-of-Compassion-Legacy-Inventory-Workbook.epub
+07c1fe2ec655fd2e5dd835fd900858bc513adf095013929d58397080ae23f5d2  pdf/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.pdf
+2439037cfe3b0b87e4914c2058f6a28b2416172ff651ea9eb3536d5f15bd511f  pdf/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.pdf
+e6fa999a7d9b2157e364080a1c792441aff9d0cba104c0e323ea90088d36362d  pdf/A-Cup-of-Compassion-03-Compassion-and-Legacy.pdf
+4cc65b18d50db6c4103e619d3ee2560bf6807b07477aa1263a02672ed85abd53  pdf/A-Cup-of-Compassion-04-Compassion-or-Confusion.pdf
+1777fcfcb9a378cef70b75d48360122d6e439a11327a41974d43243c9c7da9fd  pdf/A-Cup-of-Compassion-05-Compassion-and-Commitment.pdf
+9a951433af9f54906b932f96a186ebd5796f7cecd9ddce317a7dad129342c9f9  pdf/A-Cup-of-Compassion-06-Compassion-and-Companionship.pdf
+e291819bbd7abbf06413d1d0fa00716585cc36d5b711ffc42dd37d573c122779  pdf/A-Cup-of-Compassion-Companion-Workbook.pdf
+4d72fd4c3df34a6920ec0e2360aebce989a69ccbac2b8b2c651ce1ce31e063d4  pdf/A-Cup-of-Compassion-Legacy-Inventory-Workbook.pdf

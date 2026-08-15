@@ -1716,6 +1716,68 @@ p a, .about-copy a { text-decoration: underline; }
 .pd-actions { display: grid; gap: 11px; margin-top: 20px; }
 .pd-actions .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
 
+.download-panel {
+  margin-top: 24px;
+  padding: 22px;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--gold);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--lift-sm);
+}
+.download-panel .cap {
+  display: block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+.download-panel h2 {
+  margin-top: 8px;
+  font-family: var(--serif);
+  font-size: 21px;
+  color: var(--plum-800);
+}
+.download-intro {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.download-list { display: grid; gap: 10px; margin-top: 18px; }
+.download-row {
+  display: grid;
+  gap: 10px;
+  padding: 13px 0 0;
+  border-top: 1px solid var(--line);
+}
+.download-title {
+  font-family: var(--serif);
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--ink);
+}
+.download-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.download-link {
+  display: grid;
+  min-width: 120px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--plum-800);
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.1;
+}
+.download-link small { margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 600; }
+.download-link:hover { border-color: var(--gold); background: var(--gold-soft); }
+@media (min-width: 620px) {
+  .download-row { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+}
+
 .about-cap {
   font-family: var(--serif);
   font-size: 12px;
