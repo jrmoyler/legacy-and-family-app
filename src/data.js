@@ -191,6 +191,19 @@ const bookAssets = (slug) => ({
   coverThumb: `/assets/library/covers/thumbs/${slug}.jpg`,
 });
 
+/**
+ * Commissioned illustrated covers for resources that are not embedded inside
+ * an EPUB. They use the same full/thumbnail contract as the production books,
+ * so every grid and detail screen can render them through `coverArt()`.
+ */
+const productCoverAssets = (slug) => ({
+  cover: `/assets/library/covers/products/${slug}.jpg`,
+  coverThumb: `/assets/library/covers/products/thumbs/${slug}.jpg`,
+});
+
+/** The flagship series cover displayed on the Compassion Hub home page. */
+export const HOME_COVER = productCoverAssets('A-Cup-of-Compassion-Home');
+
 export const BOOKS = [
   {
     id: 'benefit', seriesLabel: 'Book 1', title: 'The Benefit of Having Compassion', designId: 'DAHPs1e2Od0',
@@ -267,7 +280,10 @@ export const PRODUCTS = [
     buyable: true,
     free: true,
     goTo: 'legacy',
-    assets: bookAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
+    assets: {
+      ...bookAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
+      ...productCoverAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook-Illustrated'),
+    },
     note: '10 pages · PDF & EPUB',
     about: 'Pulled straight out of Compassion and Legacy: every asset, policy, document, heirloom, and story your family will need you to have written down. Open it, print it, and fill it in on paper or on your own device. Nothing you write is sent anywhere.',
   },
@@ -280,6 +296,7 @@ export const PRODUCTS = [
     cats: ['Free'],
     buyable: true,
     free: true,
+    assets: productCoverAssets('A-Cup-of-Compassion-40-Second-Compassion-Card'),
     note: 'One page · bulletin insert',
     about: 'A single page for a church bulletin or a break room wall: what forty seconds of real attention does for a person, and the four things to do with them.',
   },
@@ -340,7 +357,10 @@ export const PRODUCTS = [
     badge: '',
     cats: ['Companions'],
     buyable: true,
-    assets: bookAssets('A-Cup-of-Compassion-Companion-Workbook'),
+    assets: {
+      ...bookAssets('A-Cup-of-Compassion-Companion-Workbook'),
+      ...productCoverAssets('A-Cup-of-Compassion-Companion-Workbook-Illustrated'),
+    },
     note: '28 pages · PDF & EPUB',
     about: 'Seven parts for every book in the series: overview, key concepts, reflection, a guided exercise, journaling pages, a discussion guide, and action steps. Built for kitchen tables and small groups alike.',
   },
@@ -352,6 +372,7 @@ export const PRODUCTS = [
     badge: '',
     cats: ['Collections'],
     buyable: true,
+    assets: productCoverAssets('A-Cup-of-Compassion-Church-Small-Group-Licence'),
     note: '25 copies · one invoice',
     about: 'Twenty-five copies of the collection for a congregation, a ministry, or a small group, on a single invoice. One study, one language, everybody on the same page.',
   },
@@ -389,6 +410,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'In production',
+    assets: productCoverAssets('A-Cup-of-Compassion-Family-Legacy-Conversation-Kit'),
     note: 'Scripts & checklists',
     about: 'Word-for-word scripts for raising estate planning with a parent who will not discuss it, a sibling who resents it, or an adult child who thinks it is morbid — plus the inventory and a first-72-hours checklist.',
   },
@@ -401,6 +423,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-30-Day-Devotional'),
     note: '30 days · KJV',
     about: 'A month of short readings, each anchored in a KJV passage, each ending with one thing to actually do that day.',
   },
@@ -413,6 +436,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-Caregiving-Burnout-Boundaries'),
     note: 'For family caregivers',
     about: 'For the daughter who became a nurse overnight and the husband who has not slept properly in two years. What burnout does, what boundaries protect, and why neither is a failure of love.',
   },
@@ -425,6 +449,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-Church-Small-Group-Leaders-Kit'),
     note: 'Six sessions · slides',
     about: 'Everything a ministry leader needs to run the series as a six-week study: session plans, discussion prompts, slides, and handouts.',
   },
@@ -437,6 +462,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-Youth-School-Edition'),
     note: 'Classroom-ready',
     about: 'The series rewritten for younger readers, with classroom activities and a family take-home page for each unit.',
   },
@@ -449,6 +475,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-Caregiver-Team-Training-Deck'),
     note: 'For agencies & facilities',
     about: 'A staff training deck for home-care agencies and residential facilities — compassion as a measurable clinical practice, not a personality trait.',
   },
@@ -469,7 +496,10 @@ export const BOOK_PRODUCTS = BOOKS
 export function titlesForProduct(product) {
   const titles = [];
   const add = (title, assets) => {
-    if (assets && !titles.some((t) => t.assets.pdf === assets.pdf)) titles.push({ title, assets });
+    const key = assets?.pdf || assets?.cover;
+    if (assets && key && !titles.some((t) => (t.assets.pdf || t.assets.cover) === key)) {
+      titles.push({ title, assets });
+    }
   };
 
   if (product.book) {

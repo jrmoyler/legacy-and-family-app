@@ -40,7 +40,7 @@ source.
 | `src/components.js` | Sidebar, app bar, tab bar, sheets, toast, brand footer |
 | `src/state.js` | State + localStorage persistence |
 | `src/data.js` | Brand, books, catalogue, reading, inventory, production status |
-| `src/covers.js` | Typographic cover art — one per book and product |
+| `src/covers.js` | Accessible typographic fallback for any future item without commissioned art |
 | `src/icons.js` | Inline SVG icons and the cup-and-heart brand mark |
 | `src/dom.js` | `esc()` and small DOM helpers |
 | `assets/` | PWA icons and the link-preview image |
@@ -50,6 +50,7 @@ source.
 | `assets/books/` | Older EPUB masters, superseded by `assets/library/` — see its own README |
 | `assets/network/` | Headshots for the Network page (see its README) |
 | `tools/extract_library_covers.py` | Lifts cover art out of the EPUB masters |
+| `tools/build_product_covers.py` | Builds illustrated workbook, resource, and home covers from commissioned source art |
 | `tools/verify_library_assets.py` | Release check: editions, covers, checksums, app wiring |
 
 ## Screens
@@ -162,6 +163,23 @@ pip install pillow
 python3 tools/extract_library_covers.py --root .
 ```
 
+The two workbooks, eight standalone resources, and the flagship home cover use
+commissioned painterly illustration layers. Their exact titles, brand panel,
+border, author line, and thumbnail renditions are rendered deterministically so
+the art stays expressive without trusting generated typography:
+
+```
+assets/library/covers/product-art/<stem>.jpg        commissioned source art
+assets/library/covers/products/<stem>.jpg           1600 x 2560 final cover
+assets/library/covers/products/thumbs/<stem>.jpg      640 x 1024 grid cover
+```
+
+Rebuild those covers after changing source art or cover copy:
+
+```bash
+python3 tools/build_product_covers.py --root .
+```
+
 ## The Network page
 
 `#/network` lists the people around the series with the one contact detail each
@@ -223,26 +241,13 @@ Scripture styling matches the print spec: italic serif with a gold small-caps
 reference line. Callouts are centred bold-italic purple on cream with a gold
 left border.
 
-## Cover art
+## Cover fallbacks
 
-There is no cover photography and no illustration budget, and every book and
-product used to render the same purple tile with the same cup mark — six
-different books, one indistinguishable thumbnail. `src/covers.js` builds a
-typographic cover instead: a colour field, one geometric motif, and the title
-set in the series serif.
-
-Six fields (plum, night, teal, mauve, gold, cream) and five motifs (arc, rules,
-split, halo, ladder) are assigned to fixed pairs per id, so a title keeps the
-same cover everywhere it appears and between visits. Every field is drawn from
-the Bible §6 palette; the variety comes from which colour leads.
-
-The two light fields are pitched so that even the darkest gradient stop clears
-4.5:1 against the title, the kicker, and the imprint line — the obvious deep
-gold (`#8A6C18`) puts the imprint line at 2.2:1, and was rejected for it.
-
-Below the two-column shop breakpoint each cover is about 165px wide, where its
-own title would land directly above the card's title at nearly the same size.
-There, the type is dropped and the field, motif, and mark identify it alone.
+Every current book, workbook, shop resource, and the home page now carries
+production raster cover art. `src/covers.js` remains as the accessible fallback
+for a future catalogue record added before its commissioned art arrives. Six
+brand fields and five motifs are assigned deterministically by id, so even a
+temporary item stays identifiable and never collapses the 5:8 cover rhythm.
 
 ## Accessibility
 

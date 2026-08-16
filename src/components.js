@@ -115,13 +115,13 @@ export function tabbar() {
  * dense display pull the full 1600 x 2560 rendition from the same srcset, which
  * is also what the "view full size" links point at.
  */
-export const coverArt = (assets, alt, sizes = '160px') => `
+export const coverArt = (assets, alt, sizes = '160px', loading = 'lazy') => `
   <img class="cover-art"
        src="${esc(assets.coverThumb)}"
        srcset="${esc(assets.coverThumb)} 640w, ${esc(assets.cover)} 1600w"
        sizes="${esc(sizes)}"
        width="640" height="1024"
-       loading="lazy" decoding="async"
+       loading="${esc(loading)}"${loading === 'eager' ? ' fetchpriority="high"' : ''} decoding="async"
        alt="Cover of ${esc(alt)}">`;
 
 export const backButton = (screen, label = 'Back') =>
