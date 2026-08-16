@@ -9,9 +9,9 @@ import { $, $$ } from './src/dom.js';
 import { screens } from './src/screens.js';
 import { sidebar, appbar, tabbar, overlays, hrefFor } from './src/components.js';
 import {
-  BRAND, CATEGORIES, FORMAT_SHORT, bookById, lessonById, productById, networkById,
+  BRAND, CATEGORIES, PRODUCTS, FORMAT_SHORT,
+  bookById, lessonById, productById, networkById,
 } from './src/data.js';
-import { BRAND, CATEGORIES, PRODUCTS, bookById, lessonById, productById } from './src/data.js';
 import {
   state, loadState, saveState, toggleSection, toggleLesson,
   toggleCart, removeFromCart, addToLibrary, toggleSaved, setFormat, formatFor,

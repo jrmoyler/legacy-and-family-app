@@ -75,11 +75,24 @@ const editionsForProduct = (product) =>
 const coversForProduct = (product) =>
   titlesForProduct(product).filter(({ assets }) => assets?.cover);
 
-/** A stack of up to three covers — one title shows one, a set shows its spread. */
-const coverStack = (product, sizes = '120px') => {
+/**
+ * A stack of up to three covers — one title shows one, a set shows its spread.
+ *
+ * Kits and licences have no photographed cover, and rendering the cup mark for
+ * every one of them gave nine catalogue cards the same thumbnail. They get a
+ * typographic cover instead, in the same 5:8 slot the real art uses, so the
+ * grid keeps one shape and no two items look alike.
+ */
+const coverStack = (product, sizes = '120px', { mini = false } = {}) => {
   const covers = coversForProduct(product).slice(0, 3);
   if (!covers.length) {
-    return `<span class="cover-fallback" aria-hidden="true">${cupMarkOnDark(46)}</span>`;
+    const stand = mini
+      ? coverMini(product)
+      : cover(product, { kicker: product.kind, foot: product.free ? 'Free · A Cup of Compassion' : '' });
+    return `
+    <span class="cover-stack cover-stack-1">
+      <span class="cover-slot">${stand}</span>
+    </span>`;
   }
   return `
   <span class="cover-stack cover-stack-${covers.length}">
@@ -167,14 +180,11 @@ screens.home = () => {
       </a>
 
       <div class="quick-grid span-all">
-        <a class="quick-tile" href="${hrefFor('read')}"><span class="icon-tile it-gold">${bookIcon(22, '#96771F', 1.9)}</span>Free reading<small>${read} of ${LESSON_TOTAL} read</small></a>
-        <a class="quick-tile" href="${hrefFor('shop')}"><span class="icon-tile it-teal">${cartIcon(22, '#23636A', 1.9)}</span>The shop<small>Books, sets &amp; kits</small></a>
-        <a class="quick-tile" href="${hrefFor('library')}"><span class="icon-tile it-gold">${shelfIcon(22, '#96771F', 1.9)}</span>My Library<small>${saved} saved &amp; bought</small></a>
-        <a class="quick-tile" href="${hrefFor('network')}"><span class="icon-tile it-teal">${peopleIcon(22, '#23636A', 1.9)}</span>Network<small>${NETWORK.length} people to call</small></a>
-        <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile it-gold">${cupMark(22)}</span>About Pamela<small>And the movement</small></a>
         ${quickTile(hrefFor('read'), 'it-gold', bookIcon(22, '#96771F', 1.9), 'Free reading', `${read} of ${LESSON_TOTAL} read`)}
         ${quickTile(hrefFor('shop'), 'it-teal', cartIcon(22, '#23636A', 1.9), 'The shop', 'Books, sets & kits')}
-        ${quickTile(hrefFor('about'), 'it-gold', peopleIcon(22, '#96771F', 1.9), 'About Pamela', 'And the movement')}
+        ${quickTile(hrefFor('library'), 'it-gold', shelfIcon(22, '#96771F', 1.9), 'My Library', `${saved} saved & bought`)}
+        ${quickTile(hrefFor('network'), 'it-teal', peopleIcon(22, '#23636A', 1.9), 'Network', `${NETWORK.length} people to call`)}
+        ${quickTile(hrefFor('about'), 'it-gold', cupMark(22), 'About Pamela', 'And the movement')}
       </div>
 
       ${featuredLessonCard()}
@@ -248,9 +258,8 @@ function bookRow(book) {
   return `
   <a class="book-row" href="${hrefForBook(book.id)}">
     <span class="book-cover">
-      ${book.assets?.cover ? coverArt(book.assets, book.title, '(min-width: 720px) 96px, 74px') : cupMarkOnDark(38)}
+      ${book.assets?.cover ? coverArt(book.assets, book.title, '(min-width: 720px) 96px, 74px') : coverMini(book)}
     </span>
-    ${coverMini(book)}
     <span class="body">
       <span class="meta">
         ${book.seriesLabel ? `<span class="num">${esc(book.seriesLabel)}</span>` : ''}
@@ -330,10 +339,6 @@ screens.book = () => {
         <figcaption>Cover art · <a href="${esc(book.assets.cover)}" target="_blank" rel="noopener noreferrer">view full size</a></figcaption>
       </figure>` : ''}
       ${book.assets ? editionDownloadPanel([{ title: book.title, assets: book.assets }], 'Download this book', product ? formatFor(product.id) : DEFAULT_FORMAT) : ''}
-      <div class="book-cover-rail">
-        ${cover(book, { kicker: book.seriesLabel || 'A Cup of Compassion', size: 'lg' })}
-      </div>
-
       ${product ? `
       <div class="aside-card" style="margin-top:16px">
         <span class="cap">Available on its own</span>
@@ -609,7 +614,6 @@ screens.shop = () => {
       ${visible.map((p) => `
       <a class="prod-card ${p.buyable ? '' : 'pending'}" href="${hrefForProduct(p.id)}">
         <span class="prod-cover">
-          ${cover(p, { kicker: p.kind, foot: p.free ? 'Free · A Cup of Compassion' : 'A Cup of Compassion' })}
           ${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ''}
           ${coverStack(p, '(min-width: 1100px) 240px, (min-width: 620px) 30vw, 44vw')}
           <span class="kind">${esc(p.kind)}</span>
@@ -687,11 +691,8 @@ screens.product = () => {
         </a>`).join('')}
       </div>` : ''}` : `
       <div class="pd-cover">
-        <span class="mark" aria-hidden="true">${cupMarkOnDark(96)}</span>
-        <span class="cap">${esc(product.kind.toLowerCase())}</span>
-      </div>`}
         ${cover(product, { kicker: product.kind, size: 'lg' })}
-      </div>
+      </div>`}
     </div>
 
     <div>
@@ -827,8 +828,7 @@ screens.cart = () => {
     <div class="cart-items">
       ${items.map((p) => `
       <div class="cart-item">
-        <span class="thumb">${coverStack(p, '64px')}</span>
-        ${coverMini(p, 'xs')}
+        <span class="thumb">${coverStack(p, '64px', { mini: true })}</span>
         <span class="who">
           <span class="t">${esc(p.title)}</span>
           <span class="k">${esc(p.kind)}</span>

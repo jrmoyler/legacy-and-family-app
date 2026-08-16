@@ -20,12 +20,15 @@ rest of the grid.
 
 The current entries and their ids:
 
-| id                 | Person             |
-| ------------------ | ------------------ |
-| `pamella-grear`    | Pamella Grear      |
-| `j-douglas-bailey` | J. Douglas Bailey  |
-| `james-mann`       | James Mann         |
-| `john-ross-moyler` | John-Ross Moyler   |
+| id                 | Person             | Photo                    |
+| ------------------ | ------------------ | ------------------------ |
+| `pamella-grear`    | Pamella Grear      | still to come            |
+| `j-douglas-bailey` | J. Douglas Bailey  | `j-douglas-bailey.jpg`   |
+| `james-mann`       | James Mann         | `james-mann.jpg`         |
+| `john-ross-moyler` | John-Ross Moyler   | `john-ross-moyler.jpg`   |
+
+The three photos on file were supplied by each person and cropped square at
+512 × 512 from the portrait they sent.
 
 Use each person's own photo, supplied by them, and keep the file under about
 300 KB so the page stays quick on a phone.
