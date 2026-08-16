@@ -11,3 +11,5 @@ Thumbs.db
 .vercel/
 node_modules/
 *.log
+.library-build/
+__pycache__/

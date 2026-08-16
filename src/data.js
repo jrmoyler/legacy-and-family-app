@@ -12,24 +12,33 @@
  *
  * TWO RULES THIS FILE ENFORCES, BOTH LOAD-BEARING:
  *
- * 1. No series numbering is asserted as settled. Two numbering schemes are in
- *    conflict and at least three covers claim a "3" (Bible §0.1, §2). Books
- *    carry `seriesLabel` only where the cover and the current scheme agree;
- *    everywhere else it is null and the book is shown by title. The conflicts
- *    are surfaced on the production status screen rather than papered over.
+ * 1. The six current publishing editions use the settled Book 1-6 library
+ *    sequence shown in their verified download filenames and catalog.
  *
- * 2. Nothing offers to prepare legal documents. Defect L1 (Bible §5) is
- *    unauthorized practice of law. The positioning is fixed: we do not prepare
- *    legal documents, we help families arrive prepared.
+ * 2. Nothing offers to prepare legal documents. The positioning is fixed: we
+ *    do not prepare legal documents, we help families arrive prepared.
  */
 
-import { homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon } from './icons.js';
+import {
+  homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon, peopleIcon, shelfIcon,
+} from './icons.js';
 
 /* ==========================================================================
    Brand (Bible §1, §6, §7)
    ========================================================================== */
 
+/**
+ * Two names live here, and they are not interchangeable.
+ *
+ * `app` is the product the reader opens: the Compassion Hub. `name` is the
+ * publishing imprint and book series the Hub carries — A Cup of Compassion —
+ * and it stays on every book footer, disclaimer, and copyright line, because
+ * that is what is printed inside the editions themselves.
+ */
 export const BRAND = {
+  app: 'Compassion Hub',
+  appBy: 'by Cup of Compassion',
+  appFull: 'Compassion Hub by Cup of Compassion',
   name: 'A Cup of Compassion',
   tagline: 'Build it. Document it. Pass it on.',
   author: 'Pamela Foster-Grear',
@@ -41,6 +50,31 @@ export const BRAND = {
   closing: 'Keep on giving. Keep on being.',
   blessing: 'Blessings.',
 };
+
+/**
+ * Pamela's platforms, supplied and confirmed by her directly — which is what
+ * the app was waiting on before linking any of them (Bible §11).
+ */
+export const SOCIAL_LINKS = [
+  {
+    id: 'instagram',
+    label: 'Instagram',
+    handle: '@familykeepers',
+    url: 'https://www.instagram.com/familykeepers/',
+  },
+  {
+    id: 'tiktok',
+    label: 'TikTok',
+    handle: '@pamelafostergrear',
+    url: 'https://www.tiktok.com/@pamelafostergrear?_r=1&_t=ZT-98gpo4iN0ZB',
+  },
+  {
+    id: 'youtube',
+    label: 'YouTube',
+    handle: '@acupofcompassion7490',
+    url: 'https://youtube.com/@acupofcompassion7490?si=qkfTArSfOUSsmA-u',
+  },
+];
 
 /** The canonical footer that appears on every book (Bible §1). */
 export const FOOTER_LINE = `${BRAND.site} | ${BRAND.email} | ${BRAND.social}`;
@@ -71,6 +105,26 @@ export const TABS = [
   { id: 'shop', label: 'Shop', icon: cartIcon },
 ];
 
+/**
+ * Tools: the two screens that are about the reader's own material and the
+ * people around it, rather than about the series. They hang off one button in
+ * the sidebar and one tab on a phone.
+ */
+export const TOOLS = [
+  {
+    id: 'library',
+    label: 'My Library',
+    icon: shelfIcon,
+    blurb: 'Everything you have saved or bought, with both file formats ready to download.',
+  },
+  {
+    id: 'network',
+    label: 'Network',
+    icon: peopleIcon,
+    blurb: 'The people Pamela works alongside, and how to reach each of them directly.',
+  },
+];
+
 /** Which nav tab should read as current for a given screen. */
 export const TAB_OF = {
   home: 'home',
@@ -84,19 +138,36 @@ export const TAB_OF = {
   cart: 'shop',
   checkout: 'shop',
   'checkout-done': 'shop',
+  tools: 'tools',
+  library: 'tools',
+  network: 'tools',
 };
 
 /* ==========================================================================
-   The books (Bible §2 content status, §8 content spines)
+   File formats
    ========================================================================== */
 
 /**
- * Publication status, which decides whether a book can be bought.
- *   ready       — edited and rebuilt 24 Jul; sellable on its own
- *   bundle-only — complete but short (Bible §5 "Length"); sells inside the set
- *   layout      — manuscript exists, interior not laid out yet
- *   drafting    — content incomplete; must not ship (Bible §4)
+ * Every paid title ships as both a PDF and an EPUB, and the reader says which
+ * one they actually want before they buy. `both` is the default because it
+ * costs the same and covers the reader who prints at home and reads on a phone.
  */
+export const FORMATS = [
+  { id: 'both', label: 'Both formats', sub: 'PDF and EPUB — recommended' },
+  { id: 'pdf', label: 'PDF only', sub: 'Fixed layout, best for printing' },
+  { id: 'epub', label: 'EPUB only', sub: 'Reflowable, best for e-readers and phones' },
+];
+
+export const DEFAULT_FORMAT = 'both';
+export const FORMAT_IDS = FORMATS.map((f) => f.id);
+export const formatById = (id) => FORMATS.find((f) => f.id === id);
+/** Short form for cart lines and library rows. */
+export const FORMAT_SHORT = { both: 'PDF + EPUB', pdf: 'PDF', epub: 'EPUB' };
+
+/* ==========================================================================
+   The books and their verified download editions
+   ========================================================================== */
+
 export const BOOK_STATUS = {
   ready: { label: 'Available now', tone: 'gold' },
   'bundle-only': { label: 'In the collection', tone: 'teal' },
@@ -105,6 +176,64 @@ export const BOOK_STATUS = {
 };
 
 /**
+ * Every publication is addressed by one slug. The two download editions and
+ * the two cover renditions all hang off it, so a title can never end up with
+ * a PDF from one book and a cover from another.
+ *
+ * The covers are the production cover art lifted out of the EPUBs at
+ * 1600 x 2560 by tools/extract_library_covers.py, with a 640px thumbnail for
+ * grids. Both are listed with checksums in assets/library/catalog.json.
+ */
+const bookAssets = (slug) => ({
+  epub: `/assets/library/epub/${slug}.epub`,
+  pdf: `/assets/library/pdf/${slug}.pdf`,
+  cover: `/assets/library/covers/${slug}.jpg`,
+  coverThumb: `/assets/library/covers/thumbs/${slug}.jpg`,
+});
+
+export const BOOKS = [
+  {
+    id: 'benefit', seriesLabel: 'Book 1', title: 'The Benefit of Having Compassion', designId: 'DAHPs1e2Od0',
+    pages: 25, words: '≈4,200 words', status: 'ready', price: 4.99,
+    assets: bookAssets('A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion'),
+    blurb: 'The doorway into the series: compassion as a practice you can learn, model, and make visible.',
+    anchor: { text: 'If ye have faith as a grain of mustard seed, ye shall say unto this mountain, Remove hence to yonder place; and it shall remove; and nothing shall be impossible unto you.', ref: 'Matthew 17:20 · KJV' },
+    spine: ['Compassion learned at home - Pastor Foster as the model', 'What compassion actually is, and what it costs', 'Everyday care: kitchen herbs and oils, in traditional-use framing', 'The compassion crisis, and why self-compassion comes first', 'The forty seconds that measurably change a patient’s outcome', 'Family Keepers, and compassion organised into service'],
+    scriptures: ['Matthew 20:34', 'Matthew 15:32', 'Matthew 9:36', 'Matthew 14:14', 'Luke 7:13', 'Mark 1:41'], wellnessNote: true,
+  },
+  {
+    id: 'nurtured', seriesLabel: 'Book 2', title: 'Are You Born in Compassion or Nurtured in It?', designId: 'DAHPtMCqeWs',
+    pages: 22, words: '≈1,600 words', status: 'ready', price: 4.99,
+    assets: bookAssets('A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion'),
+    blurb: 'The question the whole series turns on, put to real people and answered in their own words.',
+    anchor: { text: 'But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith, Meekness, temperance: against such there is no law.', ref: 'Galatians 5:22-23 · KJV' },
+    spine: ['Made in the image - where the argument starts', 'And where it complicates: all have sinned', 'Voices for “born in it”', 'Voices for “nurtured into it”', 'Compassion as a choice you keep making', 'Reflection questions, and Pouring the Cup'],
+    scriptures: ['Genesis 1:27', 'Romans 3:23', 'Galatians 5:22-23'],
+  },
+  {
+    id: 'legacy', seriesLabel: 'Book 3', title: 'Compassion and Legacy', designId: 'DAHPxYb83RQ',
+    pages: 26, words: '≈1,800 words', status: 'ready', price: 4.99,
+    assets: bookAssets('A-Cup-of-Compassion-03-Compassion-and-Legacy'), flagship: true,
+    blurb: 'Compassion that outlives you has to be written down. A practical invitation to prepare with purpose.',
+    anchor: { text: 'A good man leaveth an inheritance to his children’s children: and the wealth of the sinner is laid up for the just.', ref: 'Proverbs 13:22 · KJV' },
+    spine: ['What happens to a family with no plan', 'Compassion is intentional, or it is only a feeling', 'Generational wealth, defined honestly', 'Getting started with a licensed attorney', 'The Legacy Inventory, page by page'],
+    scriptures: ['Proverbs 13:22'], legalNote: true,
+  },
+  {
+    id: 'confusion', seriesLabel: 'Book 4', title: 'Compassion or Confusion?', designId: 'DAHPpCDXy-s',
+    pages: 15, words: '≈3,100 words', status: 'ready', price: 4.99,
+    assets: bookAssets('A-Cup-of-Compassion-04-Compassion-or-Confusion'),
+    blurb: 'A reflective guide to recognizing the difference between compassionate love, self-abandonment, and patterns that diminish your voice.',
+    anchor: null,
+    spine: ['When love starts to feel unclear', 'Compassion is not self-abandonment', 'The pattern tells the truth', 'Boundaries can be gentle and firm', 'Choose the love that lifts'], scriptures: [],
+  },
+  {
+    id: 'commitment', seriesLabel: 'Book 5', title: 'Compassion and Commitment', designId: 'DAHPpbNcwyE',
+    pages: 16, words: '≈3,200 words', status: 'ready', price: 4.99,
+    assets: bookAssets('A-Cup-of-Compassion-05-Compassion-and-Commitment'),
+    blurb: 'A faith-centered relationship guide to practicing compassion, commitment, honest communication, and daily repair.',
+    anchor: { text: 'Two are better than one; because they have a good reward for their labour… and a threefold cord is not quickly broken.', ref: 'Ecclesiastes 4:9-12 · KJV' },
+    spine: ['A relationship is a daily practice', 'What compassion brings to love', 'Commitment gives love a foundation', 'When a relationship feels like confinement', 'Seven daily practices and an action plan'],
  * Where the built book files live. One EPUB per book, filed under the series
  * name and the number printed on that book's own cover — so a file can be
  * matched to a cover without opening it, even while the numbering is still
@@ -279,6 +408,15 @@ export const BOOKS = [
     ],
     scriptures: ['1 Corinthians 13:4-8', 'Ecclesiastes 4:9-12', 'Colossians 3:12-14', 'Ephesians 4:32', 'Mark 10:9'],
   },
+  {
+    id: 'companionship', seriesLabel: 'Book 6', title: 'Compassion and Companionship', designId: 'DAHQDC0Itq0',
+    pages: 16, words: '≈3,000 words', status: 'ready', price: 4.99,
+    assets: bookAssets('A-Cup-of-Compassion-06-Compassion-and-Companionship'),
+    blurb: 'Companionship is compassion that stays: friendship that has carried weight across decades, distance, and ordinary days.',
+    anchor: { text: 'It is of the LORD’s mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness.', ref: 'Lamentations 3:22-23 · KJV' },
+    spine: ['Compassionship: naming a kind of friendship that stays', 'Friendships that survive distance and decades', 'Milestones, memory, and showing up', 'Becoming neighbours again', 'Acts of compassionship in ordinary life'],
+    scriptures: ['Ephesians 4:32', 'Psalm 103:13', 'Lamentations 3:22-23'],
+  },
 ];
 
 export const bookById = (id) => BOOKS.find((b) => b.id === id);
@@ -304,10 +442,7 @@ const titleList = (books) => endStop(books.map((b) => b.title).join(' · '));
 
 export const CATEGORIES = ['Free', 'Books', 'Collections', 'Companions'];
 
-/**
- * `buyable: false` means the thing is real but not finished — it shows with
- * its status and no purchase control. Nothing half-built takes money.
- */
+/** `buyable: false` is reserved for future products that are not yet built. */
 export const PRODUCTS = [
   {
     id: 'inventory-worksheet',
@@ -319,7 +454,8 @@ export const PRODUCTS = [
     buyable: true,
     free: true,
     goTo: 'legacy',
-    note: 'Print it · fill it in at home',
+    assets: bookAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
+    note: '10 pages · PDF & EPUB',
     about: 'Pulled straight out of Compassion and Legacy: every asset, policy, document, heirloom, and story your family will need you to have written down. Open it, print it, and fill it in on paper or on your own device. Nothing you write is sent anywhere.',
   },
   {
@@ -343,8 +479,33 @@ export const PRODUCTS = [
     cats: ['Books'],
     buyable: true,
     book: 'benefit',
-    note: 'ePub & PDF · yours forever',
+    note: 'PDF & EPUB · yours forever',
     about: 'The longest book in the series and the natural place to begin — compassion as something taught, practised, and measurable, anchored in Matthew 17:20.',
+  },
+  {
+    id: 'nurtured', kind: 'eBook', title: 'Are You Born in Compassion or Nurtured in It?', price: 4.99,
+    badge: '', cats: ['Books'], buyable: true, book: 'nurtured', note: 'PDF & EPUB · yours forever',
+    about: 'A thoughtful exploration of where compassion begins, how it is practiced, and the examples that help it grow.',
+  },
+  {
+    id: 'legacy', kind: 'eBook', title: 'Compassion and Legacy', price: 4.99,
+    badge: '', cats: ['Books'], buyable: true, book: 'legacy', note: 'PDF & EPUB · yours forever',
+    about: 'A practical invitation to prepare with purpose and make care visible in the plans, stories, and conversations you leave behind.',
+  },
+  {
+    id: 'confusion', kind: 'eBook', title: 'Compassion or Confusion?', price: 4.99,
+    badge: '', cats: ['Books'], buyable: true, book: 'confusion', note: 'PDF & EPUB · yours forever',
+    about: 'A reflective guide to clear boundaries, self-respect, and the difference between love that lifts and patterns that diminish.',
+  },
+  {
+    id: 'commitment', kind: 'eBook', title: 'Compassion and Commitment', price: 4.99,
+    badge: '', cats: ['Books'], buyable: true, book: 'commitment', note: 'PDF & EPUB · yours forever',
+    about: 'A faith-centered guide to honest communication, daily repair, and the practices that give relationships a dependable foundation.',
+  },
+  {
+    id: 'companionship', kind: 'eBook', title: 'Compassion and Companionship', price: 4.99,
+    badge: '', cats: ['Books'], buyable: true, book: 'companionship', note: 'PDF & EPUB · yours forever',
+    about: 'A warm reflection on friendship, belonging, and the ordinary ways people show up for one another across seasons of life.',
   },
   {
     id: 'first-three',
@@ -354,9 +515,9 @@ export const PRODUCTS = [
     badge: 'BEST VALUE',
     cats: ['Collections'],
     buyable: true,
-    note: '54 pages · ePub & PDF',
+    note: 'Books 1-3 · PDF & EPUB',
     includes: ['benefit', 'nurtured', 'legacy'],
-    about: 'The three finished books in one 54-page interior: The Benefit of Having Compassion, Are You Born in Compassion or Nurtured in It?, and Compassion and Legacy. Fully edited, scripture standardised to KJV, and laid out at 6×9 with the series design.',
+    about: 'The first three books in the series: The Benefit of Having Compassion, Are You Born in Compassion or Nurtured in It?, and Compassion and Legacy. Each edition is included in both PDF and EPUB formats.',
   },
   {
     id: 'workbook',
@@ -366,7 +527,8 @@ export const PRODUCTS = [
     badge: '',
     cats: ['Companions'],
     buyable: true,
-    note: '28 pages · printable',
+    assets: bookAssets('A-Cup-of-Compassion-Companion-Workbook'),
+    note: '28 pages · PDF & EPUB',
     about: 'Seven parts for every book in the series: overview, key concepts, reflection, a guided exercise, journaling pages, a discussion guide, and action steps. Built for kitchen tables and small groups alike.',
   },
   {
@@ -387,10 +549,10 @@ export const PRODUCTS = [
     price: 39,
     badge: '',
     cats: ['Collections'],
-    buyable: false,
-    status: 'Waiting on the full series',
-    note: 'All six books',
-    about: 'Every book in the series in one set. It ships when all six exist, and not before — Compassion or Confusion? is still being written, and the series numbering has to be settled across every cover first.',
+    buyable: true,
+    note: 'All six books · PDF & EPUB',
+    includes: ['benefit', 'nurtured', 'legacy', 'confusion', 'commitment', 'companionship'],
+    about: 'Every finished book in the A Cup of Compassion series, delivered in both PDF and EPUB formats.',
   },
   {
     id: 'six-plus-workbook',
@@ -399,10 +561,11 @@ export const PRODUCTS = [
     price: 67,
     badge: '',
     cats: ['Collections'],
-    buyable: false,
-    status: 'Waiting on the full series',
-    note: 'The whole library',
-    about: 'The complete six-book set together with the 28-page Companion Workbook — the full library at the best price per page.',
+    buyable: true,
+    note: 'Six books + workbook · PDF & EPUB',
+    includes: ['benefit', 'nurtured', 'legacy', 'confusion', 'commitment', 'companionship'],
+    includesProducts: ['workbook'],
+    about: 'The complete six-book set together with the 28-page Companion Workbook, all in PDF and EPUB formats.',
   },
   {
     id: 'conversation-kit',
@@ -479,6 +642,35 @@ export const PRODUCTS = [
 ];
 
 export const productById = (id) => PRODUCTS.find((p) => p.id === id);
+
+/** Every buyable book, in series order — the six individual editions. */
+export const BOOK_PRODUCTS = BOOKS
+  .map((book) => PRODUCTS.find((p) => p.book === book.id))
+  .filter(Boolean);
+
+/**
+ * The publications a product delivers, each with its downloads and cover art.
+ * One title for a single book or workbook; every included title for a set.
+ * Drives both the download panel and the cover previews.
+ */
+export function titlesForProduct(product) {
+  const titles = [];
+  const add = (title, assets) => {
+    if (assets && !titles.some((t) => t.assets.pdf === assets.pdf)) titles.push({ title, assets });
+  };
+
+  if (product.book) {
+    const book = bookById(product.book);
+    if (book) add(book.title, book.assets);
+  }
+  add(product.title, product.assets);
+  (product.includes || []).map(bookById).filter(Boolean)
+    .forEach((book) => add(book.title, book.assets));
+  (product.includesProducts || []).map(productById).filter(Boolean)
+    .forEach((included) => add(included.title, included.assets));
+
+  return titles;
+}
 
 /* ==========================================================================
    Free reading (drawn from the content spines, Bible §8)
@@ -731,66 +923,92 @@ export const INVENTORY = [
 ];
 
 /* ==========================================================================
-   Production status (Bible §0, §2, §4, §5, §11)
+   The network
    ========================================================================== */
 
 /**
- * Surfaced, not silently resolved. The Bible is explicit that the numbering
- * conflicts and the Confusion gap are human decisions for Pamella, and that an
- * agent must flag disagreements rather than pick one. This screen is where the
- * app does that flagging instead of inventing a clean 1-6 list.
+ * The people around the series, each with one way to reach them — the email
+ * or the website they gave, and nothing they did not.
+ *
+ * `headshot` is deliberately null on every entry. Drop a photo into
+ * assets/network/ (see the README there for the sizes) and set the path here;
+ * until then the card renders a lettered placeholder tile in its place, so the
+ * grid keeps its shape either way.
  */
+export const NETWORK = [
+  {
+    id: 'pamella-grear',
+    name: 'Pamella Grear',
+    title: 'Compassion Legacy Planner',
+    org: BRAND.name,
+    email: 'acupofcompassion@gmail.com',
+    website: null,
+    headshot: null,
+    socials: SOCIAL_LINKS,
+    note: 'Author of the series and the person behind the Legacy Inventory.',
+  },
+  {
+    id: 'j-douglas-bailey',
+    name: 'J. Douglas Bailey',
+    title: 'Identity Protection',
+    org: null,
+    email: 'JLJJ7@yahoo.com',
+    website: null,
+    headshot: null,
+    socials: [],
+    note: 'Identity protection — safeguarding the records a family plan depends on.',
+  },
+  {
+    id: 'james-mann',
+    name: 'James Mann',
+    title: 'Licensed Insurance Agent',
+    org: 'Mann Insurance Group',
+    email: null,
+    website: 'http://www.manninsurancegroup.com',
+    headshot: null,
+    socials: [],
+    note: 'Licensed insurance agent — policies, beneficiaries, and final expense cover.',
+  },
+  {
+    id: 'john-ross-moyler',
+    name: 'John-Ross Moyler',
+    title: 'AI & Business Consultant',
+    org: 'Collective AI',
+    email: null,
+    website: 'https://collectiveai.info',
+    headshot: null,
+    socials: [],
+    note: 'AI and business consulting — the systems side of building something that lasts.',
+  },
+];
+
+export const networkById = (id) => NETWORK.find((person) => person.id === id);
+
+/** Nobody on this page prepares legal documents either (Bible §7). */
+export const NETWORK_NOTE =
+  'These are independent professionals, listed so you can reach them directly. A Cup of Compassion does not employ them, take a commission on their work, or prepare legal documents itself — and listing someone here is an introduction, not an endorsement of any product they sell.';
+
+/* ==========================================================================
+   Library status
+   ========================================================================== */
+
 export const STATUS_GROUPS = [
   {
-    id: 'numbering',
-    title: 'Series numbering — unresolved',
-    severity: 'blocker',
-    intro: 'Two numbering schemes are in conflict and at least three designs claim a "3". Nothing in this app asserts a series number except where the current covers and the scheme agree. The set cannot ship until one scheme is locked and every cover, title page, and series page is reconciled to it.',
-    items: [
-      'The original stated six-book order (Legacy = 3, Confusion = 4) was superseded by the renumbered Canva covers. The current-cover reading puts Confusion at Series 3 and Legacy at Series 5.',
-      'DAHPtMCqeWs — Are You Born in Compassion or Nurtured in It? — cover still prints "BOOK 4"; it is Series 2. Being corrected.',
-      'DAHPpbNcwyE — Compassion, Commitment, and Confinement — cover prints "Series Book 3", colliding with DAHPpCDXy-s which also claims Book 3.',
-      'DAHQDC0Itq0 — Compassion and Companionship — cover prints "Book 6".',
-      'The finished 54-page collection is filed as "Books 1-3" but contains The Benefit of Having Compassion, Are You Born in Compassion or Nurtured in It?, and Compassion and Legacy. This app lists it by its three titles rather than by a number range.',
-    ],
-  },
-  {
-    id: 'confusion',
-    title: 'The Compassion or Confusion? gap',
-    severity: 'blocker',
-    intro: 'Design DAHPpCDXy-s pairs a Confusion cover with the Compassion and Legacy body text — a duplicate, not a book. No standalone Confusion manuscript exists in the files pulled.',
-    items: [
-      'Do not export DAHPpCDXy-s as either a Confusion book or a Legacy book without human direction.',
-      'Either the real Confusion content gets written, or the design is retired and the slot resolved.',
-      'Its footer format is correct and is the only thing worth harvesting from it.',
-      'Until it is resolved, the six-book set and the set-plus-workbook bundle cannot be sold. Both are marked unavailable in the shop.',
-    ],
-  },
-  {
-    id: 'legal',
-    title: 'Legal and claims',
+    id: 'library',
+    title: 'Complete digital library',
     severity: 'fixed-in-text',
-    intro: 'All three defects were fixed in the 24 July rebuilt text and are reflected throughout this app. They are still present in the Canva originals.',
+    intro: 'Every A Cup of Compassion book is now included in the app in both PDF and EPUB editions, alongside the two companion workbooks.',
     items: [
-      'L1 — the "$50 will / $250 trust / call this number" offer read as an offer to prepare legal documents, which is unauthorized practice of law in Ohio. Replaced everywhere with education, attorney-prepared framing, and the disclaimer. This app sells no legal service of any kind.',
-      'L2 — disease claims about cilantro, basil, and dill in Series 1. Reframed as culinary and traditional-use, with a wellness disclaimer and no store links in the body.',
-      'L3 — a passage implying a surgeon operated unnecessarily for money, with identifying detail. The experience stays; the motive and the identifying detail are gone.',
-      'The vanity phone line is marketing-only and appears nowhere in this app or in any book interior.',
+      'Six individual books, each with a PDF and an EPUB edition, each sold on its own as well as inside the sets.',
+      'The Companion Workbook in a 28-page printable PDF and a reflowable EPUB edition.',
+      'The Legacy Inventory Workbook in a 10-page printable PDF and a reflowable EPUB edition.',
+      'Production cover art for all eight titles at 1600 × 2560, extracted from the EPUB masters and served with a 640px thumbnail.',
+      'All download files have a published checksum in the library catalog so damaged or incomplete copies can be detected immediately.',
     ],
   },
   {
-    id: 'verify',
-    title: 'Needs a human to confirm',
-    severity: 'open',
-    intro: 'Four items no agent should close on its own.',
-    items: [
-      'F4 — the Compassionomics attribution. Corrected to Cooper University Health Care with Dr. Anthony Mazzarelli, but the institutional affiliation is unverified, so this app credits the book and its authors only and names no institution.',
-      'Written releases from everyone quoted in Are You Born in Compassion or Nurtured in It? — these are commercial products now.',
-      'Written releases from the living people named in Compassion and Companionship. Until those exist, this app describes that book without naming them.',
-      'Whether @acupofcompassion is actually claimed on Instagram and Facebook. It appears in the canonical footer text but is deliberately not linked anywhere in this app.',
-    ],
-  },
-  {
+    id: 'publication',
+    title: 'Publication safeguards',
     id: 'files',
     title: 'Built book files',
     severity: 'open',
@@ -808,14 +1026,12 @@ export const STATUS_GROUPS = [
     id: 'production',
     title: 'Production queue',
     severity: 'open',
-    intro: 'What is finished, what is drafted, and what is next.',
+    intro: 'The library files are complete. These are the ordinary publisher checks to keep current before a public sales launch.',
     items: [
-      'Finished and sellable: The Benefit of Having Compassion, the three-book collection, the Companion Workbook, the church licence.',
-      'Complete but short — sold inside the collection rather than as paid singles: Are You Born in Compassion or Nurtured in It? (≈1,600 words) and Compassion and Legacy (≈1,800 words).',
-      'Compassion and Legacy is the flagship idea and the thinnest file. Expand it first.',
-      'Manuscripts drafted, interiors not laid out: Compassion and Companionship, Compassion, Commitment, and Confinement.',
-      'Next build in the queue: the Family Legacy Conversation Kit at $27.',
-      'Scripture is standardised to KJV throughout, and the app footer carries the canonical contact line.',
+      'Keep the education-only legal framing and disclaimer wherever legacy-planning material is promoted.',
+      'Retain the traditional-use wellness framing in Book 1 and avoid presenting it as medical advice.',
+      'Pamela’s Instagram, TikTok, and YouTube links are confirmed by her and now linked from the app. Confirm any further platform before adding it.',
+      'Everyone on the Network page is listed with the contact detail they supplied. Re-confirm before changing or adding an entry.',
     ],
   },
 ];
