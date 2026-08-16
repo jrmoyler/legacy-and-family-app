@@ -11,6 +11,7 @@
  */
 
 import { PRODUCTS, CATEGORIES, INVENTORY, FORMAT_IDS, DEFAULT_FORMAT } from './data.js';
+import { PRODUCTS, CATEGORIES, INVENTORY, LESSONS } from './data.js';
 
 const STORAGE_KEY = 'cup-of-compassion:v1';
 
@@ -39,6 +40,7 @@ const isValidProduct = (id) => PRODUCTS.some((p) => p.id === id && p.buyable && 
 /** Anything buyable can be saved for later, including the free downloads. */
 const isSavableProduct = (id) => PRODUCTS.some((p) => p.id === id && p.buyable);
 const isValidSection = (id) => INVENTORY.some((s) => s.id === id);
+const isValidLesson = (id) => LESSONS.some((l) => l.id === id);
 const strings = (value, keep) =>
   (Array.isArray(value) ? value.filter((v) => typeof v === 'string' && keep(v)) : []);
 
@@ -63,7 +65,9 @@ export function loadState() {
   if (!saved || typeof saved !== 'object') return;
 
   state.inventoryDone = strings(saved.inventoryDone, isValidSection);
-  state.lessonsRead = strings(saved.lessonsRead, () => true);
+  /* Lessons are renamed and renumbered as the books are rebuilt, so stale ids
+     are dropped here rather than left to inflate the "N of 6 read" count. */
+  state.lessonsRead = strings(saved.lessonsRead, isValidLesson);
   state.cart = strings(saved.cart, isValidProduct);
   state.library = strings(saved.library, isValidProduct);
   state.saved = strings(saved.saved, isSavableProduct);

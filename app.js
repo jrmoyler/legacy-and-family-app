@@ -11,6 +11,7 @@ import { sidebar, appbar, tabbar, overlays, hrefFor } from './src/components.js'
 import {
   BRAND, CATEGORIES, FORMAT_SHORT, bookById, lessonById, productById, networkById,
 } from './src/data.js';
+import { BRAND, CATEGORIES, PRODUCTS, bookById, lessonById, productById } from './src/data.js';
 import {
   state, loadState, saveState, toggleSection, toggleLesson,
   toggleCart, removeFromCart, addToLibrary, toggleSaved, setFormat, formatFor,
@@ -60,40 +61,94 @@ function go(screen) {
    Rendering
    ========================================================================== */
 
-function paint() {
-  view.innerHTML = `<div class="screen active" id="screen-${state.screen}">${screens[state.screen]()}</div>`;
+function paint({ entering = false } = {}) {
+  const cls = entering ? 'screen active enter' : 'screen active';
+  view.innerHTML = `<div class="${cls}" id="screen-${state.screen}">${screens[state.screen]()}</div>`;
   sidebarEl.innerHTML = sidebar();
   appbarEl.innerHTML = appbar();
   tabbarEl.innerHTML = tabbar();
 }
 
-/** Full navigation: render, reset scroll, move focus to the new page. */
+/* --- scroll -------------------------------------------------------------
+   The document scrolls smoothly for in-page jumps, which is right for an
+   anchor and wrong for a route change: a new page should already be at the
+   top when it appears, not glide there. Every programmatic reset is therefore
+   explicitly instant. */
+
+const currentKey = () => location.hash || '#/';
+
+/** Where each route was left, so Back returns to the card you clicked. */
+const scrollMemory = new Map();
+/** The route currently on screen — the one whose scroll position we own. */
+let renderedKey = null;
+/** Set by popstate, which fires for Back and Forward but not for a fresh
+    navigation. Only history moves get their scroll position restored. */
+let cameFromHistory = false;
+
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+window.addEventListener('popstate', () => { cameFromHistory = true; });
+
+/** Full navigation: render, place the scroll, move focus to the new page. */
 function renderRoute() {
+  if (renderedKey !== null) scrollMemory.set(renderedKey, window.scrollY);
+
   const route = parseHash();
   state.screen = route.screen;
   if (route.book) state.activeBook = route.book;
   if (route.lesson) state.activeLesson = route.lesson;
   if (route.product) state.activeProduct = route.product;
 
-  paint();
-  window.scrollTo(0, 0);
+  const arriving = renderedKey !== currentKey();
+  paint({ entering: arriving });
+  renderedKey = currentKey();
+
+  const remembered = cameFromHistory ? scrollMemory.get(renderedKey) : 0;
+  cameFromHistory = false;
+  window.scrollTo({ top: remembered || 0, left: 0, behavior: 'instant' });
+
   view.focus({ preventScroll: true });
   document.title = titleFor(state.screen);
+  syncAppbar();
 }
 
 /** In-place update after a state change: keep scroll position and focus. */
 function refresh() {
   const scrollY = window.scrollY;
   const focusKey = document.activeElement?.getAttribute?.('data-focus-key');
+  capturePayFields();
 
   paint();
 
-  window.scrollTo(0, scrollY);
+  window.scrollTo({ top: scrollY, left: 0, behavior: 'instant' });
+  restorePayFields();
   if (focusKey) {
     // Searched document-wide, not just the view: the sidebar re-renders too,
     // and its Tools disclosure is one of the controls that survives a refresh.
     const restored = document.querySelector(`[data-focus-key="${CSS.escape(focusKey)}"]`);
     if (restored) restored.focus({ preventScroll: true });
+  }
+}
+
+/**
+ * Switching payment method re-renders the whole screen, which would otherwise
+ * wipe anything already typed into the card fields — including on the way
+ * back, since the invoice view has no fields to read the values off. So they
+ * are held here rather than scraped from the DOM each time.
+ *
+ * In memory only: nothing a payment form collects is ever written to storage.
+ */
+const payFields = new Map();
+
+function capturePayFields() {
+  for (const input of $$('#view input.field')) {
+    if (input.value) payFields.set(input.name, input.value);
+  }
+}
+
+function restorePayFields() {
+  for (const [name, value] of payFields) {
+    const input = view.querySelector(`input.field[name="${CSS.escape(name)}"]`);
+    if (input && !input.value) input.value = value;
   }
 }
 
@@ -129,6 +184,17 @@ function titleFor(screen) {
 }
 
 /* ==========================================================================
+   App bar
+   ========================================================================== */
+
+/** The mobile bar is flat against the top of the page and lifts once content
+    runs underneath it. */
+function syncAppbar() {
+  appbarEl.classList.toggle('scrolled', window.scrollY > 4);
+}
+window.addEventListener('scroll', syncAppbar, { passive: true });
+
+/* ==========================================================================
    Toast
    ========================================================================== */
 let toastTimer;
@@ -139,6 +205,11 @@ function toast(message) {
   el.classList.add('show');
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+/** Speak something that only happened visually. Nothing is drawn. */
+function announce(message) {
+  $('#live').textContent = message;
 }
 
 /* ==========================================================================
@@ -232,9 +303,40 @@ function closeSheet() {
   sheetOpener = null;
 }
 
+/* ==========================================================================
+   Keyboard
+   ========================================================================== */
+
+const ARROWS = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
+
+/**
+ * A radiogroup and a chip group are single-stop widgets: Tab moves past the
+ * whole set, and the arrow keys move within it. Without this the payment
+ * options and shop filters are buttons that merely look like radios and tabs.
+ */
+function moveWithinGroup(event) {
+  const step = ARROWS[event.key];
+  if (!step) return false;
+
+  const el = event.target.closest('.pay-opt, .cat-chip');
+  if (!el) return false;
+
+  const group = el.closest('.pay-opts, .cat-chips');
+  const items = $$('.pay-opt, .cat-chip', group);
+  const next = items[(items.indexOf(el) + step + items.length) % items.length];
+
+  event.preventDefault();
+  next.focus();
+  next.click();
+  return true;
+}
+
 /** Keep Tab inside an open sheet, and let Escape dismiss it. */
 document.addEventListener('keydown', (event) => {
-  if (!openSheetEl) return;
+  if (!openSheetEl) {
+    moveWithinGroup(event);
+    return;
+  }
 
   if (event.key === 'Escape') {
     event.preventDefault();
@@ -343,6 +445,8 @@ document.addEventListener('click', (event) => {
     state.category = el.dataset.cat;
     saveState();
     refresh();
+    const shown = PRODUCTS.filter((p) => p.cats.includes(state.category)).length;
+    announce(`${state.category}: ${shown} item${shown === 1 ? '' : 's'}`);
     return;
   }
   if ((el = hit('[data-cart-toggle]'))) {
@@ -369,6 +473,7 @@ document.addEventListener('click', (event) => {
     const bought = state.cart.map(productById).filter(Boolean);
     if (!bought.length) return;
     addToLibrary(bought.map((p) => p.id));
+    payFields.clear();
     go('checkout-done');
     return;
   }

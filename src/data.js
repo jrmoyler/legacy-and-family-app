@@ -234,6 +234,178 @@ export const BOOKS = [
     blurb: 'A faith-centered relationship guide to practicing compassion, commitment, honest communication, and daily repair.',
     anchor: { text: 'Two are better than one; because they have a good reward for their labour… and a threefold cord is not quickly broken.', ref: 'Ecclesiastes 4:9-12 · KJV' },
     spine: ['A relationship is a daily practice', 'What compassion brings to love', 'Commitment gives love a foundation', 'When a relationship feels like confinement', 'Seven daily practices and an action plan'],
+ * Where the built book files live. One EPUB per book, filed under the series
+ * name and the number printed on that book's own cover — so a file can be
+ * matched to a cover without opening it, even while the numbering is still
+ * unsettled (Bible §0.1, §2). The number in a filename is the cover's claim,
+ * not a series number this app asserts.
+ *
+ * A book's `epub` is its built file where one exists and null where it does
+ * not. Nothing in the app links to these paths: the finished books are sold,
+ * and a static host serves whatever sits in this folder to anyone who asks for
+ * it. They are the fulfilment masters. The app reports which are on hand and
+ * hands out none of them.
+ */
+export const EPUB_DIR = './assets/books/';
+
+export const BOOKS = [
+  {
+    id: 'benefit',
+    /* Series 1 is the one number nothing disputes. */
+    seriesLabel: 'Series 1',
+    title: 'The Benefit of Having Compassion',
+    designId: 'DAHPs1e2Od0',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.epub`,
+    pages: 16,
+    words: '≈4,200 words',
+    status: 'ready',
+    price: 4.99,
+    blurb: 'The long one, and the doorway into the series. Compassion as a practice you can learn, modeled on the woman who taught it first.',
+    anchor: {
+      text: 'If ye have faith as a grain of mustard seed, ye shall say unto this mountain, Remove hence to yonder place; and it shall remove; and nothing shall be impossible unto you.',
+      ref: 'Matthew 17:20 · KJV',
+    },
+    spine: [
+      'Compassion learned at home — Pastor Foster as the model',
+      'What compassion actually is, and what it costs',
+      'Everyday care: kitchen herbs and oils, in the traditional-use framing',
+      'The compassion crisis, and why self-compassion comes first',
+      'The forty seconds that measurably change a patient’s outcome',
+      'Family Keepers, and compassion organised into service',
+    ],
+    scriptures: ['Matthew 20:34', 'Matthew 15:32', 'Matthew 9:36', 'Matthew 14:14', 'Luke 7:13', 'Mark 1:41'],
+    /* Bible §5 defect L2: wellness content needs the traditional-use frame. */
+    wellnessNote: true,
+  },
+  {
+    id: 'nurtured',
+    /* Bible §2: the cover still prints "BOOK 4"; Pamella is correcting it. */
+    seriesLabel: 'Series 2',
+    title: 'Are You Born in Compassion or Nurtured in It?',
+    designId: 'DAHPtMCqeWs',
+    /* The delivered EPUB was truncated mid-file: cover art and the package
+       document survive, all ten chapter files do not. Left null rather than
+       shipping a book that no reader can open. See STATUS_GROUPS §files. */
+    epub: null,
+    pages: 8,
+    words: '≈1,600 words',
+    status: 'bundle-only',
+    price: null,
+    blurb: 'The question the whole series turns on, put to real people and answered in their own words. Short, and meant to be argued with.',
+    anchor: {
+      text: 'But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith, Meekness, temperance: against such there is no law.',
+      ref: 'Galatians 5:22-23 · KJV',
+    },
+    spine: [
+      'Made in the image — where the argument starts',
+      'And where it complicates: all have sinned',
+      'Voices for "born in it"',
+      'Voices for "nurtured into it"',
+      'Compassion as a choice you keep making',
+      'Reflection questions, and Pouring the Cup',
+    ],
+    scriptures: ['Genesis 1:27', 'Romans 3:23', 'Galatians 5:22-23'],
+  },
+  {
+    id: 'legacy',
+    /* Bible §2: current covers put this at Series 5, not 3. Not asserted. */
+    seriesLabel: null,
+    title: 'Compassion and Legacy',
+    designId: 'DAHPxYb83RQ',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-03-Compassion-and-Legacy.epub`,
+    pages: 7,
+    words: '≈1,800 words',
+    status: 'bundle-only',
+    price: null,
+    flagship: true,
+    blurb: 'The flagship idea of the series, and currently its thinnest file. Compassion that outlives you has to be written down.',
+    anchor: {
+      text: 'A good man leaveth an inheritance to his children’s children: and the wealth of the sinner is laid up for the just.',
+      ref: 'Proverbs 13:22 · KJV',
+    },
+    spine: [
+      'What happens to a family with no plan',
+      'Compassion is intentional, or it is only a feeling',
+      'Generational wealth, defined honestly',
+      'Getting started — with a licensed attorney, not with us',
+      'The Legacy Inventory, page by page',
+    ],
+    scriptures: ['Proverbs 13:22'],
+    /* Bible §5 defect L1 — the reason this book gets the legal frame. */
+    legalNote: true,
+  },
+  {
+    id: 'confusion',
+    seriesLabel: null,
+    title: 'Compassion or Confusion?',
+    designId: 'DAHPpCDXy-s',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-04-Compassion-or-Confusion.epub`,
+    pages: 6,
+    words: null,
+    status: 'drafting',
+    price: null,
+    blurb: 'When the impulse to help gets misread, misdirected, or mistaken for something else. The book the series needs and does not yet have.',
+    anchor: null,
+    spine: [
+      'Compassion and enabling are not the same thing',
+      'Boundaries as an act of care, not a withdrawal of it',
+      'Being taken advantage of, and what that does to a giver',
+      'Telling the difference in real time',
+    ],
+    scriptures: [],
+    /* Bible §4: cover is Confusion, body is duplicated Legacy text. */
+    contentGap: 'The existing design pairs a Confusion cover with the Compassion and Legacy body text. No standalone manuscript exists yet, so this book is not for sale in any form.',
+  },
+  {
+    id: 'companionship',
+    /* Bible §2: cover prints "Book 6". Not asserted as final. */
+    seriesLabel: null,
+    title: 'Compassion and Companionship',
+    designId: 'DAHQDC0Itq0',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-06-Compassion-and-Companionship.epub`,
+    pages: 17,
+    words: null,
+    status: 'layout',
+    price: null,
+    blurb: 'Coins a word the series needed: compassionship. Friendship that has carried weight across decades and continents.',
+    anchor: {
+      text: 'It is of the LORD’s mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness.',
+      ref: 'Lamentations 3:22-23 · KJV',
+    },
+    spine: [
+      'Compassionship — naming a thing that had no name',
+      'Friendships that survived distance and decades',
+      'Milestone birthdays, and showing up for them',
+      'Becoming neighbours again',
+      'Pamela’s own acts of compassionship',
+    ],
+    scriptures: ['Ephesians 4:32', 'Psalm 103:13', 'Lamentations 3:22-23'],
+    /* Bible §5: names living people; releases required before it ships. */
+    rightsNote: true,
+  },
+  {
+    id: 'commitment',
+    seriesLabel: null,
+    title: 'Compassion, Commitment, and Confinement',
+    designId: 'DAHPpbNcwyE',
+    epub: `${EPUB_DIR}A-Cup-of-Compassion-05-Compassion-and-Commitment.epub`,
+    pages: 9,
+    words: '≈1,200 words',
+    status: 'layout',
+    price: null,
+    blurb: 'For couples. The line between a commitment that holds you and one that confines you — and the daily practices that decide which it becomes.',
+    anchor: {
+      text: 'Two are better than one; because they have a good reward for their labour… and a threefold cord is not quickly broken.',
+      ref: 'Ecclesiastes 4:9-12 · KJV',
+    },
+    spine: [
+      'What compassion is, inside a marriage',
+      'What commitment is, when the feeling has gone quiet',
+      'When a relationship becomes a confinement — emotional loneliness',
+      'Seven daily practices, for each of you',
+      'The compassion–commitment cycle',
+      'Questions for the two of you, an action plan, and a prayer',
+    ],
     scriptures: ['1 Corinthians 13:4-8', 'Ecclesiastes 4:9-12', 'Colossians 3:12-14', 'Ephesians 4:32', 'Mark 10:9'],
   },
   {
@@ -248,6 +420,21 @@ export const BOOKS = [
 ];
 
 export const bookById = (id) => BOOKS.find((b) => b.id === id);
+
+/**
+ * Which books have a built EPUB and which do not. Derived rather than written
+ * out, so the production status screen cannot drift from what is actually on
+ * disk: adding or removing a book's `epub` moves it between these two lists and
+ * rewrites that screen in the same edit.
+ */
+export const BOOKS_WITH_EPUB = BOOKS.filter((b) => b.epub);
+export const BOOKS_WITHOUT_EPUB = BOOKS.filter((b) => !b.epub);
+
+/** Closes a sentence without doubling punctuation — two book titles end in "?". */
+const endStop = (line) => (/[.?!]$/.test(line) ? line : `${line}.`);
+
+/** "Title · Title · Title", full-stopped, for the status screen. */
+const titleList = (books) => endStop(books.map((b) => b.title).join(' · '));
 
 /* ==========================================================================
    Shop catalogue (Handoff §5 pricing, §7 build order; Bible §9)
@@ -822,6 +1009,22 @@ export const STATUS_GROUPS = [
   {
     id: 'publication',
     title: 'Publication safeguards',
+    id: 'files',
+    title: 'Built book files',
+    severity: 'open',
+    intro: `The EPUB masters live in assets/books/, one file per book, named for the number printed on that book’s own cover. ${BOOKS_WITH_EPUB.length} of the ${BOOKS.length} are on hand. Nothing in the app links to them — they are the files a fulfilment step would hand to a buyer, not downloads this app gives away.`,
+    items: [
+      `On hand: ${titleList(BOOKS_WITH_EPUB)}`,
+      `No file yet: ${titleList(BOOKS_WITHOUT_EPUB)}`,
+      'The file delivered for Are You Born in Compassion or Nurtured in It? was truncated. Its package document and cover art are intact, but all ten chapter files, the navigation document, the TOC, and the stylesheet are cut off the end, so no reader can open it. It was not committed. Rebuild and re-export it.',
+      'That gap blocks the three-book collection as an ePub: the set is The Benefit of Having Compassion, Are You Born in Compassion or Nurtured in It?, and Compassion and Legacy, and one third of it has no file.',
+      'File 04 is a genuine standalone Compassion or Confusion? manuscript, which the Canva design DAHPpCDXy-s never was. It does not on its own close the Confusion gap above — the numbering and the retirement of that design are still open.',
+      'Filenames carry cover numbers, not settled series numbers. Renaming them is part of whatever numbering scheme gets locked, not a separate job.',
+    ],
+  },
+  {
+    id: 'production',
+    title: 'Production queue',
     severity: 'open',
     intro: 'The library files are complete. These are the ordinary publisher checks to keep current before a public sales launch.',
     items: [
