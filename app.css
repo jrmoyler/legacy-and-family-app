@@ -1055,16 +1055,13 @@ p a, .about-copy a { text-decoration: underline; }
 .market-cta .t { display: block; font-family: var(--serif); font-weight: 700; font-size: 18px; }
 .market-cta .s { display: block; font-size: 13px; font-weight: 600; opacity: .84; margin-top: 3px; line-height: 1.4; }
 
+/* Auto-fit rather than a fixed column count: the tiles run as rows on a 360px
+   phone and fill the width as soon as there is room for a real grid. */
 .quick-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
   gap: 12px;
 }
-/* Three across is too tight for "About Pamela / And the movement" on a 360px
-   phone, so the tiles run as rows until there is width for a real grid. */
-.quick-grid { display: grid; gap: 12px; }
-@media (min-width: 460px) { .quick-grid { grid-template-columns: repeat(3, 1fr); } }
-
 .quick-tile {
   background: var(--card);
   border-radius: var(--radius-sm);
@@ -1087,6 +1084,7 @@ p a, .about-copy a { text-decoration: underline; }
     font-size: 13px;
     text-align: center;
   }
+}
 .quick-tile:active { transform: scale(.97); }
 @media (hover: hover) {
   .quick-tile:hover { transform: translateY(-2px); box-shadow: var(--lift); }
@@ -1885,7 +1883,6 @@ p a, .about-copy a { text-decoration: underline; }
   align-items: center;
   justify-content: center;
 }
-.prod-cover { position: relative; }
 .prod-cover .badge {
   position: absolute;
   top: 10px; right: 10px;
@@ -1899,6 +1896,19 @@ p a, .about-copy a { text-decoration: underline; }
   border-radius: 12px;
   padding: 4px 9px;
   box-shadow: 0 4px 10px -4px rgba(0, 0, 0, .45);
+}
+/* The format label, kept clear of the cover art in the band the card's bottom
+   padding reserves for it. */
+.prod-cover .kind {
+  position: absolute;
+  bottom: 8px; left: 12px;
+  z-index: 1;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .8px;
+  text-transform: uppercase;
+  color: rgba(246, 239, 223, .88);
+  text-shadow: 0 1px 3px rgba(20, 10, 30, .6);
 }
 .prod-info { padding: 14px; display: flex; flex-direction: column; flex: 1; }
 .prod-info .t { font-weight: 700; font-size: 14.5px; line-height: 1.35; color: var(--ink); }
@@ -1940,16 +1950,8 @@ p a, .about-copy a { text-decoration: underline; }
   max-width: 340px;
   box-shadow: var(--lift-lg);
 }
+.pd-cover > .cover { aspect-ratio: 5 / 8; border-radius: inherit; }
 @media (max-width: 899px) { .pd-cover { max-width: 260px; margin-inline: auto; } }
-
-.book-cover-rail {
-  max-width: 250px;
-  margin: 0 0 18px;
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--lift);
-}
-@media (max-width: 999px) { .book-cover-rail { max-width: 190px; } }
 
 .pd-rating {
   display: flex;
@@ -2004,13 +2006,23 @@ p a, .about-copy a { text-decoration: underline; }
   color: var(--muted);
 }
 .download-list { display: grid; gap: 10px; margin-top: 18px; }
+/* The title and the two file buttons share a line where there is room for
+   both and stack where there is not. This has to answer to the width of the
+   panel, not the window: the same panel sits in a full-width product column
+   and in a ~250px rail beside a book, where a viewport-keyed two-column grid
+   left the title a few pixels wide and broke it one letter per line. */
 .download-row {
-  display: grid;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
   gap: 10px;
   padding: 13px 0 0;
   border-top: 1px solid var(--line);
 }
 .download-title {
+  flex: 1 1 14ch;
+  min-width: 0;
   font-family: var(--serif);
   font-weight: 700;
   font-size: 15px;
@@ -2032,9 +2044,6 @@ p a, .about-copy a { text-decoration: underline; }
 }
 .download-link small { margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 600; }
 .download-link:hover { border-color: var(--gold); background: var(--gold-soft); }
-@media (min-width: 620px) {
-  .download-row { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
-}
 
 .about-cap {
   font-family: var(--serif);
@@ -2267,7 +2276,6 @@ p a, .about-copy a { text-decoration: underline; }
 @media (hover: hover) {
   .book-row:hover { transform: translateY(-2px); box-shadow: var(--lift); }
 }
-.book-row > svg:last-child { flex: none; margin-top: 20px; }
 .book-cover {
   flex: none;
   width: 62px; height: 84px;
@@ -2278,6 +2286,7 @@ p a, .about-copy a { text-decoration: underline; }
   justify-content: center;
   box-shadow: var(--lift-sm);
 }
+/* The chevron centres on the row rather than hanging off its first line. */
 .book-row > svg:last-child { flex: none; align-self: center; }
 .book-row .cover { box-shadow: var(--lift-sm); }
 .book-row .body { flex: 1; min-width: 0; }
@@ -2592,162 +2601,6 @@ p a, .about-copy a { text-decoration: underline; }
 
 /* --------------------------------------------------------------------------
    26. Cover art
-   Typographic covers, one per title. The colour field and the motif carry the
-   identity at thumbnail size; the type takes over from `cover-md` up.
-   Custom properties (--cv-*) are set inline per item by src/covers.js.
-   -------------------------------------------------------------------------- */
-.cover {
-  position: relative;
-  display: block;
-  overflow: hidden;
-  flex: none;
-  background: linear-gradient(158deg, var(--cv-from) 0%, var(--cv-to) 100%);
-  color: var(--cv-ink);
-  isolation: isolate;
-}
-
-.cover-xs { width: 54px; aspect-ratio: 3 / 4; border-radius: 9px; }
-.cover-sm { width: 68px; aspect-ratio: 3 / 4; border-radius: 10px; }
-.cover-md { width: 100%; aspect-ratio: 3 / 4; }
-.cover-lg { width: 100%; aspect-ratio: 3 / 4; border-radius: var(--radius-lg); }
-
-/* Hairline frame, a nod to the printed interiors. */
-.cv-frame {
-  position: absolute;
-  inset: 7px;
-  border: 1px solid currentColor;
-  border-radius: 4px;
-  opacity: .22;
-  pointer-events: none;
-}
-.cover-lg .cv-frame { inset: 14px; border-radius: 6px; }
-.cover-xs .cv-frame, .cover-sm .cv-frame { inset: 5px; border-radius: 3px; }
-
-/* --- motifs: one geometric gesture each, drawn from the accent --- */
-.cv-motif { position: absolute; inset: 0; pointer-events: none; }
-
-.mo-arc .cv-motif::before {
-  content: "";
-  position: absolute;
-  right: -28%; bottom: -34%;
-  width: 116%; aspect-ratio: 1;
-  border-radius: 50%;
-  border: 2px solid var(--cv-accent);
-  opacity: .34;
-}
-.mo-halo .cv-motif::before {
-  content: "";
-  position: absolute;
-  top: -22%; right: -18%;
-  width: 92%; aspect-ratio: 1;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--cv-accent) 0%, transparent 68%);
-  opacity: .34;
-}
-.mo-rules .cv-motif {
-  background:
-    linear-gradient(var(--cv-accent), var(--cv-accent)) 0 22% / 100% 2px no-repeat,
-    linear-gradient(var(--cv-accent), var(--cv-accent)) 0 28% / 100% 2px no-repeat,
-    linear-gradient(var(--cv-accent), var(--cv-accent)) 0 34% / 100% 2px no-repeat;
-  opacity: .40;
-}
-.mo-split .cv-motif {
-  background: linear-gradient(202deg, transparent 46%, var(--cv-accent) 46%, var(--cv-accent) 54%, transparent 54%);
-  opacity: .28;
-}
-.mo-ladder .cv-motif {
-  background: repeating-linear-gradient(90deg, var(--cv-accent) 0 1.5px, transparent 1.5px 11px);
-  opacity: .26;
-}
-
-.cv-mark {
-  position: absolute;
-  top: 13px; left: 14px;
-  display: flex;
-  opacity: .92;
-}
-.cover-lg .cv-mark { top: 24px; left: 26px; }
-.cover-xs .cv-mark, .cover-sm .cv-mark {
-  inset: 0;
-  top: auto; left: 50%;
-  transform: translateX(-50%);
-  bottom: 26%;
-  opacity: .95;
-}
-
-/* --- the type block --- */
-.cv-text {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
-  padding: 18px 17px 20px;
-  text-align: left;
-}
-.cover-lg .cv-text { padding: 30px 30px 32px; }
-
-.cv-kicker {
-  font-family: var(--serif);
-  font-size: 8.5px;
-  font-weight: 600;
-  letter-spacing: 1.8px;
-  text-transform: uppercase;
-  color: var(--cv-accent);
-}
-.cv-title {
-  font-family: var(--serif);
-  font-weight: 600;
-  font-size: 17px;
-  line-height: 1.16;
-  margin-top: 7px;
-  color: var(--cv-ink);
-  /* Long titles must not push the imprint line out of the cover. */
-  display: -webkit-box;
-  -webkit-line-clamp: 4;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.cover-lg .cv-title { font-size: 30px; -webkit-line-clamp: 5; }
-.cv-rule {
-  width: 26px; height: 2px;
-  margin-top: 11px;
-  background: var(--cv-accent);
-  opacity: .9;
-}
-.cover-lg .cv-rule { width: 44px; margin-top: 16px; }
-.cv-foot {
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 1.4px;
-  text-transform: uppercase;
-  color: var(--cv-soft);
-  margin-top: 9px;
-}
-.cover-lg .cv-foot { font-size: 10px; letter-spacing: 2px; margin-top: 14px; }
-
-/* Title size tracks the cover's own width, not the viewport — the same
-   component sits in a 220px grid card and a 360px detail column. */
-@supports (container-type: inline-size) {
-  .cover-md, .cover-lg { container-type: inline-size; }
-  .cover-md .cv-title { font-size: clamp(14px, 7.6cqw, 22px); }
-  .cover-lg .cv-title { font-size: clamp(20px, 8.4cqw, 34px); }
-}
-
-/* Two shop cards across a phone leaves each cover about 165px wide, where the
-   cover's own title lands directly above the card's title at nearly the same
-   size. The field, the motif and the mark still identify it; the type goes. */
-@media (max-width: 619px) {
-  .prod-card .cv-text { display: none; }
-  .prod-card .cv-mark {
-    top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    opacity: 1;
-  }
-}
-
-/* --------------------------------------------------------------------------
-   26. Cover art
 
    Every cover is 5:8 (1600 x 2560). Slots declare that ratio themselves so a
    grid never reflows as the images decode.
@@ -2758,14 +2611,6 @@ p a, .about-copy a { text-decoration: underline; }
   object-fit: cover;
   border-radius: inherit;
   background: var(--plum-900);
-}
-
-.cover-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  height: 100%;
 }
 
 /**
@@ -2797,6 +2642,14 @@ p a, .about-copy a { text-decoration: underline; }
 .cover-stack-3 .cover-slot + .cover-slot { margin-left: -16%; }
 .cover-stack .cover-slot:nth-child(2) { z-index: 1; }
 .cover-stack .cover-slot:nth-child(3) { z-index: 2; }
+/* A typographic stand-in (§29) fills the same slot as photographed art, so a
+   catalogue item without a cover keeps the grid's 5:8 rhythm. */
+.cover-slot > .cover {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
 
 /* Product detail: the full-resolution preview and the set's other covers. */
 .pd-cover-figure { display: block; }
@@ -2857,8 +2710,7 @@ p a, .about-copy a { text-decoration: underline; }
 
 /* Cards that carry cover art rather than the cup mark. */
 .prod-cover { aspect-ratio: 1 / 1; padding: 16px 16px 28px; }
-.prod-cover .cover-stack,
-.prod-cover .cover-fallback { height: 100%; }
+.prod-cover .cover-stack { height: 100%; }
 
 /* The series list: a 5:8 slot so the whole cover reads at thumbnail size. */
 .book-cover { width: 66px; height: 106px; overflow: hidden; }
@@ -3281,8 +3133,171 @@ p a, .about-copy a { text-decoration: underline; }
 }
 
 /* --------------------------------------------------------------------------
-   29. Print — the Legacy Inventory is meant to leave the screen
-   27. Print — the Legacy Inventory is meant to leave the screen
+   29. Typographic covers
+   The stand-in for a catalogue item that has no photographed cover: a colour
+   field, one geometric motif, and the title set in the series serif, so two
+   kits are told apart at thumbnail size. Books and workbooks use their real
+   cover art (§26) and never reach this.
+   Custom properties (--cv-*) are set inline per item by src/covers.js.
+   -------------------------------------------------------------------------- */
+.cover {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  flex: none;
+  background: linear-gradient(158deg, var(--cv-from) 0%, var(--cv-to) 100%);
+  color: var(--cv-ink);
+  isolation: isolate;
+}
+
+.cover-xs { width: 54px; aspect-ratio: 3 / 4; border-radius: 9px; }
+.cover-sm { width: 68px; aspect-ratio: 3 / 4; border-radius: 10px; }
+.cover-md { width: 100%; aspect-ratio: 3 / 4; }
+.cover-lg { width: 100%; aspect-ratio: 3 / 4; border-radius: var(--radius-lg); }
+
+/* Hairline frame, a nod to the printed interiors. */
+.cv-frame {
+  position: absolute;
+  inset: 7px;
+  border: 1px solid currentColor;
+  border-radius: 4px;
+  opacity: .22;
+  pointer-events: none;
+}
+.cover-lg .cv-frame { inset: 14px; border-radius: 6px; }
+.cover-xs .cv-frame, .cover-sm .cv-frame { inset: 5px; border-radius: 3px; }
+
+/* --- motifs: one geometric gesture each, drawn from the accent --- */
+.cv-motif { position: absolute; inset: 0; pointer-events: none; }
+
+.mo-arc .cv-motif::before {
+  content: "";
+  position: absolute;
+  right: -28%; bottom: -34%;
+  width: 116%; aspect-ratio: 1;
+  border-radius: 50%;
+  border: 2px solid var(--cv-accent);
+  opacity: .34;
+}
+.mo-halo .cv-motif::before {
+  content: "";
+  position: absolute;
+  top: -22%; right: -18%;
+  width: 92%; aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--cv-accent) 0%, transparent 68%);
+  opacity: .34;
+}
+.mo-rules .cv-motif {
+  background:
+    linear-gradient(var(--cv-accent), var(--cv-accent)) 0 22% / 100% 2px no-repeat,
+    linear-gradient(var(--cv-accent), var(--cv-accent)) 0 28% / 100% 2px no-repeat,
+    linear-gradient(var(--cv-accent), var(--cv-accent)) 0 34% / 100% 2px no-repeat;
+  opacity: .40;
+}
+.mo-split .cv-motif {
+  background: linear-gradient(202deg, transparent 46%, var(--cv-accent) 46%, var(--cv-accent) 54%, transparent 54%);
+  opacity: .28;
+}
+.mo-ladder .cv-motif {
+  background: repeating-linear-gradient(90deg, var(--cv-accent) 0 1.5px, transparent 1.5px 11px);
+  opacity: .26;
+}
+
+.cv-mark {
+  position: absolute;
+  top: 13px; left: 14px;
+  display: flex;
+  opacity: .92;
+}
+.cover-lg .cv-mark { top: 24px; left: 26px; }
+.cover-xs .cv-mark, .cover-sm .cv-mark {
+  inset: 0;
+  top: auto; left: 50%;
+  transform: translateX(-50%);
+  bottom: 26%;
+  opacity: .95;
+}
+
+/* --- the type block --- */
+.cv-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 18px 17px 20px;
+  text-align: left;
+}
+.cover-lg .cv-text { padding: 30px 30px 32px; }
+
+.cv-kicker {
+  font-family: var(--serif);
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 1.8px;
+  text-transform: uppercase;
+  color: var(--cv-accent);
+}
+.cv-title {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 17px;
+  line-height: 1.16;
+  margin-top: 7px;
+  color: var(--cv-ink);
+  /* Long titles must not push the imprint line out of the cover. */
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.cover-lg .cv-title { font-size: 30px; -webkit-line-clamp: 5; }
+.cv-rule {
+  width: 26px; height: 2px;
+  margin-top: 11px;
+  background: var(--cv-accent);
+  opacity: .9;
+}
+.cover-lg .cv-rule { width: 44px; margin-top: 16px; }
+.cv-foot {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+  color: var(--cv-soft);
+  margin-top: 9px;
+}
+.cover-lg .cv-foot { font-size: 10px; letter-spacing: 2px; margin-top: 14px; }
+
+/* Title size tracks the cover's own width, not the viewport — the same
+   component sits in a 98px grid slot and a 340px detail column. */
+@supports (container-type: inline-size) {
+  .cover-md, .cover-lg { container-type: inline-size; }
+  .cover-md .cv-title { font-size: clamp(11px, 9cqw, 22px); }
+  .cover-lg .cv-title { font-size: clamp(20px, 8.4cqw, 34px); }
+}
+
+/* A catalogue slot is about 98px across, and the full block — kicker, title,
+   rule, imprint — is taller than the cover at that size, which pushed the
+   kicker up under the mark and cut the title off. Below 150px the field, the
+   motif, the mark and a short title do the identifying on their own. */
+@container (max-width: 150px) {
+  .cv-text { padding: 26px 9px 10px; }
+  .cv-kicker,
+  .cv-rule,
+  .cv-foot { display: none; }
+  .cv-title {
+    margin-top: 0;
+    line-height: 1.2;
+    -webkit-line-clamp: 3;
+  }
+  .cv-frame { inset: 5px; border-radius: 3px; }
+  .cv-mark { top: 7px; left: 8px; }
+}
+
+/* --------------------------------------------------------------------------
+   30. Print — the Legacy Inventory is meant to leave the screen
    -------------------------------------------------------------------------- */
 @media print {
   .sidebar, .appbar, .tabbar, #tabbar, .no-print,

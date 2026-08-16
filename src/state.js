@@ -10,8 +10,7 @@
  * would turn the app into a data-privacy obligation.
  */
 
-import { PRODUCTS, CATEGORIES, INVENTORY, FORMAT_IDS, DEFAULT_FORMAT } from './data.js';
-import { PRODUCTS, CATEGORIES, INVENTORY, LESSONS } from './data.js';
+import { PRODUCTS, CATEGORIES, INVENTORY, LESSONS, FORMAT_IDS, DEFAULT_FORMAT } from './data.js';
 
 const STORAGE_KEY = 'cup-of-compassion:v1';
 
