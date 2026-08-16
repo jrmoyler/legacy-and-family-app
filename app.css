@@ -2530,6 +2530,21 @@ p a, .about-copy a { text-decoration: underline; }
   .about-layout { grid-template-columns: 1.5fr .85fr; }
 }
 
+/* The author's portrait sits beside her name in the dark header. It wraps to
+   its own line on a narrow phone rather than squeezing the h1 to two words. */
+.about-id { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.about-id-text { flex: 1 1 300px; min-width: 0; }
+.about-portrait {
+  flex: none;
+  width: 104px;
+  height: 104px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(208, 172, 76, .5);
+  box-shadow: 0 12px 28px -14px rgba(0, 0, 0, .65);
+}
+@media (min-width: 720px) { .about-portrait { width: 132px; height: 132px; } }
+
 .disclaimer-body { padding-top: 26px; max-width: 68ch; }
 .disclaimer-body h2:first-child { margin-top: 0; }
 
@@ -3086,7 +3101,10 @@ p a, .about-copy a { text-decoration: underline; }
   font-size: 12px;
   font-weight: 700;
   color: var(--plum-800);
-  overflow-wrap: anywhere;
+  /* `break-word` rather than `anywhere`, so the <wbr> seams that escBreakable
+     puts into an address are taken first and a mid-word split stays the last
+     resort — it is what turned a domain into "manninsurancegro / up.com". */
+  overflow-wrap: break-word;
   text-align: left;
   transition: border-color .15s, background .15s;
 }

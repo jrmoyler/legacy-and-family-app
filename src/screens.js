@@ -6,7 +6,7 @@
  * measured on a wide monitor.
  */
 
-import { esc, join } from './dom.js';
+import { esc, escBreakable, join } from './dom.js';
 import {
   BRAND, BOOKS, BOOK_STATUS, bookById,
   PRODUCTS, CATEGORIES, productById, BOOK_PRODUCTS, titlesForProduct,
@@ -14,7 +14,7 @@ import {
   LESSONS, FEATURED_LESSON, LESSON_TOTAL, lessonById,
   INVENTORY, INVENTORY_PRIVACY, STATUS_GROUPS,
   ABOUT_AUTHOR, PERSONAL_INVITATION, LEGAL_POSITIONING,
-  TOOLS, NETWORK, NETWORK_NOTE, SOCIAL_LINKS,
+  TOOLS, NETWORK, NETWORK_NOTE, SOCIAL_LINKS, AUTHOR_PORTRAIT,
 } from './data.js';
 import {
   state, inventoryProgress, sectionDone, hasReadLesson,
@@ -741,6 +741,7 @@ function formatPicker(product, format) {
       ${FORMATS.map((option) => `
       <button class="format-opt" role="radio"
               aria-checked="${format === option.id}"
+              tabindex="${format === option.id ? 0 : -1}"
               data-format="${esc(option.id)}"
               data-format-product="${esc(product.id)}"
               data-focus-key="format-${esc(option.id)}">
@@ -1108,8 +1109,9 @@ function libraryRow(product, kind) {
 
 /**
  * The network: the people around the series, with the one contact detail each
- * of them gave. Headshots are placeholders until the photos arrive — see
- * assets/network/README.md and the `headshot` field in data.js.
+ * of them gave. Every entry carries its own photo — see assets/network/README.md
+ * and the `headshot` field in data.js. An entry with none still renders a
+ * lettered tile of the same size, so the grid keeps its shape either way.
  */
 screens.network = () => `
   <header class="dark-head">
@@ -1118,7 +1120,7 @@ screens.network = () => `
       ${backButton('tools', 'Tools')}
       <p class="eyebrow">Tools</p>
       <h1>Network</h1>
-      <p class="lede">The people Pamela works alongside — what each one does, and how to reach them directly.</p>
+      <p class="lede">Pamella and the independent professionals she works alongside — what each one does, and how to reach them directly.</p>
     </div>
   </header>
 
@@ -1138,6 +1140,13 @@ screens.network = () => `
     <div class="screen-foot"></div>
   </div>`;
 
+/**
+ * A website as a reader would say it: no scheme, no `www.`, no trailing slash.
+ * The link itself still points at the address exactly as it was supplied.
+ */
+const displayHost = (url) =>
+  url.replace(/^https?:\/\//i, '').replace(/^www\./i, '').replace(/\/$/, '');
+
 function networkCard(person) {
   const initials = person.name.split(/[\s-]+/).filter(Boolean).slice(0, 2)
     .map((part) => part[0].toUpperCase()).join('');
@@ -1146,11 +1155,13 @@ function networkCard(person) {
   <article class="net-card">
     <span class="net-shot">
       ${person.headshot
-        ? `<img src="${esc(person.headshot)}" width="160" height="160" loading="lazy" decoding="async" alt="${esc(person.name)}">`
+        // alt="" on purpose: the name is the next line of the card, so a
+        // described portrait would only make a screen reader say it twice.
+        ? `<img src="${esc(person.headshot)}" width="512" height="512" loading="lazy" decoding="async" alt="">`
         : `<span class="net-initials" aria-hidden="true">${esc(initials)}</span>
            <span class="net-shot-note">Headshot to come</span>`}
     </span>
-    <span class="net-name">${esc(person.name)}</span>
+    <h2 class="net-name">${esc(person.name)}</h2>
     <span class="net-title">${esc(person.title)}</span>
     ${person.org ? `<span class="net-org">${esc(person.org)}</span>` : ''}
     <p class="net-note">${esc(person.note)}</p>
@@ -1158,15 +1169,15 @@ function networkCard(person) {
     <div class="net-links">
       ${person.email ? `
       <a class="net-link" href="mailto:${esc(person.email)}">
-        ${mailIcon(15, '#4A2A63')}<span>${esc(person.email)}</span>
+        ${mailIcon(15, '#4A2A63')}<span>${escBreakable(person.email)}</span>
       </a>` : ''}
       ${person.website ? `
       <a class="net-link" href="${esc(person.website)}" target="_blank" rel="noopener noreferrer">
-        ${externalIcon(15, '#4A2A63')}<span>${esc(person.website.replace(/^https?:\/\//i, ''))}</span>
+        ${externalIcon(15, '#4A2A63')}<span>${escBreakable(displayHost(person.website))}</span>
       </a>` : ''}
       ${(person.socials || []).map((link) => `
       <a class="net-link" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer">
-        ${externalIcon(15, '#4A2A63')}<span>${esc(link.label)} · ${esc(link.handle)}</span>
+        ${externalIcon(15, '#4A2A63')}<span>${esc(link.label)} · ${escBreakable(link.handle)}</span>
       </a>`).join('')}
     </div>
 
@@ -1184,9 +1195,18 @@ screens.about = () => `
     <span class="glow" aria-hidden="true"></span>
     <div class="shell">
       ${backButton('home')}
-      <p class="eyebrow">${esc(BRAND.authorTagline)}</p>
-      <h1>${esc(BRAND.author)}</h1>
-      <p class="lede">Founder of ${esc(BRAND.name)} · ${esc(BRAND.publisher)}</p>
+      <div class="about-id">
+        ${AUTHOR_PORTRAIT
+          // alt="" for the same reason as the Network cards: the name is the
+          // h1 directly beside it.
+          ? `<img class="about-portrait" src="${esc(AUTHOR_PORTRAIT)}" width="512" height="512" decoding="async" alt="">`
+          : ''}
+        <div class="about-id-text">
+          <p class="eyebrow">${esc(BRAND.authorTagline)}</p>
+          <h1>${esc(BRAND.author)}</h1>
+          <p class="lede">Founder of ${esc(BRAND.name)} · ${esc(BRAND.publisher)}</p>
+        </div>
+      </div>
     </div>
   </header>
 

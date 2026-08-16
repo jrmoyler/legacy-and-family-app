@@ -756,7 +756,7 @@ export const NETWORK = [
     org: BRAND.name,
     email: 'acupofcompassion@gmail.com',
     website: null,
-    headshot: null,
+    headshot: '/assets/network/pamella-grear.jpg',
     socials: SOCIAL_LINKS,
     note: 'Author of the series and the person behind the Legacy Inventory.',
   },
@@ -797,6 +797,14 @@ export const NETWORK = [
 
 export const networkById = (id) => NETWORK.find((person) => person.id === id);
 
+/**
+ * The About page portrait is Pamella's own Network headshot rather than a
+ * second copy of the same photograph, so replacing that one file updates both
+ * screens. Null if the headshot is ever removed — the About header simply
+ * renders without a portrait, exactly as it did before there was one.
+ */
+export const AUTHOR_PORTRAIT = networkById('pamella-grear')?.headshot ?? null;
+
 /** Nobody on this page prepares legal documents either (Bible §7). */
 export const NETWORK_NOTE =
   'These are independent professionals, listed so you can reach them directly. A Cup of Compassion does not employ them, take a commission on their work, or prepare legal documents itself — and listing someone here is an introduction, not an endorsement of any product they sell.';
@@ -828,7 +836,7 @@ export const STATUS_GROUPS = [
       'Keep the education-only legal framing and disclaimer wherever legacy-planning material is promoted.',
       'Retain the traditional-use wellness framing in Book 1 and avoid presenting it as medical advice.',
       'Pamela’s Instagram, TikTok, and YouTube links are confirmed by her and now linked from the app. Confirm any further platform before adding it.',
-      'Everyone on the Network page is listed with the contact detail they supplied. Re-confirm before changing or adding an entry.',
+      'Everyone on the Network page is listed with the contact detail and the headshot they supplied. Re-confirm before changing or adding an entry.',
     ],
   },
 ];

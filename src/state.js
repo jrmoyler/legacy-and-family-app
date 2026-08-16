@@ -43,12 +43,19 @@ const isValidLesson = (id) => LESSONS.some((l) => l.id === id);
 const strings = (value, keep) =>
   (Array.isArray(value) ? value.filter((v) => typeof v === 'string' && keep(v)) : []);
 
-/** Format choices, dropping any entry whose product or format no longer exists. */
+/**
+ * Format choices, dropping any entry whose product or format no longer exists.
+ *
+ * Gated on savable rather than purchasable: the free workbooks carry a PDF and
+ * an EPUB and show the same picker, so screening them out here meant a reader
+ * who chose EPUB for the Legacy Inventory found it back on PDF + EPUB after a
+ * reload.
+ */
 function formatMap(value) {
   if (!value || typeof value !== 'object') return {};
   return Object.fromEntries(
     Object.entries(value).filter(
-      ([id, format]) => isValidProduct(id) && FORMAT_IDS.includes(format),
+      ([id, format]) => isSavableProduct(id) && FORMAT_IDS.includes(format),
     ),
   );
 }

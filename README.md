@@ -166,10 +166,20 @@ python3 tools/extract_library_covers.py --root .
 
 `#/network` lists the people around the series with the one contact detail each
 of them supplied — an email or a website — plus a `.vcf` export built in the
-page (nothing is uploaded). Every entry has a `headshot` field that is `null`
-until a photo arrives; the card renders a lettered placeholder of exactly the
-same size in the meantime, so adding photos never moves the grid. See
-`assets/network/README.md` for the file naming and sizes.
+page (nothing is uploaded). All four entries now carry their own headshot. The
+`headshot` field may still be `null` for anyone added later, in which case the
+card renders a lettered placeholder of exactly the same size, so adding a photo
+never moves the grid. See `assets/network/README.md` for the file naming and
+sizes.
+
+Pamella's headshot is also the portrait in the `#/about` header — the About page
+reads it straight off her Network entry (`AUTHOR_PORTRAIT` in `src/data.js`), so
+one file serves both screens.
+
+Long addresses in the contact rows are run through `escBreakable()` from
+`src/dom.js`, which marks the seams — after a dot, a slash, a hyphen, an
+underscore, or an interior `@` — where a line may wrap. Without it a four-column
+grid split `www.manninsurancegroup.com` as "manninsurancegro / up.com".
 
 ## Production status
 
@@ -288,4 +298,4 @@ needed — Vercel serves these as static files automatically.
   persist in `localStorage` on the device only; there is no account or
   cross-device sync.
 - Everyone on the Network page is listed with the contact detail they supplied,
-  and headshots are placeholders until the photos arrive.
+  and every entry now carries the headshot that person provided.

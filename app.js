@@ -217,6 +217,27 @@ function announce(message) {
    ========================================================================== */
 
 /**
+ * Escape one vCard text value (RFC 2426 §2.4.2). A backslash, semicolon, or
+ * comma left raw does not read as itself: the semicolon splits a structured
+ * value into extra fields, and the comma splits a value into a list. An org
+ * named "Mann, Bailey & Co." would arrive in the address book as two
+ * organisations without this.
+ */
+const vcardText = (value) =>
+  String(value).replace(/([\\;,])/g, '\\$1').replace(/\r?\n/g, '\\n');
+
+/**
+ * Split a display name into the family/given halves vCard wants. Everything
+ * before the last word is the given name, which keeps "J. Douglas Bailey" and
+ * "John-Ross Moyler" filing under Bailey and Moyler.
+ */
+function structuredName(name) {
+  const parts = name.trim().split(/\s+/);
+  const family = parts.length > 1 ? parts.pop() : '';
+  return `${vcardText(family)};${vcardText(parts.join(' '))};;;`;
+}
+
+/**
  * Export one Network entry as a .vcf file, so a phone or a mail client can
  * file the person away rather than the reader retyping an address. Built and
  * revoked in the page — nothing is uploaded, and no request leaves the app.
@@ -228,13 +249,17 @@ function exportContactCard(id) {
   const lines = [
     'BEGIN:VCARD',
     'VERSION:3.0',
-    `FN:${person.name}`,
-    `TITLE:${person.title}`,
-    person.org && `ORG:${person.org}`,
-    person.email && `EMAIL;TYPE=INTERNET:${person.email}`,
+    // N is mandatory in vCard 3.0. Without it iOS Contacts and Outlook both
+    // import the card with an empty name and sort it to the top of the list.
+    `N:${structuredName(person.name)}`,
+    `FN:${vcardText(person.name)}`,
+    `TITLE:${vcardText(person.title)}`,
+    person.org && `ORG:${vcardText(person.org)}`,
+    person.email && `EMAIL;TYPE=INTERNET:${vcardText(person.email)}`,
+    // URL is a uri value, not text, so it is carried exactly as written.
     person.website && `URL:${person.website}`,
     ...(person.socials || []).map((link) => `URL:${link.url}`),
-    `NOTE:${person.note} (via ${BRAND.appFull})`,
+    `NOTE:${vcardText(`${person.note} (via ${BRAND.appFull})`)}`,
     'END:VCARD',
   ].filter(Boolean);
 
@@ -247,7 +272,10 @@ function exportContactCard(id) {
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(url);
+  // Revoked on the next turn of the loop, not this one: Safari reads the blob
+  // asynchronously after the click, and pulling the URL out from under it
+  // cancels the download.
+  setTimeout(() => URL.revokeObjectURL(url), 0);
   toast(`${person.name}’s contact card downloaded`);
 }
 
@@ -312,17 +340,18 @@ const ARROWS = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
 /**
  * A radiogroup and a chip group are single-stop widgets: Tab moves past the
  * whole set, and the arrow keys move within it. Without this the payment
- * options and shop filters are buttons that merely look like radios and tabs.
+ * options, the format picker, and the shop filters are buttons that merely
+ * look like radios and tabs.
  */
 function moveWithinGroup(event) {
   const step = ARROWS[event.key];
   if (!step) return false;
 
-  const el = event.target.closest('.pay-opt, .cat-chip');
+  const el = event.target.closest('.pay-opt, .format-opt, .cat-chip');
   if (!el) return false;
 
-  const group = el.closest('.pay-opts, .cat-chips');
-  const items = $$('.pay-opt, .cat-chip', group);
+  const group = el.closest('.pay-opts, .format-opts, .cat-chips');
+  const items = $$('.pay-opt, .format-opt, .cat-chip', group);
   const next = items[(items.indexOf(el) + step + items.length) % items.length];
 
   event.preventDefault();
