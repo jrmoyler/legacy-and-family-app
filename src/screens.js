@@ -14,7 +14,7 @@ import {
   LESSONS, FEATURED_LESSON, LESSON_TOTAL, lessonById,
   INVENTORY, INVENTORY_PRIVACY, STATUS_GROUPS,
   ABOUT_AUTHOR, PERSONAL_INVITATION, LEGAL_POSITIONING,
-  TOOLS, NETWORK, NETWORK_NOTE, SOCIAL_LINKS, AUTHOR_PORTRAIT,
+  TOOLS, NETWORK, NETWORK_NOTE, SOCIAL_LINKS, AUTHOR_PORTRAIT, HOME_COVER,
 } from './data.js';
 import {
   state, inventoryProgress, sectionDone, hasReadLesson,
@@ -150,6 +150,19 @@ screens.home = () => {
     </header>
 
     <div class="home-grid">
+      <section class="home-cover-intro span-all" aria-labelledby="home-cover-title">
+        <a class="home-cover-figure" href="${hrefFor('series')}" aria-label="Explore the A Cup of Compassion series">
+          ${coverArt(HOME_COVER, 'A Cup of Compassion', '(min-width: 900px) 230px, 38vw', 'eager')}
+        </a>
+        <div class="home-cover-copy">
+          <span class="pill pill-gold-soft">The complete compassion hub</span>
+          <p class="home-cover-kicker">A visual home for a living legacy</p>
+          <h2 id="home-cover-title">Compassion can be learned, practiced, documented, and passed on.</h2>
+          <p>Begin with six illustrated books, keep going with practical workbooks and resources, and leave the people you love something they can carry forward.</p>
+          <a class="home-cover-link" href="${hrefFor('series')}">Explore the complete series ${chevron('#D0AC4C')}</a>
+        </div>
+      </section>
+
       <a class="progress-card span-all" href="${hrefFor('legacy')}">
         <span class="ring" aria-hidden="true">
           <svg width="96" height="96" viewBox="0 0 96 96">

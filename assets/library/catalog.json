@@ -1,7 +1,7 @@
 {
-  "schemaVersion": 1,
-  "verifiedOn": "2026-08-14",
-  "verification": "Every file in this catalog is committed as a binary asset and is covered by assets/library/SHA256SUMS.txt.",
+  "schemaVersion": 2,
+  "verifiedOn": "2026-08-16",
+  "verification": "Every publication edition is covered by assets/library/SHA256SUMS.txt; every publication, product, and home cover is recorded here with exact byte counts and SHA-256 hashes.",
   "titles": [
     {
       "id": "book-1",
@@ -243,6 +243,239 @@
         "path": "/assets/library/covers/thumbs/A-Cup-of-Compassion-Legacy-Inventory-Workbook.jpg",
         "bytes": 28609,
         "sha256": "916eb18872bdc9b64c3a704300627e6d28237202f203292bff30d7917911676f"
+      }
+    }
+  ],
+  "productCovers": [
+    {
+      "id": "workbook",
+      "title": "The Companion Workbook",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Companion-Workbook-Illustrated.jpg",
+        "bytes": 377023,
+        "sha256": "1c4c9b5572807b472c73dc98df7ad4927564548d297a3123b1b2eb9e1fb45dcc"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Companion-Workbook-Illustrated.jpg",
+        "bytes": 751522,
+        "sha256": "876a0b52dfe27ed21257605df71b118c6c9c003a38fde0b9daa8953e70e6318c"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Companion-Workbook-Illustrated.jpg",
+        "bytes": 141306,
+        "sha256": "6c95dfc89edbbd50b665eb170230cb41fd25bec941506527f8170fe3e6518322"
+      }
+    },
+    {
+      "id": "inventory-worksheet",
+      "title": "The Legacy Inventory Workbook",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Legacy-Inventory-Workbook-Illustrated.jpg",
+        "bytes": 375869,
+        "sha256": "35f7a91c34205d3c4c6311818eac2a209a1b4abcb645c3357182fc701e12d305"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Legacy-Inventory-Workbook-Illustrated.jpg",
+        "bytes": 754923,
+        "sha256": "fa7ce94882c14d9bb3e8363bee08c845b9e9a5ccaa570a9fa76c6a062e32cc5b"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Legacy-Inventory-Workbook-Illustrated.jpg",
+        "bytes": 143219,
+        "sha256": "981111ffcc7af41c2b150430b1853d52f20aad24929367e0b442a6383c42dc18"
+      }
+    },
+    {
+      "id": "compassion-card",
+      "title": "The 40-Second Compassion Card",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-40-Second-Compassion-Card.jpg",
+        "bytes": 307055,
+        "sha256": "e909892c66e4ecc9cce352cb9d3192f14f5a928bc8216ac295c539ed632447a6"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-40-Second-Compassion-Card.jpg",
+        "bytes": 645437,
+        "sha256": "3b429fce82d97d5eb504e52a62f4e005c41b56f38eed609ea56fc8c14a1176c2"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-40-Second-Compassion-Card.jpg",
+        "bytes": 121733,
+        "sha256": "2f9d5d37f806b607c96b257ab37b15641c420c747adb4dcaf9fc8bacb458d318"
+      }
+    },
+    {
+      "id": "church-license",
+      "title": "Church & Small-Group Licence",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Church-Small-Group-Licence.jpg",
+        "bytes": 341682,
+        "sha256": "53ac43f1d500be41b9bf851a28269678fcbd55232e969005441e9da7ff858ce7"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Church-Small-Group-Licence.jpg",
+        "bytes": 723281,
+        "sha256": "c794ad91e9cc1f2d197feed29db20dd1613c02026d7741cdd86dcaa327692c29"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Church-Small-Group-Licence.jpg",
+        "bytes": 141310,
+        "sha256": "fac4e717dece4e9865757758ce2d6b7acc62da99aaff5632b99d49ab97c34717"
+      }
+    },
+    {
+      "id": "conversation-kit",
+      "title": "The Family Legacy Conversation Kit",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Family-Legacy-Conversation-Kit.jpg",
+        "bytes": 376400,
+        "sha256": "6f05ebfdea848e0a1a2e56010de86c65dfbe2801f52b800e1da025821d7578fa"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Family-Legacy-Conversation-Kit.jpg",
+        "bytes": 750624,
+        "sha256": "c15ba8bd3d6176315af482e3e3a70241733f94f3d37c61c30f55db1fc07569cd"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Family-Legacy-Conversation-Kit.jpg",
+        "bytes": 145150,
+        "sha256": "882d03590f2a159374276baa13860d53730ef8eb9d1f494a8c0bf740f1526860"
+      }
+    },
+    {
+      "id": "devotional",
+      "title": "The 30-Day Compassion Devotional",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-30-Day-Devotional.jpg",
+        "bytes": 283928,
+        "sha256": "ff8297e9c37151936e003f9c4f665a1defaf895bd38e5a5da571eafe2667de93"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-30-Day-Devotional.jpg",
+        "bytes": 644869,
+        "sha256": "f5ad3e9a5de163e438bd9705e7ed4e148c2a6942bb80e0559c2228ea88c73238"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-30-Day-Devotional.jpg",
+        "bytes": 127434,
+        "sha256": "4e546a6b9a774308d07be06fa2e96a36f48c784cc854fab722511e1503a3f291"
+      }
+    },
+    {
+      "id": "caregiving",
+      "title": "Compassion in Caregiving: Burnout & Boundaries",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Caregiving-Burnout-Boundaries.jpg",
+        "bytes": 332786,
+        "sha256": "eeaca6442fc4a523c7fc5bebce852fcd9bc54cccf98db7a83f9d372c61d3bece"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Caregiving-Burnout-Boundaries.jpg",
+        "bytes": 702409,
+        "sha256": "79265ec42a3f6c09c54529d219570e593cf9757558ea841dbda865f9baabcfe9"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Caregiving-Burnout-Boundaries.jpg",
+        "bytes": 137870,
+        "sha256": "bf15f234a2cd06390182b5b1a6fb1e50a9f2dad0a84e6e418fd8586da85b0b11"
+      }
+    },
+    {
+      "id": "leaders-kit",
+      "title": "Church & Small-Group Leader's Kit",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Church-Small-Group-Leaders-Kit.jpg",
+        "bytes": 330549,
+        "sha256": "e5bfa6be3a2e4dce76c864a65a76387689cc77707e31cd73a293e1c63c07e4ab"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Church-Small-Group-Leaders-Kit.jpg",
+        "bytes": 694665,
+        "sha256": "b7cf0914365bdf36931bf73948a429f58250c57260a6d516535ef31e389f41f1"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Church-Small-Group-Leaders-Kit.jpg",
+        "bytes": 145856,
+        "sha256": "7e3345ded9a8aaa63d35e48f2be1996a7bfff9466878b912e267a940ca30c7cd"
+      }
+    },
+    {
+      "id": "youth",
+      "title": "Youth & School Edition",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Youth-School-Edition.jpg",
+        "bytes": 332834,
+        "sha256": "8b38a011e7a304bff255af66b46d15794ab4d5b918cfb5de83b3819cedf3c434"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Youth-School-Edition.jpg",
+        "bytes": 698484,
+        "sha256": "3ca8989eda78ab36d83e01cf6727b8b4069b6630228f78a41882d06e425ec1d0"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Youth-School-Edition.jpg",
+        "bytes": 137947,
+        "sha256": "88eb149455375dea80e6adea49178ef20107481af7b34bf118d45e5bfaac89a9"
+      }
+    },
+    {
+      "id": "training-deck",
+      "title": "Caregiver Team Training Deck",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Caregiver-Team-Training-Deck.jpg",
+        "bytes": 300903,
+        "sha256": "95cf07d5a4e91c66360213b306de1c177633b65c4972787b526702b0d97bfc26"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Caregiver-Team-Training-Deck.jpg",
+        "bytes": 640761,
+        "sha256": "d9c56ff0b70ebf9942805c3673b1e08ecde8ece64ea5193de8883782ddcd4819"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Caregiver-Team-Training-Deck.jpg",
+        "bytes": 123161,
+        "sha256": "43ba3035f9218503db5168e509709bea7b890cabf57bba501269800def082d63"
+      }
+    },
+    {
+      "id": "home",
+      "title": "A Cup of Compassion",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Home.jpg",
+        "bytes": 366516,
+        "sha256": "d6a130a8d2d91a0608c1d2bfa70141f1ec8b78837f6fd7b70e422bb452cebb4f"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Home.jpg",
+        "bytes": 742575,
+        "sha256": "5ba9762f91292eb478e80dcbe11180f51370499a28da8bdf3b8b07158da37ec9"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Home.jpg",
+        "bytes": 144669,
+        "sha256": "7eb1e91f6475c055129abf1ef9df070a40ef9c31263a708ce0064b296c923362"
       }
     }
   ]
