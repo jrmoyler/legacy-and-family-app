@@ -22,13 +22,17 @@ The current entries and their ids:
 
 | id                 | Person             | Photo                    |
 | ------------------ | ------------------ | ------------------------ |
-| `pamella-grear`    | Pamella Grear      | still to come            |
+| `pamella-grear`    | Pamella Grear      | `pamella-grear.jpg`      |
 | `j-douglas-bailey` | J. Douglas Bailey  | `j-douglas-bailey.jpg`   |
 | `james-mann`       | James Mann         | `james-mann.jpg`         |
 | `john-ross-moyler` | John-Ross Moyler   | `john-ross-moyler.jpg`   |
 
-The three photos on file were supplied by each person and cropped square at
-512 × 512 from the portrait they sent.
+Every photo on file was supplied by the person in it and cropped square at
+512 × 512 from the portrait they sent. Pamella's was supplied already square at
+476 × 476 and scaled up the last 7% to match the rest of the set.
+
+Pamella's headshot also serves as the portrait on the About page
+(`#/about`), so replacing `pamella-grear.jpg` updates both places at once.
 
 Use each person's own photo, supplied by them, and keep the file under about
 300 KB so the page stays quick on a phone.
