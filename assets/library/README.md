@@ -17,8 +17,8 @@ sha256sum -c SHA256SUMS.txt
 
 `catalog.json` provides the same hashes, byte counts, and public app paths for deployment checks.
 
-For the complete release audit—catalog order, all 16 checksums and byte counts, EPUB package
-structure, PDF parsing, and the app's PDF/EPUB links—run:
+For the complete release audit—catalog order, all 16 checksums and byte counts, canonical author
+metadata, EPUB package structure, PDF parsing, and the app's PDF/EPUB links—run:
 
 ```sh
 python3 tools/verify_library_assets.py --root .

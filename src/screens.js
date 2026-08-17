@@ -146,7 +146,7 @@ screens.home = () => {
       <div class="quick-grid span-all">
         <a class="quick-tile" href="${hrefFor('read')}"><span class="icon-tile it-gold">${bookIcon(22, '#96771F', 1.9)}</span>Free reading<small>${read} of ${LESSON_TOTAL} read</small></a>
         <a class="quick-tile" href="${hrefFor('shop')}"><span class="icon-tile it-teal">${cartIcon(22, '#23636A', 1.9)}</span>The shop<small>Books, sets &amp; kits</small></a>
-        <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile it-gold">${peopleIcon(22, '#96771F', 1.9)}</span>About Pamela<small>And the movement</small></a>
+        <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile it-gold">${peopleIcon(22, '#96771F', 1.9)}</span>About Pamella<small>And the movement</small></a>
       </div>
 
       ${featuredLessonCard()}
@@ -854,7 +854,7 @@ screens.about = () => `
       <section class="consult-card">
         <div>
           <h2>Bring the series to your church or group.</h2>
-          <p>Twenty-five copies on a single invoice, and a six-week study built around them. Pamela also speaks to congregations, caregiver teams, and family reunions.</p>
+          <p>Twenty-five copies on a single invoice, and a six-week study built around them. Pamella also speaks to congregations, caregiver teams, and family reunions.</p>
         </div>
         <a class="btn btn-gold btn-auto" href="${hrefForProduct('church-license')}">See the group licence</a>
       </section>
