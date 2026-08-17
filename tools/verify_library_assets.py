@@ -33,6 +33,8 @@ EXPECTED_IDS = [
     "companion-workbook",
     "legacy-inventory-workbook",
 ]
+EXPECTED_AUTHOR = "Pamella Foster-Grear"
+INCORRECT_AUTHOR = "Pamela Foster-Grear"
 PDF_MAGIC = b"%PDF-"
 
 
@@ -90,11 +92,30 @@ def epub_details(path: Path) -> dict[str, Any]:
             if not rootfile:
                 fail(f"{path.name}: EPUB container has no package rootfile.")
             package = ET.fromstring(archive.read(rootfile))
+            creators = [
+                (node.text or "").strip()
+                for node in package.iter()
+                if node.tag.endswith("creator")
+            ]
+            if creators != [EXPECTED_AUTHOR]:
+                fail(f"{path.name}: EPUB creator metadata must be {EXPECTED_AUTHOR!r}; found {creators!r}.")
+            metadata_values = [
+                (node.text or "").strip()
+                for node in package.iter()
+                if node.tag.endswith(("creator", "rights"))
+            ]
+            if any(INCORRECT_AUTHOR in value for value in metadata_values):
+                fail(f"{path.name}: EPUB package metadata still contains {INCORRECT_AUTHOR!r}.")
             manifest = [node for node in package.iter() if node.tag.endswith("item")]
             spine = [node for node in package.iter() if node.tag.endswith("itemref")]
             if not manifest or not spine:
                 fail(f"{path.name}: EPUB package must contain a manifest and reading spine.")
-            return {"zipMembers": len(members), "manifestItems": len(manifest), "spineItems": len(spine)}
+            return {
+                "author": creators[0],
+                "zipMembers": len(members),
+                "manifestItems": len(manifest),
+                "spineItems": len(spine),
+            }
     except (KeyError, ET.ParseError, zipfile.BadZipFile) as error:
         fail(f"{path.name}: invalid EPUB package ({error}).")
 
@@ -123,7 +144,9 @@ def pdf_details(path: Path) -> dict[str, Any]:
         fail(f"{path.name}: pdfinfo did not report a page count.")
     if pages < 1 or not fields.get("Page size"):
         fail(f"{path.name}: invalid PDF page metadata.")
-    return {"pages": pages, "pageSize": fields["Page size"]}
+    if fields.get("Author") != EXPECTED_AUTHOR:
+        fail(f"{path.name}: PDF author metadata must be {EXPECTED_AUTHOR!r}; found {fields.get('Author')!r}.")
+    return {"author": fields["Author"], "pages": pages, "pageSize": fields["Page size"]}
 
 
 def downloaded_digest(base_url: str, asset_path: str, expected_size: int) -> dict[str, Any]:

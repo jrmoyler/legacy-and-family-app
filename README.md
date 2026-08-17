@@ -1,6 +1,6 @@
 # A Cup of Compassion — App
 
-A series by **Pamela Foster-Grear** on compassion, legacy, and what gets passed on.
+A series by **Pamella Foster-Grear** on compassion, legacy, and what gets passed on.
 **Build it. Document it. Pass it on.**
 
 Published by Pam Grear Publishing LLC, Columbus, Ohio.
@@ -44,7 +44,7 @@ source.
 **Reading** — Read index, Lesson (×6, free, full text)
 **Legacy** — The Legacy Inventory worksheet (printable)
 **Shop** — Shop, Product detail, Cart, Checkout, Confirmation
-**Standing pages** — About Pamela, Disclaimers, Production status
+**Standing pages** — About Pamella, Disclaimers, Production status
 
 ## Routing
 

@@ -28,7 +28,7 @@ import { homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon } from './icons.
 export const BRAND = {
   name: 'A Cup of Compassion',
   tagline: 'Build it. Document it. Pass it on.',
-  author: 'Pamela Foster-Grear',
+  author: 'Pamella Foster-Grear',
   authorTagline: 'Author | Legacy Advocate | Community Leader | Compassion Educator',
   publisher: 'Pam Grear Publishing LLC · Columbus, Ohio',
   site: 'www.acupofcompassion.com',
@@ -43,9 +43,9 @@ export const FOOTER_LINE = `${BRAND.site} | ${BRAND.email} | ${BRAND.social}`;
 
 /** Verbatim from Bible §7 — do not rewrite. */
 export const ABOUT_AUTHOR = [
-  'Pamela Foster-Grear is the founder of A Cup of Compassion, a movement dedicated to helping individuals and families live with purpose, lead with compassion, and leave a meaningful legacy for generations to come. For more than three decades, Pamela has served her community through nonprofit leadership, family advocacy, caregiving support, business development, and educational outreach. Her life’s work has been centered on one simple belief: compassion should not end with today — it should become tomorrow’s inheritance.',
-  'As an author, speaker, and educator, Pamela teaches that legacy is far more than financial wealth. It is the intentional passing down of love, wisdom, faith, family values, assets, and opportunity. Through her writing, workshops, and educational resources, she encourages families to prepare with purpose — to have the conversations, and create the documents, that preserve both relationships and generational wealth.',
-  'Pamela believes every family deserves more than memories. They deserve a roadmap that protects what generations have worked so hard to build.',
+  'Pamella Foster-Grear is the founder of A Cup of Compassion, a movement dedicated to helping individuals and families live with purpose, lead with compassion, and leave a meaningful legacy for generations to come. For more than three decades, Pamella has served her community through nonprofit leadership, family advocacy, caregiving support, business development, and educational outreach. Her life’s work has been centered on one simple belief: compassion should not end with today — it should become tomorrow’s inheritance.',
+  'As an author, speaker, and educator, Pamella teaches that legacy is far more than financial wealth. It is the intentional passing down of love, wisdom, faith, family values, assets, and opportunity. Through her writing, workshops, and educational resources, she encourages families to prepare with purpose — to have the conversations, and create the documents, that preserve both relationships and generational wealth.',
+  'Pamella believes every family deserves more than memories. They deserve a roadmap that protects what generations have worked so hard to build.',
 ];
 
 /** Verbatim from Bible §7. */
