@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -35,6 +36,9 @@ EXPECTED_IDS = [
 ]
 EXPECTED_AUTHOR = "Pamella Foster-Grear"
 INCORRECT_AUTHOR = "Pamela Foster-Grear"
+INCORRECT_NAME_PATTERN = re.compile(r"(?<![A-Za-z])Pamela(?![A-Za-z])", re.IGNORECASE)
+EXPECTED_AUTHOR_PATTERN = re.compile(r"\bPamella Foster-Grear\b", re.IGNORECASE)
+EPUB_TEXT_SUFFIXES = (".css", ".htm", ".html", ".ncx", ".opf", ".svg", ".txt", ".xhtml", ".xml")
 PDF_MAGIC = b"%PDF-"
 
 
@@ -106,6 +110,16 @@ def epub_details(path: Path) -> dict[str, Any]:
             ]
             if any(INCORRECT_AUTHOR in value for value in metadata_values):
                 fail(f"{path.name}: EPUB package metadata still contains {INCORRECT_AUTHOR!r}.")
+            text_name_occurrences = 0
+            for member in members:
+                if not member.filename.lower().endswith(EPUB_TEXT_SUFFIXES):
+                    continue
+                text = archive.read(member).decode("utf-8")
+                if INCORRECT_NAME_PATTERN.search(text):
+                    fail(f"{path.name}: {member.filename} still contains the misspelled author name.")
+                text_name_occurrences += len(EXPECTED_AUTHOR_PATTERN.findall(text))
+            if text_name_occurrences < 1:
+                fail(f"{path.name}: EPUB text contains no corrected author name.")
             manifest = [node for node in package.iter() if node.tag.endswith("item")]
             spine = [node for node in package.iter() if node.tag.endswith("itemref")]
             if not manifest or not spine:
@@ -115,6 +129,7 @@ def epub_details(path: Path) -> dict[str, Any]:
                 "zipMembers": len(members),
                 "manifestItems": len(manifest),
                 "spineItems": len(spine),
+                "textNameOccurrences": text_name_occurrences,
             }
     except (KeyError, ET.ParseError, zipfile.BadZipFile) as error:
         fail(f"{path.name}: invalid EPUB package ({error}).")
@@ -146,7 +161,27 @@ def pdf_details(path: Path) -> dict[str, Any]:
         fail(f"{path.name}: invalid PDF page metadata.")
     if fields.get("Author") != EXPECTED_AUTHOR:
         fail(f"{path.name}: PDF author metadata must be {EXPECTED_AUTHOR!r}; found {fields.get('Author')!r}.")
-    return {"author": fields["Author"], "pages": pages, "pageSize": fields["Page size"]}
+    if not shutil.which("pdftotext"):
+        fail("pdftotext is required to validate reader-visible PDF text.")
+    text_result = subprocess.run(
+        ["pdftotext", "-layout", str(path), "-"],
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if text_result.returncode:
+        fail(f"{path.name}: pdftotext failed: {text_result.stderr.strip()}")
+    if INCORRECT_NAME_PATTERN.search(text_result.stdout):
+        fail(f"{path.name}: reader-visible PDF text still contains the misspelled author name.")
+    text_name_occurrences = len(EXPECTED_AUTHOR_PATTERN.findall(text_result.stdout))
+    if text_name_occurrences < 1:
+        fail(f"{path.name}: reader-visible PDF text contains no corrected author name.")
+    return {
+        "author": fields["Author"],
+        "pages": pages,
+        "pageSize": fields["Page size"],
+        "textNameOccurrences": text_name_occurrences,
+    }
 
 
 def downloaded_digest(base_url: str, asset_path: str, expected_size: int) -> dict[str, Any]:

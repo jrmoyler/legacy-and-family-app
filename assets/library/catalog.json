@@ -6,50 +6,50 @@
     {
       "id": "book-1",
       "title": "The Benefit of Having Compassion",
-      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.pdf", "bytes": 2723532, "sha256": "2f29173036113e501e5cc85a965e310489a26ebe9f298a2bc8d36adb129060bb" },
-      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.epub", "bytes": 2416152, "sha256": "7e2e6ac569bcb0b3f09cb8fec4dd95733e66d12005ebc126d7ef3d25296e9bd2" }
+      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.pdf", "bytes": 4173181, "sha256": "4f0032c50c76b189e88eb93b372043569f3797f06e10199f11e192c6a48c33f5" },
+      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.epub", "bytes": 2530353, "sha256": "cdd5f8b7c9e302594815a72ec843108d21046aa539bffd84189f174d037f93dd" }
     },
     {
       "id": "book-2",
       "title": "Are You Born in Compassion or Nurtured in It?",
-      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.pdf", "bytes": 3034245, "sha256": "c110f7268e0ef378b3bcd4aef7d4c931505ceab937defffffc507f24f1d05cfd" },
-      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.epub", "bytes": 2710465, "sha256": "b979485a23f7511d4c5b4e1d2a278eb95bd3eb9b03fe39482d782bba6538a637" }
+      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.pdf", "bytes": 4597691, "sha256": "7f7b73012a03cf3a30d9de140c2cd2f25d01f26f33269e602178c175610d19b2" },
+      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.epub", "bytes": 2839754, "sha256": "9585a5e9b35282aa9caedae6b594941cc234e3a4672849a912f32f0765dc5835" }
     },
     {
       "id": "book-3",
       "title": "Compassion and Legacy",
-      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-03-Compassion-and-Legacy.pdf", "bytes": 2958570, "sha256": "30b59b2a590aa3c2a9e35e6a4b47569b2bdb26e61b7e53de95eacf20a9a42685" },
-      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-03-Compassion-and-Legacy.epub", "bytes": 2585808, "sha256": "6160a1ce4e41bff8a5faa091ed65ba6f7411f3eb623ac5dc7d474ad93baae5aa" }
+      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-03-Compassion-and-Legacy.pdf", "bytes": 4480903, "sha256": "fb4f03bf806d97764c48fd502d6be4ceabcb946c7d939dfe1ada3726de459b33" },
+      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-03-Compassion-and-Legacy.epub", "bytes": 2706404, "sha256": "69a3d992a2b7633f54d1d33db2b03709500ce4167b8ec6698d9611064a2496c6" }
     },
     {
       "id": "book-4",
       "title": "Compassion or Confusion?",
-      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-04-Compassion-or-Confusion.pdf", "bytes": 10599018, "sha256": "ffac968538be8cd30e7e4dc6b921313a751fccd37229a623ceb61c853945235a" },
-      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-04-Compassion-or-Confusion.epub", "bytes": 5856095, "sha256": "1763217226a7a9252a8e5dce80921a2754208560d8560ceba4c224f9f9dc3a1e" }
+      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-04-Compassion-or-Confusion.pdf", "bytes": 10535105, "sha256": "480c4d7f19457bce4b8eca939e03106fa196fa7ccb1fa76557824749b4a9b85c" },
+      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-04-Compassion-or-Confusion.epub", "bytes": 5990397, "sha256": "0fddcd2b33c210210e308eeec429090f1233f8d52054b31351b0fdbc9cf2c011" }
     },
     {
       "id": "book-5",
       "title": "Compassion and Commitment",
-      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-05-Compassion-and-Commitment.pdf", "bytes": 11578838, "sha256": "5bfbfc5cd6c09b9171acecbbeb7a4ce99b939714a9e7e605aa6b92d1ee85bc3d" },
-      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-05-Compassion-and-Commitment.epub", "bytes": 6779125, "sha256": "3f7542895c614ba4d4a2cd651912d3e45de01d4dcd52aec2bd568a2a01b4420c" }
+      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-05-Compassion-and-Commitment.pdf", "bytes": 11512885, "sha256": "31f8d7495ec9f31f17b7255d1fd03c4762c334863c9c7c5ec6b9d03668c45a51" },
+      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-05-Compassion-and-Commitment.epub", "bytes": 6938467, "sha256": "965dd97b761fb14656778f5bf6e42a41ea4ad5954649502bcf0e63419aaa1242" }
     },
     {
       "id": "book-6",
       "title": "Compassion and Companionship",
-      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-06-Compassion-and-Companionship.pdf", "bytes": 12405464, "sha256": "ff5a815634c2a597128fa26b910b53db57ffe9ea6c6d107736744a7885cda135" },
-      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-06-Compassion-and-Companionship.epub", "bytes": 7338513, "sha256": "bbf5ce933c503ded08c15a672a3eb7988a04e9fafb6c4e6ad1d2af21d52e87ac" }
+      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-06-Compassion-and-Companionship.pdf", "bytes": 12303490, "sha256": "f8314e51dd5c445cfc041728d0beb4d8a72d0bcd80464cc1fd960c2e7fc96154" },
+      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-06-Compassion-and-Companionship.epub", "bytes": 7512879, "sha256": "035dd80b1c739e4e7a7265d417ea012d9d6f59c2b865e805aa067b5175fdd393" }
     },
     {
       "id": "companion-workbook",
       "title": "The Companion Workbook",
-      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-Companion-Workbook.pdf", "bytes": 362357, "sha256": "f39fcee776c9008ca8316a31af06007b3d45eb63aa1d9900c9591c53ec444f8f" },
-      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-Companion-Workbook.epub", "bytes": 307722, "sha256": "b0f61fccd50221804a861937f5b09d573a5c8b19ed024828205bb770af997c0b" }
+      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-Companion-Workbook.pdf", "bytes": 361954, "sha256": "701af1e1b9ea9f7275f78a1a148512897fc3c0f9ae5585822b275d0a988febae" },
+      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-Companion-Workbook.epub", "bytes": 308117, "sha256": "4a7bd29d3ac8366f8d553658769f0e3beaadee4973ffd57bd3f3a2d26c9f5234" }
     },
     {
       "id": "legacy-inventory-workbook",
       "title": "The Legacy Inventory Workbook",
-      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-Legacy-Inventory-Workbook.pdf", "bytes": 336143, "sha256": "078689c41c49a72652b3a0b05d6c6f0ce5fca39786dd1d8c082a60134465149c" },
-      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-Legacy-Inventory-Workbook.epub", "bytes": 304874, "sha256": "8df9878537873147ff3507d7fc1bde6c84c98cc4fbe38ed9b9f7cc2cf3a40426" }
+      "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-Legacy-Inventory-Workbook.pdf", "bytes": 335802, "sha256": "b397f36720c67b3030d9a32a763aeb19b76f7d183a368c8fea1caed373ad1a3a" },
+      "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-Legacy-Inventory-Workbook.epub", "bytes": 305272, "sha256": "ca05d2856468f0c618fb62b40412b8507c9b1d50c06a9fe54076ac885b490556" }
     }
   ]
 }
