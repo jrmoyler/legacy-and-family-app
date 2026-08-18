@@ -922,9 +922,19 @@ screens.about = () => `
 
   <div class="shell about-layout">
     <div>
-      <div class="prose">
-        ${ABOUT_AUTHOR.map((p) => `<p>${esc(p)}</p>`).join('')}
-      </div>
+      <section class="author-intro" aria-label="About ${esc(BRAND.author)}">
+        <figure class="author-portrait">
+          <img src="${esc(BRAND.portrait)}" alt="Portrait of ${esc(BRAND.author)}" width="1536" height="1536" decoding="async" data-author-portrait>
+          <figcaption>
+            <strong>${esc(BRAND.author)}</strong>
+            <span>${esc(BRAND.authorTagline)}</span>
+          </figcaption>
+        </figure>
+
+        <div class="prose">
+          ${ABOUT_AUTHOR.map((p) => `<p>${esc(p)}</p>`).join('')}
+        </div>
+      </section>
 
       <div class="callout"><p>${esc(PERSONAL_INVITATION)}</p></div>
 

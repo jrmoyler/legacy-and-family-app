@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import urllib.request
@@ -12,6 +13,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "https://zfpjgedcjdhxvdbthikt.supabase.co/functions/v1/compassion-messages"
+PORTRAIT_PATH = ROOT / "assets" / "library" / "brand" / "pamella-grear.jpg"
+EXPECTED_PORTRAIT_SHA256 = "9adbbbc2efea4c4ddce105960cb7a114c9f0eef7b5e8e5c40fc24296be3f682d"
 APP_PATHS = [
     ROOT / "index.html",
     ROOT / "manifest.webmanifest",
@@ -40,6 +43,7 @@ def verify_sources() -> None:
         require(not incorrect.search(text), f"Incorrect author spelling in {path.relative_to(ROOT)}")
         require(not retired_byline.search(text), f"Retired author byline in {path.relative_to(ROOT)}")
 
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
     data = (ROOT / "src" / "data.js").read_text(encoding="utf-8")
     screens = (ROOT / "src" / "screens.js").read_text(encoding="utf-8")
     app = (ROOT / "app.js").read_text(encoding="utf-8")
@@ -48,6 +52,21 @@ def verify_sources() -> None:
 
     require("name: 'The Compassion Hub'" in data, "Canonical app name is missing")
     require("author: 'Pamella Grear'" in data, "Canonical author is missing")
+    require("portrait: '/assets/library/brand/pamella-grear.jpg'" in data, "Canonical Pamella portrait is not wired")
+    require(PORTRAIT_PATH.is_file(), "Canonical Pamella portrait is missing")
+    require(
+        hashlib.sha256(PORTRAIT_PATH.read_bytes()).hexdigest() == EXPECTED_PORTRAIT_SHA256,
+        "Canonical Pamella portrait does not match the approved image",
+    )
+    pamella_images = sorted(
+        path for path in (ROOT / "assets").rglob("*")
+        if path.is_file() and "pamella" in path.name.lower()
+    )
+    require(pamella_images == [PORTRAIT_PATH], "More than one Pamella portrait asset is present")
+    require(screens.count('data-author-portrait') == 1, "Pamella portrait must render exactly once")
+    require(screens.count('BRAND.portrait') == 1, "Pamella portrait must have exactly one app reference")
+    require("COVER_ASSET_REVISION = 'pamella-grear-20260818'" in data, "Corrected cover revision is missing")
+    require(index.count("?v=pamella-grear-20260818") == 2, "Social cover previews are not revisioned")
     require("socialUrl: 'https://www.instagram.com/acupofcompassion'" in data, "Instagram URL is incorrect")
     require("series: 'A Cup of Compassion'" in data, "Canonical series name is missing")
     require("INDIVIDUAL_EBOOK_PRICE = 7.99" in data, "Individual ebook price is not $7.99")

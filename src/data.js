@@ -32,6 +32,7 @@ export const BRAND = {
   series: 'A Cup of Compassion',
   tagline: 'Build it. Document it. Pass it on.',
   author: 'Pamella Grear',
+  portrait: '/assets/library/brand/pamella-grear.jpg',
   authorTagline: 'Author | Legacy Advocate | Community Leader | Compassion Educator',
   publisher: 'Pam Grear Publishing LLC · Columbus, Ohio',
   site: 'www.acupofcompassion.com',
@@ -105,7 +106,11 @@ const bookAssets = (slug) => ({
   pdf: `/assets/library/pdf/${slug}.pdf`,
 });
 
-const coverImage = (slug) => `/assets/library/covers/${slug}.jpg`;
+// Bump this whenever corrected cover artwork is published. These assets are
+// intentionally stable on disk for EPUB verification, while the revisioned
+// URL forces browsers and social previews to request the current cover.
+const COVER_ASSET_REVISION = 'pamella-grear-20260818';
+const coverImage = (slug) => `/assets/library/covers/${slug}.jpg?v=${COVER_ASSET_REVISION}`;
 
 export const BOOKS = [
   {

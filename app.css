@@ -2554,6 +2554,48 @@ p a, .about-copy a { text-decoration: underline; }
   .about-layout { grid-template-columns: 1.5fr .85fr; }
 }
 
+.author-intro {
+  display: grid;
+  gap: 24px;
+  align-items: start;
+}
+.author-portrait {
+  width: min(100%, 300px);
+  margin-inline: auto;
+  overflow: hidden;
+  border: 1px solid rgba(176, 141, 46, .34);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--lift);
+}
+.author-portrait img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+}
+.author-portrait figcaption {
+  display: grid;
+  gap: 4px;
+  padding: 15px 17px 17px;
+}
+.author-portrait strong {
+  font-family: var(--serif);
+  font-size: 19px;
+  color: var(--plum-800);
+}
+.author-portrait span {
+  font-size: 11px;
+  line-height: 1.45;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+@media (min-width: 680px) {
+  .author-intro { grid-template-columns: minmax(190px, 230px) 1fr; }
+  .author-portrait { margin-inline: 0; }
+}
+
 .disclaimer-body { padding-top: 26px; max-width: 68ch; }
 .disclaimer-body h2:first-child { margin-top: 0; }
 
