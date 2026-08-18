@@ -243,7 +243,7 @@ screens.messages = () => `
             <textarea class="field message-textarea" name="message" minlength="15" maxlength="500" required placeholder="Write a short message of encouragement or hope…"></textarea>
           </label>
           <div class="message-counter"><span data-message-count>0</span> / 500</div>
-          <p class="message-requirements">Enter your name, write at least 15 characters, and confirm the review notice to enable sharing.</p>
+          <p class="message-requirements" id="message-requirements-hint">Enter your name, write at least 15 characters, and confirm the review notice to enable sharing.</p>
 
           <label class="message-consent">
             <input type="checkbox" name="consent" required>
@@ -255,7 +255,7 @@ screens.messages = () => `
             <input name="website" tabindex="-1" autocomplete="off">
           </label>
 
-          <button class="btn btn-message" type="submit" disabled>Share compassion</button>
+          <button class="btn btn-message" type="submit" disabled aria-describedby="message-requirements-hint">Share compassion</button>
           <p class="message-review-note">${shieldIcon('#96771F')}Messages are reviewed before appearing.</p>
           <div class="message-form-status" data-message-status role="status" aria-live="polite" hidden></div>
         </form>

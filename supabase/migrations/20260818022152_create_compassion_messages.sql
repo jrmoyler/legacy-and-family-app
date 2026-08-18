@@ -19,7 +19,7 @@ create table if not exists public.compassion_messages (
 );
 
 comment on table public.compassion_messages is
-  'Moderated visitor messages for The Compassion Hub. Only approved rows are returned by the public Edge Function; service-role access is reserved for editorial moderation.';
+  'Moderated visitor messages for The Compassion Hub. Only approved rows are returned by the public Edge Function. The compassion-messages Edge Function only inserts rows and never sets approved; the approved column is flipped exclusively via the Studio SQL editor or another superuser-equivalent connection as part of manual editorial review.';
 comment on column public.compassion_messages.request_fingerprint is
   'One-way daily request fingerprint used only for anonymous submission rate limiting.';
 
