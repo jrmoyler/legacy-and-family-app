@@ -1,14 +1,16 @@
 /**
- * A Cup of Compassion — application entry point.
+ * The Compassion Hub — application entry point.
  *
  * Responsibilities: hash routing, rendering, and event delegation.
  * Screen markup lives in src/screens.js; state lives in src/state.js.
  */
 
 import { $, $$ } from './src/dom.js';
-import { screens } from './src/screens.js';
+import { screens, compassionMessageList } from './src/screens.js';
 import { sidebar, appbar, tabbar, overlays, hrefFor } from './src/components.js';
-import { BRAND, CATEGORIES, bookById, lessonById, productById } from './src/data.js';
+import {
+  BRAND, CATEGORIES, COMPASSION_API_URL, bookById, lessonById, productById,
+} from './src/data.js';
 import {
   state, loadState, saveState, toggleSection, toggleLesson,
   toggleCart, removeFromCart, addToLibrary,
@@ -77,6 +79,10 @@ function renderRoute() {
   window.scrollTo(0, 0);
   view.focus({ preventScroll: true });
   document.title = titleFor(state.screen);
+
+  if (state.screen === 'messages' && state.compassionMessagesStatus === 'idle') {
+    loadCompassionMessages();
+  }
 }
 
 /** In-place update after a state change: keep scroll position and focus. */
@@ -106,7 +112,68 @@ const TITLES = {
   about: BRAND.author,
   disclaimer: 'Disclaimers',
   status: 'Production status',
+  messages: 'Messages of Compassion',
 };
+
+let compassionLoadRequest = 0;
+
+function timeoutSignal(milliseconds) {
+  const controller = new AbortController();
+  window.setTimeout(() => controller.abort(), milliseconds);
+  return controller.signal;
+}
+
+async function loadCompassionMessages() {
+  const requestId = ++compassionLoadRequest;
+  state.compassionMessagesStatus = 'loading';
+  if (state.screen === 'messages') {
+    const list = view.querySelector('[data-compassion-list]');
+    if (list) list.innerHTML = compassionMessageList();
+  }
+
+  try {
+    const response = await fetch(COMPASSION_API_URL, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+      signal: timeoutSignal(10000),
+    });
+    if (!response.ok) throw new Error('message service unavailable');
+    const payload = await response.json();
+    if (requestId !== compassionLoadRequest) return;
+    state.compassionMessages = Array.isArray(payload.messages) ? payload.messages : [];
+    state.compassionMessagesStatus = 'ready';
+  } catch {
+    if (requestId !== compassionLoadRequest) return;
+    state.compassionMessagesStatus = 'error';
+  }
+
+  if (state.screen === 'messages') {
+    const list = view.querySelector('[data-compassion-list]');
+    if (list) list.innerHTML = compassionMessageList();
+  }
+}
+
+function updateCompassionForm(form) {
+  const textarea = form.elements.message;
+  const count = form.querySelector('[data-message-count]');
+  const submit = form.querySelector('[type="submit"]');
+  if (count) count.textContent = String(textarea.value.length);
+  if (submit) submit.disabled = !form.checkValidity();
+}
+
+function setCompassionFormStatus(form, type, message) {
+  const status = form.querySelector('[data-message-status]');
+  if (!status) return;
+  status.hidden = false;
+  status.className = `message-form-status ${type}`;
+  const heading = document.createElement('strong');
+  heading.textContent = type === 'success'
+    ? 'Thank you.'
+    : 'We could not share that yet.';
+  const detail = document.createElement('span');
+  detail.textContent = message;
+  status.replaceChildren(heading, detail);
+}
 
 function titleFor(screen) {
   if (screen === 'welcome') return TITLES.welcome;
@@ -235,6 +302,11 @@ document.addEventListener('click', (event) => {
     return;
   }
 
+  if (hit('[data-load-messages]')) {
+    loadCompassionMessages();
+    return;
+  }
+
   /* --- the Legacy Inventory --- */
   if ((el = hit('[data-section]'))) {
     toast(toggleSection(el.dataset.section) ? 'Marked as gathered' : 'Unmarked');
@@ -305,6 +377,64 @@ document.addEventListener('click', (event) => {
   if ((el = hit('[data-go]'))) {
     event.preventDefault();
     go(el.dataset.go);
+  }
+});
+
+document.addEventListener('input', (event) => {
+  const form = event.target.closest('[data-compassion-form]');
+  if (form) updateCompassionForm(form);
+});
+
+document.addEventListener('change', (event) => {
+  const form = event.target.closest('[data-compassion-form]');
+  if (form) updateCompassionForm(form);
+});
+
+document.addEventListener('submit', async (event) => {
+  const form = event.target.closest('[data-compassion-form]');
+  if (!form) return;
+  event.preventDefault();
+  updateCompassionForm(form);
+  if (!form.checkValidity()) {
+    form.reportValidity();
+    return;
+  }
+
+  const submit = form.querySelector('[type="submit"]');
+  submit.disabled = true;
+  submit.textContent = 'Sharing…';
+
+  const values = new FormData(form);
+  try {
+    const response = await fetch(COMPASSION_API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      signal: timeoutSignal(12000),
+      body: JSON.stringify({
+        displayName: values.get('displayName'),
+        community: values.get('community'),
+        message: values.get('message'),
+        consent: values.get('consent') === 'on',
+        website: values.get('website'),
+      }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || 'Please try again in a moment.');
+
+    form.reset();
+    setCompassionFormStatus(
+      form,
+      'success',
+      'Your message has been received and is now under review. We appreciate your kindness.',
+    );
+  } catch (error) {
+    const message = error.name === 'AbortError'
+      ? 'The message service took too long to respond. Please try again.'
+      : error.message || 'Please try again in a moment.';
+    setCompassionFormStatus(form, 'error', message);
+  } finally {
+    submit.textContent = 'Share compassion';
+    updateCompassionForm(form);
   }
 });
 
