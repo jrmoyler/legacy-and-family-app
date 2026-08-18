@@ -4,15 +4,11 @@
 
 import { esc, join } from './dom.js';
 import {
-  TABS, TAB_OF, BRAND, FOOTER_LINE, ONBOARDING,
+  TABS, TOOLS, TAB_OF, BRAND, FOOTER_LINE, SOCIAL_LINKS, ONBOARDING,
 } from './data.js';
 import { state } from './state.js';
 import {
-  cupMark, cupMarkOnDark, arrowLeft, cartIcon, bigCheck, closeIcon,
-import { TABS, TOOLS, TAB_OF, BRAND, FOOTER_LINE, SOCIAL_LINKS } from './data.js';
-import { state } from './state.js';
-import {
-  cupMark, cupMarkOnDark, arrowLeft, cartIcon, bigCheck, chevron, toolsIcon,
+  cupMark, cupMarkOnDark, arrowLeft, cartIcon, bigCheck, closeIcon, chevron, toolsIcon,
 } from './icons.js';
 
 /** Hash route for a screen id. */
@@ -137,7 +133,7 @@ export const backButton = (screen, label = 'Back') =>
 /**
  * The canonical book footer (Bible §1), reused on every long-form screen. The
  * printed line stays exactly as it appears inside the books; the platform links
- * sit beneath it, and are the ones Pamela confirmed herself (Bible §11).
+ * sit beneath it, and are the ones Pamella confirmed herself (Bible §11).
  */
 export const brandFooter = () => `
   <footer class="brand-foot">

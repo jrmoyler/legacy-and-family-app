@@ -1,6 +1,5 @@
 /**
  * The Compassion Hub — application entry point.
- * Compassion Hub by Cup of Compassion — application entry point.
  *
  * Responsibilities: hash routing, rendering, and event delegation.
  * Screen markup lives in src/screens.js; state lives in src/state.js.
@@ -10,14 +9,13 @@ import { $, $$ } from './src/dom.js';
 import { screens, compassionMessageList } from './src/screens.js';
 import { sidebar, appbar, tabbar, overlays, hrefFor } from './src/components.js';
 import {
-  BRAND, CATEGORIES, COMPASSION_API_URL, bookById, lessonById, productById,
-  BRAND, CATEGORIES, PRODUCTS, FORMAT_SHORT,
+  BRAND, CATEGORIES, COMPASSION_API_URL, PRODUCTS, FORMAT_SHORT,
   bookById, lessonById, productById, networkById,
 } from './src/data.js';
 import {
   state, loadState, saveState, toggleSection, toggleLesson,
   toggleCart, removeFromCart, addToLibrary, markOnboardingSeen,
-  toggleCart, removeFromCart, addToLibrary, toggleSaved, setFormat, formatFor,
+  toggleSaved, setFormat, formatFor,
 } from './src/state.js';
 
 const view = $('#view');

@@ -6,7 +6,9 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import subprocess
 import urllib.request
+from html.parser import HTMLParser
 from pathlib import Path
 
 
@@ -25,11 +27,102 @@ APP_PATHS = [
     ROOT / "supabase" / "functions" / "compassion-messages" / "index.ts",
     ROOT / "supabase" / "migrations" / "20260818022152_create_compassion_messages.sql",
 ]
+MODULE_PATHS = [ROOT / "app.js", *sorted((ROOT / "src").glob("*.js"))]
 
 
 def require(condition: bool, message: str) -> None:
     if not condition:
         raise SystemExit(message)
+
+
+def verify_module_syntax() -> None:
+    """Parse browser JavaScript as ES modules so duplicate imports fail CI."""
+    for path in MODULE_PATHS:
+        result = subprocess.run(
+            ["node", "--check", "--input-type=module"],
+            input=path.read_text(encoding="utf-8"),
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        require(
+            result.returncode == 0,
+            f"Invalid ES module syntax in {path.relative_to(ROOT)}:\n{result.stderr.strip()}",
+        )
+
+    graph = subprocess.run(
+        ["node", "--input-type=module", "--eval", "await import('./src/screens.js')"],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    require(graph.returncode == 0, f"Browser module graph is invalid:\n{graph.stderr.strip()}")
+
+
+def reject_duplicate_json_keys(pairs: list[tuple[str, object]]) -> dict[str, object]:
+    result: dict[str, object] = {}
+    for key, value in pairs:
+        require(key not in result, f"Duplicate JSON key: {key}")
+        result[key] = value
+    return result
+
+
+class HeadMetadataParser(HTMLParser):
+    def __init__(self) -> None:
+        super().__init__()
+        self.title_count = 0
+        self.metadata: dict[tuple[str, str], int] = {}
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag == "title":
+            self.title_count += 1
+        if tag != "meta":
+            return
+        values = dict(attrs)
+        key = next(((kind, values[kind]) for kind in ("name", "property") if values.get(kind)), None)
+        if key:
+            self.metadata[key] = self.metadata.get(key, 0) + 1
+
+
+def verify_metadata() -> None:
+    parser = HeadMetadataParser()
+    parser.feed((ROOT / "index.html").read_text(encoding="utf-8"))
+    require(parser.title_count == 1, f"Expected one document title, found {parser.title_count}")
+    duplicates = sorted(f"{kind}={name}" for (kind, name), count in parser.metadata.items() if count > 1)
+    require(not duplicates, f"Duplicate HTML metadata: {', '.join(duplicates)}")
+
+    for path in (ROOT / "manifest.webmanifest", ROOT / "vercel.json"):
+        json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=reject_duplicate_json_keys)
+
+
+def verify_brand_contract() -> None:
+    script = """
+      const { BRAND } = await import('./src/data.js');
+      console.log(JSON.stringify({
+        app: BRAND.app,
+        appFull: BRAND.appFull,
+        series: BRAND.series,
+        author: BRAND.author,
+      }));
+    """
+    result = subprocess.run(
+        ["node", "--input-type=module", "--eval", script],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    require(result.returncode == 0, f"Could not read the brand contract:\n{result.stderr.strip()}")
+    require(
+        json.loads(result.stdout) == {
+            "app": "The Compassion Hub",
+            "appFull": "The Compassion Hub",
+            "series": "A Cup of Compassion",
+            "author": "Pamella Foster-Grear",
+        },
+        "The exported app, series, or author brand contract is incorrect",
+    )
 
 
 def verify_sources() -> None:
@@ -44,7 +137,7 @@ def verify_sources() -> None:
     edge = (ROOT / "supabase" / "functions" / "compassion-messages" / "index.ts").read_text(encoding="utf-8")
     migration = (ROOT / "supabase" / "migrations" / "20260818022152_create_compassion_messages.sql").read_text(encoding="utf-8")
 
-    require("name: 'The Compassion Hub'" in data, "Canonical app name is missing")
+    require("app: 'The Compassion Hub'" in data, "Canonical app name is missing")
     require("author: 'Pamella Foster-Grear'" in data, "Canonical author is missing")
     require("series: 'A Cup of Compassion'" in data, "Canonical series name is missing")
     require("INDIVIDUAL_EBOOK_PRICE = 7.99" in data, "Individual ebook price is not $7.99")
@@ -63,10 +156,6 @@ def verify_sources() -> None:
     require("serviceFetch" in edge and "AbortSignal.timeout" in edge, "Edge requests need timeouts")
     require("pg_advisory_xact_lock" in migration, "Atomic rate-limit lock is missing")
     require("'The Compassion Hub', 'A note from us'" in migration, "Seed messages are not marked as examples")
-
-    json.loads((ROOT / "manifest.webmanifest").read_text(encoding="utf-8"))
-    json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
-
 
 def verify_live_api() -> None:
     request = urllib.request.Request(API_URL, headers={"Accept": "application/json"})
@@ -88,6 +177,9 @@ def main() -> None:
     parser.add_argument("--live", action="store_true", help="Also verify the deployed public message API")
     args = parser.parse_args()
 
+    verify_module_syntax()
+    verify_metadata()
+    verify_brand_contract()
     verify_sources()
     if args.live:
         verify_live_api()

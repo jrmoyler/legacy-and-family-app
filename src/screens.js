@@ -25,11 +25,8 @@ import {
 } from './components.js';
 import { cover, coverMini } from './covers.js';
 import {
-  cupMarkOnDark, chevron, goldCheck, bigCheck,
-  starOutline, printIcon, shieldIcon, cartIcon, bookIcon, messageIcon,
-  starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon, messageIcon,
   cupMark, cupMarkOnDark, chevron, goldCheck, bigCheck,
-  starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon,
+  starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon, messageIcon,
   mailIcon, externalIcon, downloadIcon, bookmarkIcon, shelfIcon,
 } from './icons.js';
 
@@ -206,7 +203,7 @@ screens.home = () => {
         ${quickTile(hrefFor('shop'), 'it-teal', cartIcon(22, '#23636A', 1.9), 'The shop', 'Books, sets & kits')}
         ${quickTile(hrefFor('library'), 'it-gold', shelfIcon(22, '#96771F', 1.9), 'My Library', `${saved} saved & bought`)}
         ${quickTile(hrefFor('network'), 'it-teal', peopleIcon(22, '#23636A', 1.9), 'Network', `${NETWORK.length} people to call`)}
-        ${quickTile(hrefFor('about'), 'it-gold', cupMark(22), 'About Pamela', 'And the movement')}
+        ${quickTile(hrefFor('about'), 'it-gold', cupMark(22), 'About Pamella', 'And the movement')}
       </div>
 
       ${featuredLessonCard()}
@@ -1326,7 +1323,7 @@ screens.about = () => `
         <div class="about-id-text">
           <p class="eyebrow">${esc(BRAND.authorTagline)}</p>
           <h1>${esc(BRAND.author)}</h1>
-          <p class="lede">Founder of ${esc(BRAND.name)} · ${esc(BRAND.publisher)}</p>
+          <p class="lede">Founder of ${esc(BRAND.app)} · ${esc(BRAND.publisher)}</p>
         </div>
       </div>
     </div>
@@ -1376,13 +1373,13 @@ screens.about = () => `
             </span>
           </a>`).join('')}
         </div>
-        <p class="hint">Every platform above is Pamela’s own and confirmed by her. She answers her email too.</p>
+        <p class="hint">Every platform above is Pamella’s own and confirmed by her. She answers her email too.</p>
       </div>
 
       <div class="aside-card" style="margin-top:16px">
         <span class="cap">Who else can help</span>
         <h2>The network</h2>
-        <p>A planner, an identity-protection specialist, a licensed insurance agent, and a business consultant — the people Pamela works alongside, with direct contact details for each.</p>
+        <p>A planner, an identity-protection specialist, a licensed insurance agent, and a business consultant — the people Pamella works alongside, with direct contact details for each.</p>
         <a class="btn btn-ghost" href="${hrefFor('network')}">Open the Network</a>
       </div>
     </div>
