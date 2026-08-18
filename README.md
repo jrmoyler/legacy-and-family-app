@@ -1,6 +1,7 @@
-# A Cup of Compassion — App
+# The Compassion Hub — App
 
-A series by **Pamella Foster-Grear** on compassion, legacy, and what gets passed on.
+The home for **Pamella Foster-Grear’s** A Cup of Compassion series, free reading,
+legacy tools, and a moderated public wall of compassionate messages.
 **Build it. Document it. Pass it on.**
 
 Published by Pam Grear Publishing LLC, Columbus, Ohio.
@@ -9,8 +10,9 @@ Published by Pam Grear Publishing LLC, Columbus, Ohio.
 
 ## What this is
 
-A responsive web app — 15 screens, no build step, no dependencies. Static
-HTML/CSS/ES modules. Drop it on any host and it runs.
+A responsive web app with no frontend build step or runtime dependencies.
+Static HTML/CSS/ES modules are paired with one Supabase Edge Function for the
+moderated public message wall.
 
 It is a real web app at every width, not a phone mockup: the page scrolls
 normally, layouts reflow, and desktop gets a persistent sidebar instead of a
@@ -34,6 +36,8 @@ source.
 | `src/data.js` | Brand, books, catalogue, reading, inventory, production status |
 | `src/icons.js` | Inline SVG icons and the cup-and-heart brand mark |
 | `src/dom.js` | `esc()` and small DOM helpers |
+| `supabase/functions/compassion-messages/` | Public read + moderated submit API |
+| `supabase/migrations/` | Message table, constraints, RLS, and seed content |
 | `manifest.webmanifest` | Installable-app metadata |
 | `vercel.json` | Clean URLs, caching, security headers |
 
@@ -44,6 +48,7 @@ source.
 **Reading** — Read index, Lesson (×6, free, full text)
 **Legacy** — The Legacy Inventory worksheet (printable)
 **Shop** — Shop, Product detail, Cart, Checkout, Confirmation
+**Messages** — Approved public notes + moderated visitor submission form
 **Standing pages** — About Pamella, Disclaimers, Production status
 
 ## Routing
@@ -52,7 +57,7 @@ Hash-based, so every screen is linkable and the browser Back button works:
 
 ```
 #/            welcome
-#/home        #/series     #/read      #/legacy    #/shop
+#/home        #/series     #/read      #/legacy    #/shop     #/messages
 #/cart        #/checkout   #/checkout-done
 #/about       #/disclaimer #/status
 #/book/<book-id>       #/lesson/<lesson-id>       #/product/<product-id>
@@ -107,6 +112,15 @@ the screen worksheet into a fill-in sheet with ruled space under every prompt.
 the numbering collisions, the fixed-in-text legal defects, the outstanding
 written releases, and the items that need a human to confirm (F4, the social
 handle). It is linked from the sidebar and from the series page.
+
+## Public compassion messages
+
+`#/messages` reads approved notes and accepts new submissions through the
+`compassion-messages` Supabase Edge Function in project
+`zfpjgedcjdhxvdbthikt`. New messages are rate-limited, validated, stripped of
+contact details, and stored as pending. They appear publicly only after an
+editor sets `approved = true` in Supabase. The browser never receives a secret
+or service-role key.
 
 ## Responsive behaviour
 
@@ -167,5 +181,8 @@ needed — Vercel serves these as static files automatically.
   (Bible §11).
 - Reading progress, inventory ticks, cart, and library persist in
   `localStorage` on the device only; there is no account or cross-device sync.
+- Compassion messages are the exception: approved messages and moderated
+  submissions use the dedicated Supabase project so visitors share one public
+  wall across devices.
 - Six-book set and set-plus-workbook are priced but not purchasable. They
   cannot ship until the numbering is locked and the Confusion content exists.

@@ -30,6 +30,8 @@ export const state = {
   activeBook: 'benefit',
   activeLesson: 'forty-seconds',
   activeProduct: 'first-three',
+  compassionMessages: [],
+  compassionMessagesStatus: 'idle',
 };
 
 const isValidProduct = (id) => PRODUCTS.some((p) => p.id === id && p.buyable && !p.free);

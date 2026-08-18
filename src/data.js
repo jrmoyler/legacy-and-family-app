@@ -19,14 +19,17 @@
  *    do not prepare legal documents, we help families arrive prepared.
  */
 
-import { homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon } from './icons.js';
+import {
+  homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon, messageIcon,
+} from './icons.js';
 
 /* ==========================================================================
    Brand (Bible §1, §6, §7)
    ========================================================================== */
 
 export const BRAND = {
-  name: 'A Cup of Compassion',
+  name: 'The Compassion Hub',
+  series: 'A Cup of Compassion',
   tagline: 'Build it. Document it. Pass it on.',
   author: 'Pamella Foster-Grear',
   authorTagline: 'Author | Legacy Advocate | Community Leader | Compassion Educator',
@@ -43,7 +46,7 @@ export const FOOTER_LINE = `${BRAND.site} | ${BRAND.email} | ${BRAND.social}`;
 
 /** Verbatim from Bible §7 — do not rewrite. */
 export const ABOUT_AUTHOR = [
-  'Pamella Foster-Grear is the founder of A Cup of Compassion, a movement dedicated to helping individuals and families live with purpose, lead with compassion, and leave a meaningful legacy for generations to come. For more than three decades, Pamella has served her community through nonprofit leadership, family advocacy, caregiving support, business development, and educational outreach. Her life’s work has been centered on one simple belief: compassion should not end with today — it should become tomorrow’s inheritance.',
+  'Pamella Foster-Grear is the founder of The Compassion Hub, a movement dedicated to helping individuals and families live with purpose, lead with compassion, and leave a meaningful legacy for generations to come. For more than three decades, Pamella has served her community through nonprofit leadership, family advocacy, caregiving support, business development, and educational outreach. Her life’s work has been centered on one simple belief: compassion should not end with today — it should become tomorrow’s inheritance.',
   'As an author, speaker, and educator, Pamella teaches that legacy is far more than financial wealth. It is the intentional passing down of love, wisdom, faith, family values, assets, and opportunity. Through her writing, workshops, and educational resources, she encourages families to prepare with purpose — to have the conversations, and create the documents, that preserve both relationships and generational wealth.',
   'Pamella believes every family deserves more than memories. They deserve a roadmap that protects what generations have worked so hard to build.',
 ];
@@ -65,6 +68,7 @@ export const TABS = [
   { id: 'read', label: 'Read', icon: bookIcon },
   { id: 'legacy', label: 'Legacy', icon: clipboardIcon },
   { id: 'shop', label: 'Shop', icon: cartIcon },
+  { id: 'messages', label: 'Messages', icon: messageIcon },
 ];
 
 /** Which nav tab should read as current for a given screen. */
@@ -80,7 +84,13 @@ export const TAB_OF = {
   cart: 'shop',
   checkout: 'shop',
   'checkout-done': 'shop',
+  messages: 'messages',
 };
+
+export const COMPASSION_API_URL =
+  'https://zfpjgedcjdhxvdbthikt.supabase.co/functions/v1/compassion-messages';
+
+export const INDIVIDUAL_EBOOK_PRICE = 7.99;
 
 /* ==========================================================================
    The books and their verified download editions
@@ -101,7 +111,7 @@ const bookAssets = (slug) => ({
 export const BOOKS = [
   {
     id: 'benefit', seriesLabel: 'Book 1', title: 'The Benefit of Having Compassion', designId: 'DAHPs1e2Od0',
-    pages: 25, words: '≈4,200 words', status: 'ready', price: 4.99,
+    pages: 25, words: '≈4,200 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion'),
     blurb: 'The doorway into the series: compassion as a practice you can learn, model, and make visible.',
     anchor: { text: 'If ye have faith as a grain of mustard seed, ye shall say unto this mountain, Remove hence to yonder place; and it shall remove; and nothing shall be impossible unto you.', ref: 'Matthew 17:20 · KJV' },
@@ -110,7 +120,7 @@ export const BOOKS = [
   },
   {
     id: 'nurtured', seriesLabel: 'Book 2', title: 'Are You Born in Compassion or Nurtured in It?', designId: 'DAHPtMCqeWs',
-    pages: 22, words: '≈1,600 words', status: 'ready', price: 4.99,
+    pages: 22, words: '≈1,600 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion'),
     blurb: 'The question the whole series turns on, put to real people and answered in their own words.',
     anchor: { text: 'But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith, Meekness, temperance: against such there is no law.', ref: 'Galatians 5:22-23 · KJV' },
@@ -119,7 +129,7 @@ export const BOOKS = [
   },
   {
     id: 'legacy', seriesLabel: 'Book 3', title: 'Compassion and Legacy', designId: 'DAHPxYb83RQ',
-    pages: 26, words: '≈1,800 words', status: 'ready', price: 4.99,
+    pages: 26, words: '≈1,800 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-03-Compassion-and-Legacy'), flagship: true,
     blurb: 'Compassion that outlives you has to be written down. A practical invitation to prepare with purpose.',
     anchor: { text: 'A good man leaveth an inheritance to his children’s children: and the wealth of the sinner is laid up for the just.', ref: 'Proverbs 13:22 · KJV' },
@@ -128,7 +138,7 @@ export const BOOKS = [
   },
   {
     id: 'confusion', seriesLabel: 'Book 4', title: 'Compassion or Confusion?', designId: 'DAHPpCDXy-s',
-    pages: 15, words: '≈3,100 words', status: 'ready', price: 4.99,
+    pages: 15, words: '≈3,100 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-04-Compassion-or-Confusion'),
     blurb: 'A reflective guide to recognizing the difference between compassionate love, self-abandonment, and patterns that diminish your voice.',
     anchor: null,
@@ -136,7 +146,7 @@ export const BOOKS = [
   },
   {
     id: 'commitment', seriesLabel: 'Book 5', title: 'Compassion and Commitment', designId: 'DAHPpbNcwyE',
-    pages: 16, words: '≈3,200 words', status: 'ready', price: 4.99,
+    pages: 16, words: '≈3,200 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-05-Compassion-and-Commitment'),
     blurb: 'A faith-centered relationship guide to practicing compassion, commitment, honest communication, and daily repair.',
     anchor: { text: 'Two are better than one; because they have a good reward for their labour… and a threefold cord is not quickly broken.', ref: 'Ecclesiastes 4:9-12 · KJV' },
@@ -145,7 +155,7 @@ export const BOOKS = [
   },
   {
     id: 'companionship', seriesLabel: 'Book 6', title: 'Compassion and Companionship', designId: 'DAHQDC0Itq0',
-    pages: 16, words: '≈3,000 words', status: 'ready', price: 4.99,
+    pages: 16, words: '≈3,000 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-06-Compassion-and-Companionship'),
     blurb: 'Companionship is compassion that stays: friendship that has carried weight across decades, distance, and ordinary days.',
     anchor: { text: 'It is of the LORD’s mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness.', ref: 'Lamentations 3:22-23 · KJV' },
@@ -194,7 +204,7 @@ export const PRODUCTS = [
     id: 'benefit',
     kind: 'eBook',
     title: 'The Benefit of Having Compassion',
-    price: 4.99,
+    price: INDIVIDUAL_EBOOK_PRICE,
     badge: 'START HERE',
     cats: ['Books'],
     buyable: true,
@@ -203,27 +213,27 @@ export const PRODUCTS = [
     about: 'The longest book in the series and the natural place to begin — compassion as something taught, practised, and measurable, anchored in Matthew 17:20.',
   },
   {
-    id: 'nurtured', kind: 'eBook', title: 'Are You Born in Compassion or Nurtured in It?', price: 4.99,
+    id: 'nurtured', kind: 'eBook', title: 'Are You Born in Compassion or Nurtured in It?', price: INDIVIDUAL_EBOOK_PRICE,
     badge: '', cats: ['Books'], buyable: true, book: 'nurtured', note: 'PDF & EPUB · yours forever',
     about: 'A thoughtful exploration of where compassion begins, how it is practiced, and the examples that help it grow.',
   },
   {
-    id: 'legacy', kind: 'eBook', title: 'Compassion and Legacy', price: 4.99,
+    id: 'legacy', kind: 'eBook', title: 'Compassion and Legacy', price: INDIVIDUAL_EBOOK_PRICE,
     badge: '', cats: ['Books'], buyable: true, book: 'legacy', note: 'PDF & EPUB · yours forever',
     about: 'A practical invitation to prepare with purpose and make care visible in the plans, stories, and conversations you leave behind.',
   },
   {
-    id: 'confusion', kind: 'eBook', title: 'Compassion or Confusion?', price: 4.99,
+    id: 'confusion', kind: 'eBook', title: 'Compassion or Confusion?', price: INDIVIDUAL_EBOOK_PRICE,
     badge: '', cats: ['Books'], buyable: true, book: 'confusion', note: 'PDF & EPUB · yours forever',
     about: 'A reflective guide to clear boundaries, self-respect, and the difference between love that lifts and patterns that diminish.',
   },
   {
-    id: 'commitment', kind: 'eBook', title: 'Compassion and Commitment', price: 4.99,
+    id: 'commitment', kind: 'eBook', title: 'Compassion and Commitment', price: INDIVIDUAL_EBOOK_PRICE,
     badge: '', cats: ['Books'], buyable: true, book: 'commitment', note: 'PDF & EPUB · yours forever',
     about: 'A faith-centered guide to honest communication, daily repair, and the practices that give relationships a dependable foundation.',
   },
   {
-    id: 'companionship', kind: 'eBook', title: 'Compassion and Companionship', price: 4.99,
+    id: 'companionship', kind: 'eBook', title: 'Compassion and Companionship', price: INDIVIDUAL_EBOOK_PRICE,
     badge: '', cats: ['Books'], buyable: true, book: 'companionship', note: 'PDF & EPUB · yours forever',
     about: 'A warm reflection on friendship, belonging, and the ordinary ways people show up for one another across seasons of life.',
   },
@@ -527,7 +537,7 @@ export const LESSON_TOTAL = LESSONS.length;
  * worked through. No field on this screen accepts an account number.
  */
 export const INVENTORY_PRIVACY =
-  'This worksheet has no fields to type into, by design. It tells you what to gather and what to ask — you write the answers on paper, or on a document that never leaves your own device. A Cup of Compassion stores none of it, and nothing on this screen is sent anywhere. The only thing saved is a tick against the sections you have finished, kept in this browser.';
+  'This worksheet has no fields to type into, by design. It tells you what to gather and what to ask — you write the answers on paper, or on a document that never leaves your own device. The Compassion Hub stores none of it, and nothing on this screen is sent anywhere. The only thing saved is a tick against the sections you have finished, kept in this browser.';
 
 export const INVENTORY = [
   {

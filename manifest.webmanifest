@@ -1,7 +1,7 @@
 {
-  "name": "A Cup of Compassion",
-  "short_name": "Compassion",
-  "description": "A series by Pamella Foster-Grear on compassion, legacy, and what gets passed on — with a free, printable Legacy Inventory.",
+  "name": "The Compassion Hub",
+  "short_name": "Compassion Hub",
+  "description": "Books, free reading, legacy tools, and public messages of compassion by Pamella Foster-Grear.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

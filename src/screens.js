@@ -22,7 +22,7 @@ import {
 } from './components.js';
 import {
   cupMarkOnDark, chevron, goldCheck, bigCheck,
-  starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon,
+  starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon, messageIcon,
 } from './icons.js';
 
 export const screens = {};
@@ -180,6 +180,103 @@ function featuredLessonCard() {
 }
 
 /* ==========================================================================
+   Messages of Compassion
+   ========================================================================== */
+const messageDate = new Intl.DateTimeFormat('en-US', {
+  month: 'short', day: 'numeric', year: 'numeric',
+});
+
+const readableMessageDate = (value) => {
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? '' : messageDate.format(date);
+};
+
+export function compassionMessageList() {
+  if (state.compassionMessagesStatus === 'loading') {
+    return '<p class="message-wall-state">Gathering messages…</p>';
+  }
+  if (state.compassionMessagesStatus === 'error') {
+    return `
+    <div class="message-wall-state message-wall-error">
+      <p>The public messages could not be loaded.</p>
+      <button class="btn btn-ghost btn-auto" data-load-messages>Try again</button>
+    </div>`;
+  }
+  if (!state.compassionMessages.length) {
+    return '<p class="message-wall-state">No approved messages yet. Be the first to leave a little kindness.</p>';
+  }
+  return state.compassionMessages.map((item) => `
+    <article class="compassion-note">
+      <span class="quote-mark" aria-hidden="true">“</span>
+      <blockquote>${esc(item.message)}</blockquote>
+      <footer>
+        <span><strong>${esc(item.display_name)}</strong>${item.community ? ` <span class="community">${esc(item.community)}</span>` : ''}</span>
+        <time datetime="${esc(item.created_at)}">${esc(readableMessageDate(item.created_at))}</time>
+      </footer>
+    </article>`).join('');
+}
+
+screens.messages = () => `
+  <div class="shell messages-page">
+    <header class="message-page-head">
+      <span class="message-head-mark" aria-hidden="true">${messageIcon(30, '#B08D2E', 1.8)}</span>
+      <div>
+        <h1>Messages of Compassion</h1>
+        <p>Leave a little kindness for someone who may need it today.</p>
+      </div>
+    </header>
+
+    <div class="messages-layout">
+      <section class="message-compose" aria-labelledby="message-form-title">
+        <h2 id="message-form-title">Share your message</h2>
+        <form data-compassion-form novalidate>
+          <label class="message-field">
+            <span>Your name</span>
+            <input class="field" name="displayName" autocomplete="name" minlength="2" maxlength="60" required placeholder="Your name">
+          </label>
+          <label class="message-field">
+            <span>City or community <small>(optional)</small></span>
+            <input class="field" name="community" autocomplete="address-level2" maxlength="80" placeholder="City or community">
+          </label>
+          <label class="message-field">
+            <span>Your message</span>
+            <textarea class="field message-textarea" name="message" minlength="15" maxlength="500" required placeholder="Write a short message of encouragement or hope…"></textarea>
+          </label>
+          <div class="message-counter"><span data-message-count>0</span> / 500</div>
+
+          <label class="message-consent">
+            <input type="checkbox" name="consent" required>
+            <span>I understand this message will be reviewed before it appears publicly.</span>
+          </label>
+
+          <label class="message-honeypot" aria-hidden="true">
+            Website
+            <input name="website" tabindex="-1" autocomplete="off">
+          </label>
+
+          <button class="btn btn-message" type="submit" disabled>Share compassion</button>
+          <p class="message-review-note">${shieldIcon('#96771F')}Messages are reviewed before appearing.</p>
+          <div class="message-form-status" data-message-status role="status" aria-live="polite" hidden></div>
+        </form>
+      </section>
+
+      <section class="message-wall" aria-labelledby="message-wall-title">
+        <div class="message-wall-head">
+          <div>
+            <h2 id="message-wall-title">Public messages</h2>
+            <p>A collection of approved notes shared with our community.</p>
+          </div>
+          <button class="message-refresh" data-load-messages aria-label="Refresh public messages">Refresh</button>
+        </div>
+        <div class="compassion-notes" data-compassion-list>
+          ${compassionMessageList()}
+        </div>
+      </section>
+    </div>
+    <div class="screen-foot"></div>
+  </div>`;
+
+/* ==========================================================================
    The series
    ========================================================================== */
 screens.series = () => `
@@ -238,7 +335,7 @@ screens.book = () => {
     <span class="glow" aria-hidden="true"></span>
     <div class="shell">
       ${backButton('series', 'The Series')}
-      <p class="eyebrow">${book.seriesLabel ? esc(book.seriesLabel) : 'A Cup of Compassion'}</p>
+      <p class="eyebrow">${book.seriesLabel ? esc(book.seriesLabel) : esc(BRAND.series)}</p>
       <h1>${esc(book.title)}</h1>
       <p class="lede">${esc(book.blurb)}</p>
     </div>
@@ -868,7 +965,7 @@ screens.about = () => `
       <div class="aside-card">
         <span class="cap">The positioning, plainly</span>
         <h2>${esc(LEGAL_POSITIONING)}</h2>
-        <p>A Cup of Compassion is an educational publisher. We do not draft wills, trusts, or any other legal instrument, and we never will. What we do is make sure you walk into an attorney’s office already knowing what you own, what you want, and who you want it to go to.</p>
+        <p>The Compassion Hub is an educational publishing and community resource. We do not draft wills, trusts, or any other legal instrument, and we never will. What we do is make sure you walk into an attorney’s office already knowing what you own, what you want, and who you want it to go to.</p>
         <a class="btn btn-ghost" href="${hrefFor('disclaimer')}">Read the disclaimers</a>
       </div>
 
@@ -904,8 +1001,15 @@ const DISCLAIMERS = [
     title: 'Your information stays yours',
     body: [
       'The Legacy Inventory deliberately has nothing to type into. It tells you what to gather and what to ask; you write the answers on paper or on a document that never leaves your own device.',
-      'This app runs entirely in your browser. It has no account, no server, and no analytics. The only thing it remembers is which sections you have ticked and what is in your cart, kept in this browser’s local storage and readable by nobody but you. Clearing your browser data erases it.',
+      'This app has no account and no analytics. It remembers only which sections you have ticked and what is in your cart, kept in this browser’s local storage and readable by nobody but you. Clearing your browser data erases it.',
       'We will never ask you to type an account number, a policy number, or the contents of a safe deposit box into a web form — not on this site, and not anywhere else.',
+    ],
+  },
+  {
+    title: 'Public messages of compassion',
+    body: [
+      'The name, community, and message you submit on the Messages page are sent to our message service for review. Approved messages are public, so do not include phone numbers, email addresses, account details, or anything you want kept private.',
+      'To discourage spam, the service keeps a non-reversible fingerprint that changes daily for the submitting network address. It never publishes that fingerprint, and the public message feed includes only approved display names, communities, messages, and dates.',
     ],
   },
   {
