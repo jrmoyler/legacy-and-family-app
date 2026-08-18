@@ -14,8 +14,8 @@ import {
 } from './src/data.js';
 import {
   state, loadState, saveState, toggleSection, toggleLesson,
-  toggleCart, removeFromCart, addToLibrary, markOnboardingSeen,
-  toggleSaved, setFormat, formatFor,
+  addToCart, removeFromCart, markOnboardingSeen,
+  toggleSaved, setFormat,
 } from './src/state.js';
 
 const view = $('#view');
@@ -120,40 +120,15 @@ function renderRoute() {
 function refresh() {
   const scrollY = window.scrollY;
   const focusKey = document.activeElement?.getAttribute?.('data-focus-key');
-  capturePayFields();
 
   paint();
 
   window.scrollTo({ top: scrollY, left: 0, behavior: 'instant' });
-  restorePayFields();
   if (focusKey) {
     // Searched document-wide, not just the view: the sidebar re-renders too,
     // and its Tools disclosure is one of the controls that survives a refresh.
     const restored = document.querySelector(`[data-focus-key="${CSS.escape(focusKey)}"]`);
     if (restored) restored.focus({ preventScroll: true });
-  }
-}
-
-/**
- * Switching payment method re-renders the whole screen, which would otherwise
- * wipe anything already typed into the card fields — including on the way
- * back, since the invoice view has no fields to read the values off. So they
- * are held here rather than scraped from the DOM each time.
- *
- * In memory only: nothing a payment form collects is ever written to storage.
- */
-const payFields = new Map();
-
-function capturePayFields() {
-  for (const input of $$('#view input.field')) {
-    if (input.value) payFields.set(input.name, input.value);
-  }
-}
-
-function restorePayFields() {
-  for (const [name, value] of payFields) {
-    const input = view.querySelector(`input.field[name="${CSS.escape(name)}"]`);
-    if (input && !input.value) input.value = value;
   }
 }
 
@@ -166,7 +141,6 @@ const TITLES = {
   shop: 'Shop',
   cart: 'Your cart',
   checkout: 'Checkout',
-  'checkout-done': 'Thank you',
   tools: 'Tools',
   library: 'My Library',
   network: 'Network',
@@ -506,12 +480,6 @@ document.addEventListener('click', (event) => {
   }
 
   /* --- checkout --- */
-  if ((el = hit('[data-pay]'))) {
-    state.payMethod = el.dataset.pay;
-    saveState();
-    refresh();
-    return;
-  }
   if (hit('[data-checkout]')) {
     if (!state.cart.length) return;
     go('checkout');
@@ -553,11 +521,6 @@ document.addEventListener('click', (event) => {
     announce(`${state.category}: ${shown} item${shown === 1 ? '' : 's'}`);
     return;
   }
-  if ((el = hit('[data-cart-toggle]'))) {
-    toast(toggleCart(el.dataset.cartToggle) ? 'Added to cart' : 'Removed from cart');
-    refresh();
-    return;
-  }
   if ((el = hit('[data-remove]'))) {
     removeFromCart(el.dataset.remove);
     refresh();
@@ -566,19 +529,8 @@ document.addEventListener('click', (event) => {
   if ((el = hit('[data-buy]'))) {
     const product = productById(el.dataset.buy);
     if (!product) return;
-    addToLibrary([product.id]);
-    $('#lib-copy').textContent =
-      `${product.title} is now in My Library, in ${FORMAT_SHORT[formatFor(product.id)]}.`;
-    refresh();
-    openSheet('library');
-    return;
-  }
-  if (hit('[data-purchase]')) {
-    const bought = state.cart.map(productById).filter(Boolean);
-    if (!bought.length) return;
-    addToLibrary(bought.map((p) => p.id));
-    payFields.clear();
-    go('checkout-done');
+    addToCart(product.id);
+    go('checkout');
     return;
   }
 

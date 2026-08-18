@@ -42,9 +42,9 @@ export const BRAND = {
   appBy: 'A Cup of Compassion',
   appFull: 'The Compassion Hub',
   tagline: 'Build it. Document it. Pass it on.',
-  author: 'Pamella Foster-Grear',
+  author: 'Pamella Grear',
   authorTagline: 'Author | Legacy Advocate | Community Leader | Compassion Educator',
-  headshot: '/assets/library/brand/pamella-foster-grear.jpg',
+  headshot: '/assets/network/pamella-grear.jpg',
   publisher: 'Pam Grear Publishing LLC · Columbus, Ohio',
   site: 'www.acupofcompassion.com',
   email: 'pamella@acupofcompassion.com',
@@ -61,14 +61,8 @@ export const SOCIAL_LINKS = [
   {
     id: 'instagram',
     label: 'Instagram',
-    handle: '@familykeepers',
-    url: 'https://www.instagram.com/familykeepers/',
-  },
-  {
-    id: 'tiktok',
-    label: 'TikTok',
-    handle: '@pamelafostergrear',
-    url: 'https://www.tiktok.com/@pamelafostergrear?_r=1&_t=ZT-98gpo4iN0ZB',
+    handle: '@acupofcompassion',
+    url: 'https://www.instagram.com/acupofcompassion',
   },
   {
     id: 'youtube',
@@ -83,7 +77,7 @@ export const FOOTER_LINE = `${BRAND.site} | ${BRAND.email} | ${BRAND.social}`;
 
 /** Verbatim from Bible §7 — do not rewrite. */
 export const ABOUT_AUTHOR = [
-  'Pamella Foster-Grear is the founder of The Compassion Hub, a movement dedicated to helping individuals and families live with purpose, lead with compassion, and leave a meaningful legacy for generations to come. For more than three decades, Pamella has served her community through nonprofit leadership, family advocacy, caregiving support, business development, and educational outreach. Her life’s work has been centered on one simple belief: compassion should not end with today — it should become tomorrow’s inheritance.',
+  'Pamella Grear is the founder of The Compassion Hub, a movement dedicated to helping individuals and families live with purpose, lead with compassion, and leave a meaningful legacy for generations to come. For more than three decades, Pamella has served her community through nonprofit leadership, family advocacy, caregiving support, business development, and educational outreach. Her life’s work has been centered on one simple belief: compassion should not end with today — it should become tomorrow’s inheritance.',
   'As an author, speaker, and educator, Pamella teaches that legacy is far more than financial wealth. It is the intentional passing down of love, wisdom, faith, family values, assets, and opportunity. Through her writing, workshops, and educational resources, she encourages families to prepare with purpose — to have the conversations, and create the documents, that preserve both relationships and generational wealth.',
   'Pamella believes every family deserves more than memories. They deserve a roadmap that protects what generations have worked so hard to build.',
 ];
@@ -163,7 +157,6 @@ export const TAB_OF = {
   product: 'shop',
   cart: 'shop',
   checkout: 'shop',
-  'checkout-done': 'shop',
   messages: 'messages',
   tools: 'tools',
   library: 'tools',
@@ -395,6 +388,24 @@ export const PRODUCTS = [
     },
     note: '28 pages · PDF & EPUB',
     about: 'Seven parts for every book in the series: overview, key concepts, reflection, a guided exercise, journaling pages, a discussion guide, and action steps. Built for kitchen tables and small groups alike.',
+  },
+  {
+    id: 'compassion-legacy-journal',
+    kind: 'Journal',
+    title: 'The Compassion Legacy Journal',
+    price: 25,
+    originalPrice: 37,
+    badge: 'SALE',
+    cats: ['Companions'],
+    buyable: true,
+    assets: {
+      pdf: '/assets/library/pdf/The-Compassion-Legacy-Journal.pdf',
+      cover: '/assets/library/covers/The-Compassion-Legacy-Journal.jpg',
+      coverThumb: '/assets/library/covers/thumbs/The-Compassion-Legacy-Journal.jpg',
+      coverFit: 'contain',
+    },
+    note: '13 pages · illustrated PDF · twelve guided letters',
+    about: 'Twelve guided letters for the people you love, the generations you may never meet, and the people trusted to carry your legacy forward. Each prompt helps you preserve the meaning behind the plans, property, stories, and acts of compassion you leave behind.',
   },
   {
     id: 'church-license',
@@ -897,7 +908,7 @@ export const STATUS_GROUPS = [
     items: [
       'Keep the education-only legal framing and disclaimer wherever legacy-planning material is promoted.',
       'Retain the traditional-use wellness framing in Book 1 and avoid presenting it as medical advice.',
-      'Pamella’s Instagram, TikTok, and YouTube links are confirmed by her and now linked from the app. Confirm any further platform before adding it.',
+      'Pamella’s A Cup of Compassion Instagram and YouTube links are published in the app. Confirm any further platform before adding it.',
       'Everyone on the Network page is listed with the contact detail and the headshot they supplied. Re-confirm before changing or adding an entry.',
     ],
   },

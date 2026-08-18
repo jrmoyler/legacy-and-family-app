@@ -934,6 +934,13 @@ p a, .about-copy a { text-decoration: underline; }
   color: var(--muted);
   flex: none;
 }
+.page-head-note {
+  align-self: center;
+  color: var(--muted);
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+}
 
 .avatar-tile {
   width: 46px; height: 46px;
@@ -1685,6 +1692,26 @@ p a, .about-copy a { text-decoration: underline; }
   .checkout-layout .summary { position: sticky; top: 26px; order: 2; }
 }
 
+.payment-request {
+  padding: 24px;
+  border: 1px solid #D8CEE0;
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: var(--lift);
+}
+.payment-request .payment-icon {
+  display: grid;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  background: #F2EAF6;
+}
+.payment-request .pay-cap { margin: 18px 0 8px; }
+.payment-request > p { color: var(--muted); font-size: 13.5px; line-height: 1.6; }
+.payment-request .btn { margin-top: 20px; }
+.payment-request .fine { margin-top: 12px; text-align: center; font-size: 12px; }
+
 .order-card {
   border-radius: var(--radius-lg);
   padding: 24px;
@@ -2087,6 +2114,9 @@ p a, .about-copy a { text-decoration: underline; }
 }
 .pd-price-row .p { font-family: var(--serif); font-weight: 700; font-size: 36px; color: var(--plum-800); }
 .pd-price-row .note { font-family: var(--serif); font-size: 13px; color: var(--muted); }
+.price-stack { display: inline-flex; align-items: baseline; gap: 8px; }
+.price-stack s { color: var(--muted); font-size: .72em; font-weight: 600; }
+.price-stack strong { color: var(--plum-800); font: inherit; }
 
 .pd-actions { display: grid; gap: 11px; margin-top: 20px; }
 .pd-actions .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; }
@@ -2159,6 +2189,20 @@ p a, .about-copy a { text-decoration: underline; }
 }
 .download-link small { margin-top: 3px; color: var(--muted); font-size: 10px; font-weight: 600; }
 .download-link:hover { border-color: var(--gold); background: var(--gold-soft); }
+.download-lock {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid #D8CEE0;
+  border-radius: var(--radius);
+  background: #F7F2FA;
+}
+.download-lock svg { flex: none; width: 24px; height: 24px; }
+.download-lock strong, .download-lock span { display: block; }
+.download-lock strong { color: var(--plum-800); font-size: 14px; }
+.download-lock span { margin-top: 3px; color: var(--muted); font-size: 12.5px; line-height: 1.45; }
 
 .about-cap {
   font-family: var(--serif);
@@ -3092,6 +3136,7 @@ p a, .about-copy a { text-decoration: underline; }
   border-radius: inherit;
   background: var(--plum-900);
 }
+.cover-art.contain { object-fit: contain; }
 
 /**
  * A single cover, or a set's titles fanned out. Slots are sized by height and
