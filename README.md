@@ -2,15 +2,12 @@
 
 The home for **Pamella Foster-Grear’s** A Cup of Compassion series, free reading,
 legacy tools, and a moderated public wall of compassionate messages.
-# Compassion Hub by Cup of Compassion
 
-The app for **A Cup of Compassion** — the series by **Pamela Foster-Grear** on
-compassion, legacy, and what gets passed on.
 **Build it. Document it. Pass it on.**
 
 Published by Pam Grear Publishing LLC, Columbus, Ohio.
 
-> **Two names, on purpose.** *Compassion Hub* is the app — what the reader
+> **Two names, on purpose.** *The Compassion Hub* is the app — what the reader
 > opens, installs, and navigates. *A Cup of Compassion* is the series and the
 > publishing imprint it carries, and it stays on every book footer, disclaimer,
 > and copyright line, because that is what is printed inside the editions
@@ -24,9 +21,6 @@ Published by Pam Grear Publishing LLC, Columbus, Ohio.
 A responsive web app with no frontend build step or runtime dependencies.
 Static HTML/CSS/ES modules are paired with one Supabase Edge Function for the
 moderated public message wall.
-A responsive web app — 18 screens, no build step, no dependencies. Static
-HTML/CSS/ES modules. Drop it on any host and it runs.
-
 It is a real web app at every width, not a phone mockup: the page scrolls
 normally, layouts reflow, and desktop gets a persistent sidebar instead of a
 simulated device frame.
@@ -72,7 +66,7 @@ source.
 **Messages** — Approved public notes + moderated visitor submission form
 **Standing pages** — About Pamella, Disclaimers, Production status
 **Tools** — Tools index, My Library, Network
-**Standing pages** — About Pamela, Disclaimers, Production status
+**Standing pages** — About Pamella, Disclaimers, Production status
 
 ## Routing
 
@@ -325,7 +319,7 @@ needed — Vercel serves these as static files automatically.
 - Six-book set and set-plus-workbook are priced but not purchasable. They
   cannot ship until the numbering is locked and the Confusion content exists.
 - `@acupofcompassion` is still printed as text in the canonical footer, matching
-  the print interiors. Pamela's Instagram, TikTok, and YouTube links are
+  the print interiors. Pamella's Instagram, TikTok, and YouTube links are
   confirmed by her and are linked from the sidebar, the About page, the book
   footer, and her Network card. Any further platform needs the same
   confirmation before it goes in (Bible §11).

@@ -20,8 +20,7 @@
  */
 
 import {
-  homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon, messageIcon,
-  homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon, peopleIcon, shelfIcon,
+  homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon, messageIcon, peopleIcon, shelfIcon,
 } from './icons.js';
 
 /* ==========================================================================
@@ -37,12 +36,11 @@ import {
  * that is what is printed inside the editions themselves.
  */
 export const BRAND = {
-  name: 'The Compassion Hub',
-  series: 'A Cup of Compassion',
-  app: 'Compassion Hub',
-  appBy: 'by Cup of Compassion',
-  appFull: 'Compassion Hub by Cup of Compassion',
   name: 'A Cup of Compassion',
+  series: 'A Cup of Compassion',
+  app: 'The Compassion Hub',
+  appBy: 'A Cup of Compassion',
+  appFull: 'The Compassion Hub',
   tagline: 'Build it. Document it. Pass it on.',
   author: 'Pamella Foster-Grear',
   authorTagline: 'Author | Legacy Advocate | Community Leader | Compassion Educator',
@@ -56,7 +54,7 @@ export const BRAND = {
 };
 
 /**
- * Pamela's platforms, supplied and confirmed by her directly — which is what
+ * Pamella's platforms, supplied and confirmed by her directly — which is what
  * the app was waiting on before linking any of them (Bible §11).
  */
 export const SOCIAL_LINKS = [
@@ -149,7 +147,7 @@ export const TOOLS = [
     id: 'network',
     label: 'Network',
     icon: peopleIcon,
-    blurb: 'The people Pamela works alongside, and how to reach each of them directly.',
+    blurb: 'The people Pamella works alongside, and how to reach each of them directly.',
   },
 ];
 
@@ -899,7 +897,7 @@ export const STATUS_GROUPS = [
     items: [
       'Keep the education-only legal framing and disclaimer wherever legacy-planning material is promoted.',
       'Retain the traditional-use wellness framing in Book 1 and avoid presenting it as medical advice.',
-      'Pamela’s Instagram, TikTok, and YouTube links are confirmed by her and now linked from the app. Confirm any further platform before adding it.',
+      'Pamella’s Instagram, TikTok, and YouTube links are confirmed by her and now linked from the app. Confirm any further platform before adding it.',
       'Everyone on the Network page is listed with the contact detail and the headshot they supplied. Re-confirm before changing or adding an entry.',
     ],
   },
