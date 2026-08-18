@@ -34,6 +34,10 @@ export const screens = {};
 
 const money = (n) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
 
+const priceMarkup = (product, className = 'price-stack') => product.originalPrice
+  ? `<span class="${className}"><s>${money(product.originalPrice)}</s><strong>${money(product.price)}</strong></span>`
+  : money(product.price);
+
 /* --------------------------------------------------------------------------
    Downloads
    -------------------------------------------------------------------------- */
@@ -44,19 +48,27 @@ const money = (n) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
  * picked one format still sees the other listed as available.
  */
 const downloadLinks = (assets, format) => join([
-  format !== 'epub' && `<a class="download-link" href="${esc(assets.pdf)}" download>PDF <small>print edition</small></a>`,
-  format !== 'pdf' && `<a class="download-link" href="${esc(assets.epub)}" download>EPUB <small>e-reader edition</small></a>`,
+  assets.pdf && format !== 'epub' && `<a class="download-link" href="${esc(assets.pdf)}" download>PDF <small>print edition</small></a>`,
+  assets.epub && format !== 'pdf' && `<a class="download-link" href="${esc(assets.epub)}" download>EPUB <small>e-reader edition</small></a>`,
 ]);
 
 const editionDownloadPanel = (editions, heading = 'Download editions', format = DEFAULT_FORMAT) => {
   if (!editions.length) return '';
+  const hasPdf = editions.some(({ assets }) => assets?.pdf);
+  const hasEpub = editions.some(({ assets }) => assets?.epub);
+  const formatLabel = hasPdf && hasEpub
+    ? (format === 'both' ? 'PDF and EPUB included' : `${FORMAT_SHORT[format]} selected`)
+    : (hasPdf ? 'PDF included' : 'EPUB included');
+  const intro = hasPdf && hasEpub
+    ? (format === 'both'
+      ? 'Choose PDF for print and fixed layout, or EPUB for comfortable reading on an e-reader or phone.'
+      : 'Showing the format you chose. Every title is available in both, so you can switch at any time.')
+    : 'This publication is supplied in the format shown below.';
   return `
   <section class="download-panel" aria-label="${esc(heading)}">
-    <span class="cap">${format === 'both' ? 'PDF and EPUB included' : `${esc(FORMAT_SHORT[format])} selected`}</span>
+    <span class="cap">${esc(formatLabel)}</span>
     <h2>${esc(heading)}</h2>
-    <p class="download-intro">${format === 'both'
-      ? 'Choose PDF for print and fixed layout, or EPUB for comfortable reading on an e-reader or phone.'
-      : 'Showing the format you chose. Every title is available in both, so you can switch at any time.'}</p>
+    <p class="download-intro">${esc(intro)}</p>
     <div class="download-list">
       ${editions.map(({ title, assets }) => `
       <div class="download-row">
@@ -67,9 +79,15 @@ const editionDownloadPanel = (editions, heading = 'Download editions', format = 
   </section>`;
 };
 
+const paidDownloadLock = () => `
+  <section class="download-lock" aria-label="Downloads available after purchase">
+    ${shieldIcon('#4A2A63')}
+    <div><strong>Downloads unlock after purchase</strong><span>Paid PDFs and EPUBs are available after payment is confirmed.</span></div>
+  </section>`;
+
 /** Publications that carry download files, for a product's download panel. */
 const editionsForProduct = (product) =>
-  titlesForProduct(product).filter(({ assets }) => assets?.pdf && assets?.epub);
+  titlesForProduct(product).filter(({ assets }) => assets?.pdf || assets?.epub);
 
 /** Publications that carry cover art, for a product's cover preview. */
 const coversForProduct = (product) =>
@@ -146,9 +164,6 @@ screens.home = () => {
         <p class="bless">${esc(BRAND.blessing)}</p>
         <h1>${esc(BRAND.app)}</h1>
       </div>
-      <a class="avatar-tile" href="${hrefFor('about')}" aria-label="About ${esc(BRAND.author)}">
-        <img src="${esc(BRAND.headshot)}" alt="" width="46" height="46">
-      </a>
     </header>
 
     <div class="home-grid">
@@ -195,10 +210,6 @@ screens.home = () => {
       </a>
 
       <div class="quick-grid span-all">
-        <a class="quick-tile" href="${hrefFor('read')}"><span class="icon-tile it-gold">${bookIcon(22, '#96771F', 1.9)}</span>Free reading<small>${read} of ${LESSON_TOTAL} read</small></a>
-        <a class="quick-tile" href="${hrefFor('shop')}"><span class="icon-tile it-teal">${cartIcon(22, '#23636A', 1.9)}</span>The shop<small>Books, sets &amp; kits</small></a>
-        <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile icon-tile-photo"><img src="${esc(BRAND.headshot)}" alt="" width="44" height="44"></span>About Pamella<small>And the movement</small></a>
-        <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile it-gold">${peopleIcon(22, '#96771F', 1.9)}</span>About Pamella<small>And the movement</small></a>
         ${quickTile(hrefFor('read'), 'it-gold', bookIcon(22, '#96771F', 1.9), 'Free reading', `${read} of ${LESSON_TOTAL} read`)}
         ${quickTile(hrefFor('shop'), 'it-teal', cartIcon(22, '#23636A', 1.9), 'The shop', 'Books, sets & kits')}
         ${quickTile(hrefFor('library'), 'it-gold', shelfIcon(22, '#96771F', 1.9), 'My Library', `${saved} saved & bought`)}
@@ -395,6 +406,7 @@ screens.book = () => {
   const book = bookById(state.activeBook);
   const status = BOOK_STATUS[book.status];
   const product = book.status === 'ready' ? PRODUCTS.find((p) => p.book === book.id) : null;
+  const owned = product ? inLibrary(product.id) : false;
 
   return `
   <header class="dark-head">
@@ -455,7 +467,11 @@ screens.book = () => {
         </a>
         <figcaption>Cover art · <a href="${esc(book.assets.cover)}" target="_blank" rel="noopener noreferrer">view full size</a></figcaption>
       </figure>` : ''}
-      ${book.assets ? editionDownloadPanel([{ title: book.title, assets: book.assets }], 'Download this book', product ? formatFor(product.id) : DEFAULT_FORMAT) : ''}
+      ${book.assets
+        ? (owned
+          ? editionDownloadPanel([{ title: book.title, assets: book.assets }], 'Download this book', product ? formatFor(product.id) : DEFAULT_FORMAT)
+          : paidDownloadLock())
+        : ''}
       ${product ? `
       <div class="aside-card" style="margin-top:16px">
         <span class="cap">Available on its own</span>
@@ -700,10 +716,7 @@ screens.shop = () => {
         <p class="bless">Books, sets &amp; kits</p>
         <h1>Shop</h1>
       </div>
-      <a class="cart-btn" href="${hrefFor('cart')}" aria-label="Cart, ${state.cart.length} item${state.cart.length === 1 ? '' : 's'}">
-        ${state.cart.length ? `<span class="dot" aria-hidden="true">${state.cart.length}</span>` : ''}
-        ${cartIcon(22, '#B08D2E', 2)}
-      </a>
+      <span class="page-head-note">${state.cart.length ? `${state.cart.length} in cart` : 'Digital marketplace'}</span>
     </header>
 
     <a class="bundle-hero" href="${hrefForProduct(hero.id)}">
@@ -740,7 +753,7 @@ screens.shop = () => {
         <span class="prod-info">
           <span class="t">${esc(p.title)}</span>
           <span class="m">${esc(p.note)}</span>
-          <span class="p">${p.buyable ? (p.free ? 'Free' : money(p.price)) : esc(p.status)}</span>
+          <span class="p">${p.buyable ? (p.free ? 'Free' : priceMarkup(p)) : esc(p.status)}</span>
         </span>
       </a>`).join('')}
     </div>
@@ -816,7 +829,7 @@ screens.product = () => {
 
     <div>
       <div class="pd-price-row">
-        <span class="p">${product.buyable ? (product.free ? 'Free' : money(product.price)) : money(product.price)}</span>
+        <span class="p">${product.buyable ? (product.free ? 'Free' : priceMarkup(product, 'price-stack detail')) : money(product.price)}</span>
         <span class="note">${product.buyable ? esc(product.note) : esc(product.status)}</span>
       </div>
 
@@ -824,11 +837,13 @@ screens.product = () => {
 
       ${productActions(product, { owned, carted })}
 
-      ${editionDownloadPanel(
-        editionsForProduct(product),
-        product.includes?.length || product.includesProducts?.length ? 'Files included in this set' : 'Download editions',
-        format,
-      )}
+      ${product.free || owned
+        ? editionDownloadPanel(
+          editionsForProduct(product),
+          product.includes?.length || product.includesProducts?.length ? 'Files included in this set' : 'Download editions',
+          format,
+        )
+        : paidDownloadLock()}
 
       <h2 class="about-cap">About this</h2>
       <p class="about-copy">${esc(product.about)}</p>
@@ -852,7 +867,8 @@ screens.product = () => {
  * phone-friendly EPUB are genuinely different things to want.
  */
 function formatPicker(product, format) {
-  if (!editionsForProduct(product).length) return '';
+  const editions = editionsForProduct(product);
+  if (!editions.length || editions.some(({ assets }) => !assets.pdf || !assets.epub)) return '';
   return `
   <section class="format-picker">
     <h2 class="format-cap">Which format would you like?</h2>
@@ -904,11 +920,10 @@ function productActions(product, { owned, carted }) {
   }
   return `
   <div class="pd-actions">
-    <button class="btn btn-gold" data-buy="${esc(product.id)}" data-focus-key="buy">${owned ? 'In your library ✓' : `Buy now · ${FORMAT_SHORT[formatFor(product.id)]}`}</button>
-    <div class="row2">
-      <button class="btn btn-dark" data-cart-toggle="${esc(product.id)}" data-focus-key="cart-toggle" aria-pressed="${carted}">${carted ? 'In your cart ✓' : 'Add to cart'}</button>
-      ${saveButton(product)}
-    </div>
+    ${owned
+      ? `<a class="btn btn-gold" href="${hrefFor('library')}">Open My Library</a>`
+      : `<button class="btn btn-gold" data-buy="${esc(product.id)}" data-focus-key="buy">${carted ? 'Continue to checkout' : 'Buy now'}</button>`}
+    ${saveButton(product)}
   </div>`;
 }
 
@@ -982,39 +997,15 @@ screens.cart = () => {
 /* ==========================================================================
    Checkout
    ========================================================================== */
-const PAY_OPTIONS = [
-  { id: 'card', title: 'Debit or credit card', sub: 'Visa, Mastercard, Amex' },
-  { id: 'invoice', title: 'Church or organisation invoice', sub: 'For group licences — we send an invoice, nothing is due today' },
-];
+const checkoutFormat = (product) => product.assets?.pdf && !product.assets?.epub
+  ? 'PDF'
+  : FORMAT_SHORT[formatFor(product.id)];
 
-/**
- * A labelled field. A placeholder alone is not a label: it vanishes the moment
- * someone types, and it leaves anyone using a screen reader or coming back to
- * a half-filled form with nothing to read.
- */
-const field = ({ id, label, hint = '', ...attrs }) => {
-  const rest = Object.entries(attrs).map(([k, v]) => ` ${k}="${esc(v)}"`).join('');
-  return `
-  <p class="field-row">
-    <label class="field-label" for="${esc(id)}">${esc(label)}</label>
-    <input class="field" id="${esc(id)}" name="${esc(id)}"${rest}>
-    ${hint ? `<span class="field-hint">${esc(hint)}</span>` : ''}
-  </p>`;
-};
-
-const payDetails = () => {
-  if (state.payMethod === 'card') {
-    return `
-    <div class="field-wrap">
-      ${field({ id: 'cc-number', label: 'Card number', inputmode: 'numeric', autocomplete: 'cc-number', placeholder: '1234 5678 9012 3456' })}
-      <div class="split">
-        ${field({ id: 'cc-exp', label: 'Expiry', inputmode: 'numeric', autocomplete: 'cc-exp', placeholder: 'MM / YY' })}
-        ${field({ id: 'cc-csc', label: 'Security code', inputmode: 'numeric', autocomplete: 'cc-csc', placeholder: 'CVC' })}
-      </div>
-      ${field({ id: 'cc-name', label: 'Name on card', autocomplete: 'cc-name', placeholder: 'As printed on the card' })}
-    </div>`;
-  }
-  return '<p class="pay-note">Tell us the organisation and the number of copies and we will send an invoice by email. Nothing is charged today.</p>';
+const orderRequestHref = (items, subtotal) => {
+  const lines = items.map((product) => `- ${product.title} (${checkoutFormat(product)}): ${money(product.price)}`).join('\n');
+  const subject = `A Cup of Compassion order request · ${money(subtotal)}`;
+  const body = `Hello Pamella,\n\nI would like to purchase:\n${lines}\n\nTotal: ${money(subtotal)}\n\nPlease send me a secure payment link.\n`;
+  return `mailto:${BRAND.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 };
 
 screens.checkout = () => {
@@ -1049,69 +1040,28 @@ screens.checkout = () => {
       <section class="order-card">
         ${items.map((p) => `
         <div class="row1">
-          <span class="t">${esc(p.title)} <small>${esc(FORMAT_SHORT[formatFor(p.id)])}</small></span>
+          <span class="t">${esc(p.title)} <small>${esc(checkoutFormat(p))}</small></span>
           <span class="p">${money(p.price)}</span>
         </div>`).join('')}
-        <p class="s">Downloadable straight after payment and yours to keep, in the format you chose for each title.</p>
+        <p class="s">Review the order, then ask Pamella for a secure payment link. No card details are collected by this static site.</p>
         <ul class="check-list">
-          <li>${goldCheck}Instant download, no account needed</li>
-          <li>${goldCheck}Free updates as the books are expanded</li>
+          <li>${goldCheck}Itemized order request</li>
+          <li>${goldCheck}Secure payment link sent directly</li>
           <li>${goldCheck}30-day money-back guarantee</li>
         </ul>
       </section>
     </div>
 
-    <div>
-      <h2 class="pay-cap">How would you like to pay?</h2>
-      <div class="pay-opts" role="radiogroup" aria-label="Payment method">
-        ${PAY_OPTIONS.map((opt) => `
-        <button class="pay-opt" role="radio"
-                aria-checked="${state.payMethod === opt.id}"
-                tabindex="${state.payMethod === opt.id ? 0 : -1}"
-                data-pay="${opt.id}"
-                data-focus-key="pay-${opt.id}">
-          <span class="radio" aria-hidden="true"><i></i></span>
-          <span>
-            <span class="t">${esc(opt.title)}</span>
-            <span class="s">${esc(opt.sub)}</span>
-          </span>
-        </button>`).join('')}
-      </div>
-
-      ${payDetails()}
-
-      <div class="pay-btn-wrap">
-        <button class="btn btn-gold" data-purchase>
-          ${state.payMethod === 'invoice' ? 'Request an invoice' : `Pay ${money(subtotal)}`}
-        </button>
-        <p class="fine">Secure checkout · instant download</p>
-      </div>
+    <section class="payment-request">
+      <span class="payment-icon" aria-hidden="true">${shieldIcon('#4A2A63')}</span>
+      <h2 class="pay-cap">Request a secure payment link</h2>
+      <p>This opens an itemized email to Pamella. She can confirm the order and reply with the appropriate secure payment link.</p>
+      <a class="btn btn-gold" href="${esc(orderRequestHref(items, subtotal))}">Request payment link · ${money(subtotal)}</a>
+      <p class="fine">This site does not collect or store card information.</p>
       <div class="screen-foot"></div>
-    </div>
+    </section>
   </div>`;
 };
-
-screens['checkout-done'] = () => `
-  <header class="dark-head">
-    <span class="glow" aria-hidden="true"></span>
-    <div class="shell">
-      ${backButton('shop', 'Shop')}
-      <p class="eyebrow">Checkout</p>
-      <h1>Thank you.</h1>
-    </div>
-  </header>
-
-  <div class="shell done-body">
-    <span class="done-badge" aria-hidden="true">${bigCheck(38)}</span>
-    <h2>It’s in your library.</h2>
-    <p>Every title you bought is waiting in My Library, in the format you chose, ready to download now. A copy of the link is on its way by email too.</p>
-    <div class="done-actions">
-      <a class="btn btn-gold" href="${hrefFor('library')}">Open My Library</a>
-      <a class="btn btn-dark" href="${hrefFor('legacy')}">Open the Legacy Inventory</a>
-      <a class="btn btn-ghost" href="${hrefFor('read')}">Keep reading</a>
-    </div>
-    <p class="signoff">${esc(BRAND.closing)} — ${esc(BRAND.blessing)}</p>
-  </div>`;
 
 /* ==========================================================================
    Tools — My Library and the Network

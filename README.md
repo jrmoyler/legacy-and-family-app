@@ -1,6 +1,6 @@
 # The Compassion Hub — App
 
-The home for **Pamella Foster-Grear’s** A Cup of Compassion series, free reading,
+The home for **Pamella Grear’s** A Cup of Compassion series, free reading,
 legacy tools, and a moderated public wall of compassionate messages.
 
 **Build it. Document it. Pass it on.**
@@ -49,7 +49,7 @@ source.
 | `assets/` | PWA icons and the link-preview image |
 | `manifest.webmanifest` | Installable-app metadata |
 | `vercel.json` | Clean URLs, caching, security headers |
-| `assets/library/` | The 16 publication files, the cover art, and `catalog.json` |
+| `assets/library/` | The 17 publication files, the cover art, and `catalog.json` |
 | `assets/books/` | Older EPUB masters, superseded by `assets/library/` — see its own README |
 | `assets/network/` | Headshots for the Network page (see its README) |
 | `tools/extract_library_covers.py` | Lifts cover art out of the EPUB masters |
@@ -62,7 +62,7 @@ source.
 **The series** — Series index, Book detail (×6)
 **Reading** — Read index, Lesson (×6, free, full text)
 **Legacy** — The Legacy Inventory worksheet (printable)
-**Shop** — Shop, Product detail, Cart, Checkout, Confirmation
+**Shop** — Shop, Product detail, Cart, gated downloads, payment-link request
 **Messages** — Approved public notes + moderated visitor submission form
 **Standing pages** — About Pamella, Disclaimers, Production status
 **Tools** — Tools index, My Library, Network
@@ -75,7 +75,7 @@ Hash-based, so every screen is linkable and the browser Back button works:
 ```
 #/            welcome
 #/home        #/series     #/read      #/legacy    #/shop     #/messages
-#/cart        #/checkout   #/checkout-done
+#/cart        #/checkout
 #/tools       #/library    #/network
 #/about       #/disclaimer #/status
 #/book/<book-id>       #/lesson/<lesson-id>       #/product/<product-id>
@@ -141,15 +141,15 @@ exist for every title, so a reader can switch at any time and the other format
 is still there.
 
 `Save for later` puts anything — a book, a set, or a free download — into My
-Library without buying it. Purchases and saves both live in `localStorage`, on
-the device only.
+Library without buying it. Saved items live in `localStorage`, on the device
+only; a secure payment link and purchased files are delivered directly.
 
 ## Cover art
 
-The production covers ship inside the EPUB masters at 1600 × 2560.
-`tools/extract_library_covers.py` lifts each one out and writes two web
-renditions, then records both in `catalog.json` with their byte counts and
-SHA-256 hashes:
+The EPUB production covers are extracted into full and thumbnail web
+renditions. The PDF-only Compassion Legacy Journal uses its committed
+illustrated marketplace cover. The tool records every rendition in
+`catalog.json` with byte counts and SHA-256 hashes:
 
 ```
 assets/library/covers/<stem>.jpg          1600 x 2560, the full-size preview
@@ -270,12 +270,8 @@ Specifically:
 
 - **Focus** is a 3px deep-plum ring, which holds up on cream, gold, and teal;
   anything sitting on a dark plum field inverts it to gold.
-- **The payment options** are a real radiogroup — arrow keys move within it,
-  Tab moves past it, and only the checked option is in the tab order. The shop
-  filter chips take arrow keys too.
-- **Checkout fields carry visible labels.** A placeholder is not a label: it
-  vanishes on the first keystroke and leaves anyone returning to a half-filled
-  form with nothing to read.
+- **Checkout collects no card information.** It prepares an itemized email so
+  Pamella can reply with the appropriate secure payment link.
 - **Filtering the shop is announced** through a live region, since it silently
   redraws a grid.
 - **Touch targets**: buttons are at least 52px tall, the inventory ticks reach
@@ -303,26 +299,19 @@ needed — Vercel serves these as static files automatically.
 
 ## Known limitations
 
-- Payment forms are UI only. No processor is connected; nothing charges. The
-  sales stack is Gumroad, and product links need wiring in `src/data.js`
-  before launch.
+- No payment processor is connected. The app does not collect card data or
+  pretend payment succeeded; checkout prepares an itemized request for a
+  secure payment link, and paid files remain gated until purchase is confirmed.
 - Scripture is quoted KJV throughout, per series canon. It should still get a
   word-for-word proof against a printed KJV before launch.
-- `@acupofcompassion` is printed in the canonical footer but deliberately
-  linked nowhere — it is not yet confirmed claimed on Instagram or Facebook
-  (Bible §11).
+- Instagram links to `https://www.instagram.com/acupofcompassion`.
 - Reading progress, inventory ticks, cart, and library persist in
   `localStorage` on the device only; there is no account or cross-device sync.
 - Compassion messages are the exception: approved messages and moderated
   submissions use the dedicated Supabase project so visitors share one public
   wall across devices.
-- Six-book set and set-plus-workbook are priced but not purchasable. They
-  cannot ship until the numbering is locked and the Confusion content exists.
-- `@acupofcompassion` is still printed as text in the canonical footer, matching
-  the print interiors. Pamella's Instagram, TikTok, and YouTube links are
-  confirmed by her and are linked from the sidebar, the About page, the book
-  footer, and her Network card. Any further platform needs the same
-  confirmation before it goes in (Bible §11).
+- The six-book set, both workbooks, and The Compassion Legacy Journal are
+  represented by their release files and corrected cover art.
 - Reading progress, inventory ticks, cart, saves, format choices, and library
   persist in `localStorage` on the device only; there is no account or
   cross-device sync.

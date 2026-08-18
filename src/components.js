@@ -119,7 +119,7 @@ export function tabbar() {
  * is also what the "view full size" links point at.
  */
 export const coverArt = (assets, alt, sizes = '160px', loading = 'lazy') => `
-  <img class="cover-art"
+  <img class="cover-art${assets.coverFit === 'contain' ? ' contain' : ''}"
        src="${esc(assets.coverThumb)}"
        srcset="${esc(assets.coverThumb)} 640w, ${esc(assets.cover)} 1600w"
        sizes="${esc(sizes)}"

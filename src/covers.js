@@ -109,7 +109,7 @@ export function cover(item, { kicker = 'A Cup of Compassion', foot = '', size = 
       <span class="cv-kicker">${esc(kicker)}</span>
       <span class="cv-title">${esc(item.title)}</span>
       <span class="cv-rule"></span>
-      <span class="cv-foot">${esc(foot || 'Pamella Foster-Grear')}</span>
+      <span class="cv-foot">${esc(foot || 'Pamella Grear')}</span>
     </span>
     <span class="cv-mark">${mark}</span>
   </span>`;

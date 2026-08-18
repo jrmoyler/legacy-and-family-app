@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Extract the published cover art out of every EPUB in the library.
+"""Build web cover previews for every publication in the library.
 
-Each EPUB already carries its production cover at 1600 x 2560. This tool lifts
-that image out of the archive and writes two web editions of it:
+EPUB publications use their embedded production cover. PDF-only publications
+use the committed marketplace cover. The tool writes two web editions:
 
   assets/library/covers/<stem>.jpg         full resolution preview
   assets/library/covers/thumbs/<stem>.jpg  grid thumbnail
@@ -110,16 +110,37 @@ def extract(root: Path) -> list[dict]:
     catalog_path = library / "catalog.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     covers: list[dict] = []
+    checksum_rows: list[str] = []
 
     for title in catalog["titles"]:
-        epub_path = library / title["epub"]["path"].removeprefix("/assets/library/")
-        stem = epub_path.stem
-        with zipfile.ZipFile(epub_path) as archive:
-            source = Image.open(BytesIO(archive.read(cover_member(archive))))
-            source.load()
+        for format_name in ("pdf", "epub"):
+            edition = title.get(format_name)
+            if not isinstance(edition, dict):
+                continue
+            relative = edition["path"].removeprefix("/assets/library/")
+            edition_path = library / relative
+            edition["bytes"] = edition_path.stat().st_size
+            edition["sha256"] = digest_file(edition_path)
+            checksum_rows.append(f"{edition['sha256']}  {relative}")
+
+        epub = title.get("epub")
+        publication = epub or title.get("pdf")
+        if not isinstance(publication, dict):
+            raise SystemExit(f"{title['id']}: no PDF or EPUB publication entry.")
+        stem = Path(publication["path"]).stem
 
         full = library / "covers" / f"{stem}.jpg"
         thumb = library / "covers" / "thumbs" / f"{stem}.jpg"
+        if isinstance(epub, dict):
+            epub_path = library / epub["path"].removeprefix("/assets/library/")
+            with zipfile.ZipFile(epub_path) as archive:
+                source = Image.open(BytesIO(archive.read(cover_member(archive))))
+                source.load()
+        else:
+            if not full.is_file():
+                raise SystemExit(f"{title['id']}: PDF-only marketplace cover is missing: {full}")
+            source = Image.open(full)
+            source.load()
         write_jpeg(source, FULL_WIDTH, FULL_QUALITY, full)
         write_jpeg(source, THUMB_WIDTH, THUMB_QUALITY, thumb)
 
@@ -146,6 +167,7 @@ def extract(root: Path) -> list[dict]:
 
     catalog["covers"] = covers
     catalog_path.write_text(json.dumps(catalog, indent=2) + "\n", encoding="utf-8")
+    (library / "SHA256SUMS.txt").write_text("\n".join(sorted(checksum_rows)) + "\n", encoding="utf-8")
     return covers
 
 

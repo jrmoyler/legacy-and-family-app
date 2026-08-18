@@ -244,7 +244,7 @@ def render_cover(source: Path, logo: Image.Image, spec: dict[str, object]) -> Im
         draw.text((WIDTH / 2, y), line, font=subtitle_face, fill=(77, 66, 55), anchor="ma")
         y += 46
 
-    draw_tracked(draw, "PAMELA FOSTER-GREAR", 2102, font(SANS_BOLD, 34), IVORY, 5)
+    draw_tracked(draw, "PAMELLA GREAR", 2102, font(SANS_BOLD, 34), IVORY, 5)
     draw.rounded_rectangle((410, 2205, WIDTH - 410, 2212), radius=4, fill=GOLD)
     draw_tracked(draw, "BUILD IT. DOCUMENT IT. PASS IT ON.", 2252, font(SANS_BOLD, 23), IVORY, 4)
     draw_tracked(draw, "A CUP OF COMPASSION", 2388, font(SANS, 19), (226, 204, 154), 6)

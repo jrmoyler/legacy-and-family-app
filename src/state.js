@@ -21,7 +21,6 @@ const defaults = () => ({
   library: [],
   saved: [],
   formats: {},
-  payMethod: 'card',
   category: 'Books',
   onboardingSeen: false,
 });
@@ -81,7 +80,6 @@ export function loadState() {
   state.library = strings(saved.library, isValidProduct);
   state.saved = strings(saved.saved, isSavableProduct);
   state.formats = formatMap(saved.formats);
-  if (['card', 'invoice'].includes(saved.payMethod)) state.payMethod = saved.payMethod;
   if (CATEGORIES.includes(saved.category)) state.category = saved.category;
   state.onboardingSeen = saved.onboardingSeen === true;
 }
@@ -101,7 +99,6 @@ export function saveState() {
         library: state.library,
         saved: state.saved,
         formats: state.formats,
-        payMethod: state.payMethod,
         category: state.category,
         onboardingSeen: state.onboardingSeen,
       }),
@@ -150,25 +147,13 @@ export function toggleSaved(id) {
   return !wasSaved;
 }
 
-export function toggleCart(id) {
-  const wasInCart = inCart(id);
-  state.cart = wasInCart ? state.cart.filter((v) => v !== id) : [...state.cart, id];
+export function addToCart(id) {
+  if (!inCart(id)) state.cart.push(id);
   saveState();
-  return !wasInCart;
 }
 
 export function removeFromCart(id) {
   state.cart = state.cart.filter((v) => v !== id);
-  saveState();
-}
-
-export function addToLibrary(ids) {
-  for (const id of ids) {
-    if (!state.library.includes(id)) state.library.push(id);
-  }
-  state.cart = state.cart.filter((id) => !ids.includes(id));
-  // Owning something supersedes having saved it, so it lists once, not twice.
-  state.saved = state.saved.filter((id) => !ids.includes(id));
   saveState();
 }
 
