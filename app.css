@@ -539,6 +539,13 @@ p a, .about-copy a { text-decoration: underline; }
   flex: none;
 }
 
+.section-hint {
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+
 .screen-foot { height: 34px; }
 
 /* --------------------------------------------------------------------------
@@ -763,12 +770,16 @@ p a, .about-copy a { text-decoration: underline; }
   width: 46px; height: 46px;
   flex: none;
   border-radius: 14px;
+  overflow: hidden;
   background: var(--plum-900);
   display: flex;
   align-items: center;
   justify-content: center;
   box-shadow: 0 8px 18px -10px rgba(35, 20, 48, .55);
+  transition: box-shadow .15s;
 }
+.avatar-tile:hover { box-shadow: 0 8px 18px -6px rgba(35, 20, 48, .7); }
+.avatar-tile img { width: 100%; height: 100%; object-fit: cover; display: block; }
 /* The mobile app bar already carries the brand mark — no need to repeat it. */
 @media (max-width: 899px) { .avatar-tile { display: none; } }
 
@@ -910,6 +921,8 @@ p a, .about-copy a { text-decoration: underline; }
 }
 .it-gold { background: #F2E6C9; }
 .it-teal { background: #DDE9E9; }
+.icon-tile-photo { border-radius: 50%; overflow: hidden; padding: 0; }
+.icon-tile-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 .feature-card {
   width: 100%;
@@ -1034,12 +1047,16 @@ p a, .about-copy a { text-decoration: underline; }
   align-self: center;
   width: 26px; height: 26px;
   border-radius: 50%;
-  border: 1.5px solid var(--line);
+  border: 2px solid var(--gold-deep);
+  background: var(--card);
   display: flex;
   align-items: center;
   justify-content: center;
+  cursor: pointer;
   transition: background .2s, border-color .2s;
 }
+.step-check:hover { border-color: var(--gold); }
+.step-check:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
 .step-check svg { opacity: 0; transition: opacity .2s; }
 
 /* --------------------------------------------------------------------------
@@ -1954,6 +1971,93 @@ p a, .about-copy a { text-decoration: underline; }
 .sheet .btn { margin-top: 12px; }
 .sheet .btn:first-of-type { margin-top: 26px; }
 
+/* The onboarding sheet is longer than the others — it scrolls, reads left,
+   and gets a dismiss button since it opens on its own, unprompted. */
+.sheet-onboarding {
+  max-height: 88vh;
+  overflow-y: auto;
+  text-align: left;
+}
+@media (min-width: 720px) { .sheet-onboarding { width: min(520px, calc(100vw - 48px)); } }
+.sheet-dismiss {
+  position: absolute;
+  top: 16px; right: 16px;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: var(--chip);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.sheet-dismiss:hover { background: var(--rule); }
+.onboarding-portrait {
+  display: block;
+  width: 88px; height: 88px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto;
+  border: 3px solid var(--card);
+  box-shadow: 0 0 0 2px var(--gold);
+}
+.onboarding-eyebrow {
+  text-align: center;
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+  margin-top: 14px;
+}
+.sheet-onboarding h2 { text-align: center; margin-top: 6px; }
+.onboarding-body p, .onboarding-sign {
+  font-family: var(--serif);
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--ink-soft);
+  max-width: none;
+  margin-top: 14px;
+}
+.onboarding-quote {
+  margin: 20px 0;
+  padding: 16px 18px;
+  border-left: 3px solid var(--gold);
+  background: var(--chip);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.onboarding-quote p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--plum-800);
+  margin: 0;
+  max-width: none;
+}
+.onboarding-features-label {
+  font-family: var(--sans);
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.onboarding-features ul { display: grid; gap: 10px; list-style: none; padding: 0; }
+.onboarding-features li {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--serif);
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.onboarding-features li strong { color: var(--plum-800); }
+.onboarding-sign { text-align: center; }
+.sheet-onboarding .btn { width: 100%; }
+
 .toast {
   position: fixed;
   left: 50%;
@@ -2474,6 +2578,16 @@ p a, .about-copy a { text-decoration: underline; }
   .about-layout { grid-template-columns: 1.5fr .85fr; }
 }
 
+.author-portrait {
+  width: 168px; height: 168px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin-bottom: 24px;
+  border: 4px solid var(--card);
+  box-shadow: 0 0 0 3px var(--gold), var(--lift);
+}
+
 .disclaimer-body { padding-top: 26px; max-width: 68ch; }
 .disclaimer-body h2:first-child { margin-top: 0; }
 
@@ -2514,13 +2628,20 @@ p a, .about-copy a { text-decoration: underline; }
 }
 
 .side-minor { display: grid; gap: 8px; margin-bottom: 16px; }
-.side-minor a {
+.side-minor a, .side-minor-btn {
   font-family: var(--sans);
   font-size: 12.5px;
   font-weight: 600;
   color: var(--on-dark-soft);
 }
-.side-minor a:hover { color: #F5EFE3; text-decoration: underline; }
+.side-minor a:hover, .side-minor-btn:hover { color: #F5EFE3; text-decoration: underline; }
+.side-minor-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
 
 .pending-note {
   font-family: var(--serif);
