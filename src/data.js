@@ -31,22 +31,20 @@ export const BRAND = {
   name: 'The Compassion Hub',
   series: 'A Cup of Compassion',
   tagline: 'Build it. Document it. Pass it on.',
-  author: 'Pamella Foster-Grear',
+  author: 'Pamella Grear',
   authorTagline: 'Author | Legacy Advocate | Community Leader | Compassion Educator',
   publisher: 'Pam Grear Publishing LLC · Columbus, Ohio',
   site: 'www.acupofcompassion.com',
   email: 'pamella@acupofcompassion.com',
   social: '@acupofcompassion',
+  socialUrl: 'https://www.instagram.com/acupofcompassion',
   closing: 'Keep on giving. Keep on being.',
   blessing: 'Blessings.',
 };
 
-/** The canonical footer that appears on every book (Bible §1). */
-export const FOOTER_LINE = `${BRAND.site} | ${BRAND.email} | ${BRAND.social}`;
-
 /** Verbatim from Bible §7 — do not rewrite. */
 export const ABOUT_AUTHOR = [
-  'Pamella Foster-Grear is the founder of The Compassion Hub, a movement dedicated to helping individuals and families live with purpose, lead with compassion, and leave a meaningful legacy for generations to come. For more than three decades, Pamella has served her community through nonprofit leadership, family advocacy, caregiving support, business development, and educational outreach. Her life’s work has been centered on one simple belief: compassion should not end with today — it should become tomorrow’s inheritance.',
+  'Pamella Grear is the founder of The Compassion Hub, a movement dedicated to helping individuals and families live with purpose, lead with compassion, and leave a meaningful legacy for generations to come. For more than three decades, Pamella has served her community through nonprofit leadership, family advocacy, caregiving support, business development, and educational outreach. Her life’s work has been centered on one simple belief: compassion should not end with today — it should become tomorrow’s inheritance.',
   'As an author, speaker, and educator, Pamella teaches that legacy is far more than financial wealth. It is the intentional passing down of love, wisdom, faith, family values, assets, and opportunity. Through her writing, workshops, and educational resources, she encourages families to prepare with purpose — to have the conversations, and create the documents, that preserve both relationships and generational wealth.',
   'Pamella believes every family deserves more than memories. They deserve a roadmap that protects what generations have worked so hard to build.',
 ];
@@ -83,7 +81,6 @@ export const TAB_OF = {
   product: 'shop',
   cart: 'shop',
   checkout: 'shop',
-  'checkout-done': 'shop',
   messages: 'messages',
 };
 
@@ -108,11 +105,14 @@ const bookAssets = (slug) => ({
   pdf: `/assets/library/pdf/${slug}.pdf`,
 });
 
+const coverImage = (slug) => `/assets/library/covers/${slug}.jpg`;
+
 export const BOOKS = [
   {
     id: 'benefit', seriesLabel: 'Book 1', title: 'The Benefit of Having Compassion', designId: 'DAHPs1e2Od0',
     pages: 25, words: '≈4,200 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion'),
+    cover: coverImage('A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion'),
     blurb: 'The doorway into the series: compassion as a practice you can learn, model, and make visible.',
     anchor: { text: 'If ye have faith as a grain of mustard seed, ye shall say unto this mountain, Remove hence to yonder place; and it shall remove; and nothing shall be impossible unto you.', ref: 'Matthew 17:20 · KJV' },
     spine: ['Compassion learned at home - Pastor Foster as the model', 'What compassion actually is, and what it costs', 'Everyday care: kitchen herbs and oils, in traditional-use framing', 'The compassion crisis, and why self-compassion comes first', 'The forty seconds that measurably change a patient’s outcome', 'Family Keepers, and compassion organised into service'],
@@ -122,6 +122,7 @@ export const BOOKS = [
     id: 'nurtured', seriesLabel: 'Book 2', title: 'Are You Born in Compassion or Nurtured in It?', designId: 'DAHPtMCqeWs',
     pages: 22, words: '≈1,600 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion'),
+    cover: coverImage('A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion'),
     blurb: 'The question the whole series turns on, put to real people and answered in their own words.',
     anchor: { text: 'But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith, Meekness, temperance: against such there is no law.', ref: 'Galatians 5:22-23 · KJV' },
     spine: ['Made in the image - where the argument starts', 'And where it complicates: all have sinned', 'Voices for “born in it”', 'Voices for “nurtured into it”', 'Compassion as a choice you keep making', 'Reflection questions, and Pouring the Cup'],
@@ -130,7 +131,8 @@ export const BOOKS = [
   {
     id: 'legacy', seriesLabel: 'Book 3', title: 'Compassion and Legacy', designId: 'DAHPxYb83RQ',
     pages: 26, words: '≈1,800 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
-    assets: bookAssets('A-Cup-of-Compassion-03-Compassion-and-Legacy'), flagship: true,
+    assets: bookAssets('A-Cup-of-Compassion-03-Compassion-and-Legacy'),
+    cover: coverImage('A-Cup-of-Compassion-03-Compassion-and-Legacy'), flagship: true,
     blurb: 'Compassion that outlives you has to be written down. A practical invitation to prepare with purpose.',
     anchor: { text: 'A good man leaveth an inheritance to his children’s children: and the wealth of the sinner is laid up for the just.', ref: 'Proverbs 13:22 · KJV' },
     spine: ['What happens to a family with no plan', 'Compassion is intentional, or it is only a feeling', 'Generational wealth, defined honestly', 'Getting started with a licensed attorney', 'The Legacy Inventory, page by page'],
@@ -140,6 +142,7 @@ export const BOOKS = [
     id: 'confusion', seriesLabel: 'Book 4', title: 'Compassion or Confusion?', designId: 'DAHPpCDXy-s',
     pages: 15, words: '≈3,100 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-04-Compassion-or-Confusion'),
+    cover: coverImage('A-Cup-of-Compassion-04-Compassion-or-Confusion'),
     blurb: 'A reflective guide to recognizing the difference between compassionate love, self-abandonment, and patterns that diminish your voice.',
     anchor: null,
     spine: ['When love starts to feel unclear', 'Compassion is not self-abandonment', 'The pattern tells the truth', 'Boundaries can be gentle and firm', 'Choose the love that lifts'], scriptures: [],
@@ -148,6 +151,7 @@ export const BOOKS = [
     id: 'commitment', seriesLabel: 'Book 5', title: 'Compassion and Commitment', designId: 'DAHPpbNcwyE',
     pages: 16, words: '≈3,200 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-05-Compassion-and-Commitment'),
+    cover: coverImage('A-Cup-of-Compassion-05-Compassion-and-Commitment'),
     blurb: 'A faith-centered relationship guide to practicing compassion, commitment, honest communication, and daily repair.',
     anchor: { text: 'Two are better than one; because they have a good reward for their labour… and a threefold cord is not quickly broken.', ref: 'Ecclesiastes 4:9-12 · KJV' },
     spine: ['A relationship is a daily practice', 'What compassion brings to love', 'Commitment gives love a foundation', 'When a relationship feels like confinement', 'Seven daily practices and an action plan'],
@@ -157,6 +161,7 @@ export const BOOKS = [
     id: 'companionship', seriesLabel: 'Book 6', title: 'Compassion and Companionship', designId: 'DAHQDC0Itq0',
     pages: 16, words: '≈3,000 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
     assets: bookAssets('A-Cup-of-Compassion-06-Compassion-and-Companionship'),
+    cover: coverImage('A-Cup-of-Compassion-06-Compassion-and-Companionship'),
     blurb: 'Companionship is compassion that stays: friendship that has carried weight across decades, distance, and ordinary days.',
     anchor: { text: 'It is of the LORD’s mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness.', ref: 'Lamentations 3:22-23 · KJV' },
     spine: ['Compassionship: naming a kind of friendship that stays', 'Friendships that survive distance and decades', 'Milestones, memory, and showing up', 'Becoming neighbours again', 'Acts of compassionship in ordinary life'],
@@ -185,6 +190,7 @@ export const PRODUCTS = [
     free: true,
     goTo: 'legacy',
     assets: bookAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
+    cover: coverImage('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
     note: '10 pages · PDF & EPUB',
     about: 'Pulled straight out of Compassion and Legacy: every asset, policy, document, heirloom, and story your family will need you to have written down. Open it, print it, and fill it in on paper or on your own device. Nothing you write is sent anywhere.',
   },
@@ -258,8 +264,23 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: true,
     assets: bookAssets('A-Cup-of-Compassion-Companion-Workbook'),
+    cover: coverImage('A-Cup-of-Compassion-Companion-Workbook'),
     note: '28 pages · PDF & EPUB',
     about: 'Seven parts for every book in the series: overview, key concepts, reflection, a guided exercise, journaling pages, a discussion guide, and action steps. Built for kitchen tables and small groups alike.',
+  },
+  {
+    id: 'compassion-legacy-journal',
+    kind: 'Journal',
+    title: 'The Compassion Legacy Journal',
+    price: 25,
+    originalPrice: 37,
+    badge: 'SALE',
+    cats: ['Companions'],
+    buyable: true,
+    assets: { pdf: '/assets/library/pdf/The-Compassion-Legacy-Journal.pdf' },
+    cover: coverImage('The-Compassion-Legacy-Journal'),
+    note: '13 pages · illustrated PDF · twelve guided letters',
+    about: 'Twelve guided letters for the people you love, the generations you may never meet, and the people trusted to carry your legacy forward. Each prompt helps you preserve the meaning behind the plans, property, stories, and acts of compassion you leave behind.',
   },
   {
     id: 'church-license',
@@ -632,11 +653,12 @@ export const STATUS_GROUPS = [
     id: 'library',
     title: 'Complete digital library',
     severity: 'fixed-in-text',
-    intro: 'Every A Cup of Compassion book is now included in the app in both PDF and EPUB editions, alongside the two companion workbooks.',
+    intro: 'Every A Cup of Compassion book is now included in the app in both PDF and EPUB editions, alongside the two companion workbooks and The Compassion Legacy Journal.',
     items: [
       'Six individual books, each with a PDF and an EPUB edition.',
       'The Companion Workbook in a 28-page printable PDF and a reflowable EPUB edition.',
       'The Legacy Inventory Workbook in a 10-page printable PDF and a reflowable EPUB edition.',
+      'The Compassion Legacy Journal in a 13-page illustrated PDF edition.',
       'All download files have a published checksum in the library catalog so damaged or incomplete copies can be detected immediately.',
     ],
   },
@@ -648,7 +670,7 @@ export const STATUS_GROUPS = [
     items: [
       'Keep the education-only legal framing and disclaimer wherever legacy-planning material is promoted.',
       'Retain the traditional-use wellness framing in Book 1 and avoid presenting it as medical advice.',
-      'Confirm any future social-media links before adding them to the app.',
+      'Keep the confirmed Instagram profile link current anywhere the author byline appears.',
     ],
   },
 ];

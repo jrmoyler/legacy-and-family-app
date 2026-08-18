@@ -1,7 +1,7 @@
 {
   "name": "The Compassion Hub",
   "short_name": "Compassion Hub",
-  "description": "Books, free reading, legacy tools, and public messages of compassion by Pamella Foster-Grear.",
+  "description": "Books, free reading, legacy tools, and public messages of compassion by Pamella Grear.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

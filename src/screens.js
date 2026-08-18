@@ -29,11 +29,38 @@ export const screens = {};
 
 const money = (n) => (Number.isInteger(n) ? `$${n}` : `$${n.toFixed(2)}`);
 
+const priceMarkup = (product, className = 'price-stack') => product.originalPrice
+  ? `<span class="${className}"><s>${money(product.originalPrice)}</s><strong>${money(product.price)}</strong></span>`
+  : money(product.price);
+
+const coversForProduct = (product) => {
+  if (product.cover) return [product.cover];
+  if (product.book) return [bookById(product.book)?.cover].filter(Boolean);
+  const books = (product.includes || []).map(bookById).filter((book) => book?.cover);
+  const companions = (product.includesProducts || []).map(productById).filter((item) => item?.cover);
+  if (companions.length) return [books[0], books.at(-1), companions[0]].filter(Boolean);
+  if (books.length > 3) return [books[0], books[Math.floor(books.length / 2)], books.at(-1)].filter(Boolean);
+  return books.map((book) => book.cover);
+};
+
+const coverForProduct = (product) => coversForProduct(product)[0] || '';
+
+const productArtwork = (product, size = 'card') => {
+  const covers = coversForProduct(product);
+  if (!covers.length) return `<span class="mark" aria-hidden="true">${cupMarkOnDark(size === 'detail' ? 96 : 46)}</span>`;
+  if (covers.length > 1) {
+    return `<span class="cover-stack ${size}" role="img" aria-label="${esc(product.title)} collection covers">
+      ${covers.map((cover) => `<img src="${esc(cover)}" alt="" loading="lazy">`).join('')}
+    </span>`;
+  }
+  return `<img class="product-art ${size}" src="${esc(covers[0])}" alt="${esc(product.title)} cover" loading="lazy">`;
+};
+
 const editionDownloadPanel = (editions, heading = 'Download editions') => {
   if (!editions.length) return '';
   return `
-  <section class="download-panel" aria-label="${esc(heading)}">
-    <span class="cap">PDF and EPUB included</span>
+  <section class="download-panel" id="downloads" aria-label="${esc(heading)}">
+    <span class="cap">Your files</span>
     <h2>${esc(heading)}</h2>
     <p class="download-intro">Choose PDF for print and fixed layout, or EPUB for comfortable reading on an e-reader or phone.</p>
     <div class="download-list">
@@ -41,8 +68,8 @@ const editionDownloadPanel = (editions, heading = 'Download editions') => {
       <div class="download-row">
         <span class="download-title">${esc(title)}</span>
         <span class="download-actions">
-          <a class="download-link" href="${esc(assets.pdf)}" download>PDF <small>print edition</small></a>
-          <a class="download-link" href="${esc(assets.epub)}" download>EPUB <small>e-reader edition</small></a>
+          ${assets.pdf ? `<a class="download-link" href="${esc(assets.pdf)}" download>PDF <small>print edition</small></a>` : ''}
+          ${assets.epub ? `<a class="download-link" href="${esc(assets.epub)}" download>EPUB <small>e-reader edition</small></a>` : ''}
         </span>
       </div>`).join('')}
     </div>
@@ -310,8 +337,8 @@ function bookRow(book) {
   const status = BOOK_STATUS[book.status];
   return `
   <a class="book-row" href="${hrefForBook(book.id)}">
-    <span class="book-cover" aria-hidden="true">
-      ${cupMarkOnDark(38)}
+    <span class="book-cover">
+      <img src="${esc(book.cover)}" alt="${esc(book.title)} cover" loading="lazy">
     </span>
     <span class="body">
       <span class="meta">
@@ -330,6 +357,7 @@ screens.book = () => {
   const book = bookById(state.activeBook);
   const status = BOOK_STATUS[book.status];
   const product = book.status === 'ready' ? PRODUCTS.find((p) => p.book === book.id) : null;
+  const owned = product ? inLibrary(product.id) : false;
 
   return `
   <header class="dark-head">
@@ -383,13 +411,14 @@ screens.book = () => {
     </div>
 
     <div>
-      ${book.assets ? editionDownloadPanel([{ title: book.title, assets: book.assets }], 'Download this book') : ''}
+      <img class="book-detail-cover" src="${esc(book.cover)}" alt="${esc(book.title)} cover">
+      ${owned && book.assets ? editionDownloadPanel([{ title: book.title, assets: book.assets }], 'Download this book') : ''}
       ${product ? `
-      <div class="aside-card"${book.assets ? ' style="margin-top:16px"' : ''}>
-        <span class="cap">Available now</span>
-        <h2>${money(product.price)}</h2>
+      <div class="aside-card" style="margin-top:16px">
+        <span class="cap">${owned ? 'In your library' : 'Available now'}</span>
+        <h2>${priceMarkup(product)}</h2>
         <p>${esc(product.note)}</p>
-        <a class="btn btn-gold" href="${hrefForProduct(product.id)}">See it in the shop</a>
+        <a class="btn btn-gold" href="${hrefForProduct(product.id)}">${owned ? 'Open the product' : 'Buy in the shop'}</a>
       </div>` : `
       <div class="aside-card">
         <span class="cap">${esc(status.label)}</span>
@@ -626,10 +655,7 @@ screens.shop = () => {
         <p class="bless">Books, sets &amp; kits</p>
         <h1>Shop</h1>
       </div>
-      <a class="cart-btn" href="${hrefFor('cart')}" aria-label="Cart, ${state.cart.length} item${state.cart.length === 1 ? '' : 's'}">
-        ${state.cart.length ? `<span class="dot" aria-hidden="true">${state.cart.length}</span>` : ''}
-        ${cartIcon(22, '#B08D2E', 2)}
-      </a>
+      <span class="page-head-note">${state.cart.length ? `${state.cart.length} in cart` : 'Digital marketplace'}</span>
     </header>
 
     <a class="bundle-hero" href="${hrefForProduct(hero.id)}">
@@ -658,15 +684,15 @@ screens.shop = () => {
     <div class="prod-grid">
       ${visible.map((p) => `
       <a class="prod-card ${p.buyable ? '' : 'pending'}" href="${hrefForProduct(p.id)}">
-        <span class="prod-cover">
+        <span class="prod-cover${coverForProduct(p) ? ' has-art' : ''}">
           ${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ''}
-          <span class="mark" aria-hidden="true">${cupMarkOnDark(46)}</span>
+          ${productArtwork(p)}
           <span class="kind">${esc(p.kind)}</span>
         </span>
         <span class="prod-info">
           <span class="t">${esc(p.title)}</span>
           <span class="m">${esc(p.note)}</span>
-          <span class="p">${p.buyable ? (p.free ? 'Free' : money(p.price)) : esc(p.status)}</span>
+          <span class="p">${p.buyable ? (p.free ? 'Free' : priceMarkup(p)) : esc(p.status)}</span>
         </span>
       </a>`).join('')}
     </div>
@@ -693,21 +719,26 @@ screens.product = () => {
 
   <div class="shell product-layout">
     <div class="media">
-      <div class="pd-cover">
-        <span class="mark" aria-hidden="true">${cupMarkOnDark(96)}</span>
+      <div class="pd-cover${coverForProduct(product) ? ' has-art' : ''}">
+        ${productArtwork(product, 'detail')}
         <span class="cap">${esc(product.kind.toLowerCase())}</span>
       </div>
     </div>
 
     <div>
       <div class="pd-price-row">
-        <span class="p">${product.buyable ? (product.free ? 'Free' : money(product.price)) : money(product.price)}</span>
+        <span class="p">${product.buyable ? (product.free ? 'Free' : priceMarkup(product, 'price-stack detail')) : money(product.price)}</span>
         <span class="note">${product.buyable ? esc(product.note) : esc(product.status)}</span>
       </div>
 
       ${productActions(product, { owned, carted })}
 
-      ${editionDownloadPanel(editionsForProduct(product), product.includes?.length || product.includesProducts?.length ? 'Files included in this set' : 'Download editions')}
+      ${product.free || owned
+        ? editionDownloadPanel(editionsForProduct(product), product.includes?.length || product.includesProducts?.length ? 'Files included in this set' : 'Download editions')
+        : `<section class="download-lock" aria-label="Downloads available after purchase">
+            ${shieldIcon('#4A2A63')}
+            <div><strong>Downloads unlock after purchase</strong><span>Paid PDFs and EPUBs are no longer exposed before checkout.</span></div>
+          </section>`}
 
       <h2 class="about-cap">About this</h2>
       <p class="about-copy">${esc(product.about)}</p>
@@ -746,11 +777,9 @@ function productActions(product, { owned, carted }) {
   }
   return `
   <div class="pd-actions">
-    <button class="btn btn-gold" data-buy="${esc(product.id)}" data-focus-key="buy">${owned ? 'In your library ✓' : 'Buy now'}</button>
-    <div class="row2">
-      <button class="btn btn-dark" data-cart-toggle="${esc(product.id)}" data-focus-key="cart-toggle" aria-pressed="${carted}">${carted ? 'In your cart ✓' : 'Add to cart'}</button>
-      <a class="btn btn-ghost" href="${hrefFor('read')}">Read free first</a>
-    </div>
+    ${owned
+      ? '<a class="btn btn-dark" href="#downloads">Open your downloads</a>'
+      : `<button class="btn btn-gold" data-buy="${esc(product.id)}" data-focus-key="buy">${carted ? 'Continue to checkout' : `Buy now · ${money(product.price)}`}</button>`}
   </div>`;
 }
 
@@ -773,13 +802,13 @@ screens.cart = () => {
     <div class="cart-items">
       ${items.map((p) => `
       <div class="cart-item">
-        <span class="thumb" aria-hidden="true">${cupMarkOnDark(24)}</span>
+        <span class="thumb">${productArtwork(p)}</span>
         <span class="who">
           <span class="t">${esc(p.title)}</span>
           <span class="k">${esc(p.kind)}</span>
         </span>
         <span class="side">
-          <span class="p">${money(p.price)}</span>
+          <span class="p">${priceMarkup(p)}</span>
           <button class="rm" data-remove="${esc(p.id)}">Remove<span class="sr-only"> ${esc(p.title)} from cart</span></button>
         </span>
       </div>`).join('')}
@@ -808,24 +837,11 @@ screens.cart = () => {
 /* ==========================================================================
    Checkout
    ========================================================================== */
-const PAY_OPTIONS = [
-  { id: 'card', title: 'Debit or credit card', sub: 'Visa, Mastercard, Amex' },
-  { id: 'invoice', title: 'Church or organisation invoice', sub: 'For group licences — we send an invoice, nothing is due today' },
-];
-
-const payDetails = () => {
-  if (state.payMethod === 'card') {
-    return `
-    <div class="field-wrap">
-      <input class="field" inputmode="numeric" autocomplete="cc-number" placeholder="Card number" aria-label="Card number">
-      <div class="split">
-        <input class="field" inputmode="numeric" autocomplete="cc-exp" placeholder="MM / YY" aria-label="Expiry date">
-        <input class="field" inputmode="numeric" autocomplete="cc-csc" placeholder="CVC" aria-label="Security code">
-      </div>
-      <input class="field" autocomplete="cc-name" placeholder="Name on card" aria-label="Name on card">
-    </div>`;
-  }
-  return '<p class="pay-note">Tell us the organisation and the number of copies and we will send an invoice by email. Nothing is charged today.</p>';
+const orderRequestHref = (items, subtotal) => {
+  const subject = `Order request · ${money(subtotal)} · ${BRAND.name}`;
+  const lines = items.map((item) => `- ${item.title}: ${money(item.price)}`).join('\n');
+  const body = `Hello Pamella,\n\nI would like to purchase:\n${lines}\n\nTotal: ${money(subtotal)}\n\nPlease send me a secure payment link.\n`;
+  return `mailto:${BRAND.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 };
 
 screens.checkout = () => {
@@ -868,7 +884,7 @@ screens.checkout = () => {
           <span class="t">${esc(p.title)}</span>
           <span class="p">${money(p.price)}</span>
         </div>`).join('')}
-        <p class="s">Delivered as ePub and PDF, downloadable straight after payment and yours to keep.</p>
+        <p class="s">Delivered in the format listed for each item after payment is confirmed, and yours to keep.</p>
         <ul class="check-list">
           <li>${goldCheck}Instant download, no account needed</li>
           <li>${goldCheck}Free updates as the books are expanded</li>
@@ -878,54 +894,17 @@ screens.checkout = () => {
     </div>
 
     <div>
-      <h2 class="pay-cap">How would you like to pay?</h2>
-      <div class="pay-opts" role="radiogroup" aria-label="Payment method">
-        ${PAY_OPTIONS.map((opt) => `
-        <button class="pay-opt" role="radio"
-                aria-checked="${state.payMethod === opt.id}"
-                data-pay="${opt.id}"
-                data-focus-key="pay-${opt.id}">
-          <span class="radio" aria-hidden="true"><i></i></span>
-          <span>
-            <span class="t">${esc(opt.title)}</span>
-            <span class="s">${esc(opt.sub)}</span>
-          </span>
-        </button>`).join('')}
-      </div>
-
-      ${payDetails()}
-
-      <div class="pay-btn-wrap">
-        <button class="btn btn-gold" data-purchase>
-          ${state.payMethod === 'invoice' ? 'Request an invoice' : `Pay ${money(subtotal)}`}
-        </button>
-        <p class="fine">Secure checkout · instant download</p>
-      </div>
+      <section class="payment-request">
+        <span class="payment-icon" aria-hidden="true">${shieldIcon('#4A2A63')}</span>
+        <h2 class="pay-cap">Request a secure payment link</h2>
+        <p>The marketplace will prepare an email with your order. Pamella will reply with secure payment instructions; paid files are released only after payment is confirmed.</p>
+        <a class="btn btn-gold" href="${esc(orderRequestHref(items, subtotal))}">Request payment link · ${money(subtotal)}</a>
+        <p class="fine">No card details are collected or stored in this app.</p>
+      </section>
       <div class="screen-foot"></div>
     </div>
   </div>`;
 };
-
-screens['checkout-done'] = () => `
-  <header class="dark-head">
-    <span class="glow" aria-hidden="true"></span>
-    <div class="shell">
-      ${backButton('shop', 'Shop')}
-      <p class="eyebrow">Checkout</p>
-      <h1>Thank you.</h1>
-    </div>
-  </header>
-
-  <div class="shell done-body">
-    <span class="done-badge" aria-hidden="true">${bigCheck(38)}</span>
-    <h2>It’s in your library.</h2>
-    <p>Your download link is on its way by email. While you wait — the Legacy Inventory is free, and it is the one thing in this whole series your family will thank you for.</p>
-    <div class="done-actions">
-      <a class="btn btn-dark" href="${hrefFor('legacy')}">Open the Legacy Inventory</a>
-      <a class="btn btn-ghost" href="${hrefFor('read')}">Keep reading</a>
-    </div>
-    <p class="signoff">${esc(BRAND.closing)} — ${esc(BRAND.blessing)}</p>
-  </div>`;
 
 /* ==========================================================================
    About

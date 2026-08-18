@@ -1,6 +1,6 @@
 # The Compassion Hub — App
 
-The home for **Pamella Foster-Grear’s** A Cup of Compassion series, free reading,
+The home for **Pamella Grear’s** A Cup of Compassion series, free reading,
 legacy tools, and a moderated public wall of compassionate messages.
 **Build it. Document it. Pass it on.**
 
@@ -31,7 +31,7 @@ source.
 | `app.css` | Design system + all screen styles |
 | `app.js` | Router, rendering, event delegation |
 | `src/screens.js` | One template per screen |
-| `src/components.js` | Sidebar, app bar, tab bar, sheets, toast, brand footer |
+| `src/components.js` | Sidebar, app bar, tab bar, toast, brand footer |
 | `src/state.js` | State + localStorage persistence |
 | `src/data.js` | Brand, books, catalogue, reading, inventory, production status |
 | `src/icons.js` | Inline SVG icons and the cup-and-heart brand mark |
@@ -47,7 +47,7 @@ source.
 **The series** — Series index, Book detail (×6)
 **Reading** — Read index, Lesson (×6, free, full text)
 **Legacy** — The Legacy Inventory worksheet (printable)
-**Shop** — Shop, Product detail, Cart, Checkout, Confirmation
+**Shop** — Shop, Product detail, Cart, gated downloads, order request
 **Messages** — Approved public notes + moderated visitor submission form
 **Standing pages** — About Pamella, Disclaimers, Production status
 
@@ -58,7 +58,7 @@ Hash-based, so every screen is linkable and the browser Back button works:
 ```
 #/            welcome
 #/home        #/series     #/read      #/legacy    #/shop     #/messages
-#/cart        #/checkout   #/checkout-done
+#/cart        #/checkout
 #/about       #/disclaimer #/status
 #/book/<book-id>       #/lesson/<lesson-id>       #/product/<product-id>
 ```
@@ -83,16 +83,11 @@ is gone. The positioning is fixed and appears verbatim in `data.js`:
 The app now sells books. `#/disclaimer` is the visible disclaimer page the
 handoff calls for, and every screen that touches estate content links to it.
 
-### 2. No series numbering is asserted as settled
+### 2. Publication order is canonical
 
-Two numbering schemes are in conflict and at least three covers claim a "3"
-(Bible §0.1, §2). The Bible is explicit that an agent must surface the
-disagreement rather than pick a side.
-
-So books carry a `seriesLabel` **only** where the current covers and the
-current scheme agree — Series 1 and Series 2. Everywhere else it is `null` and
-the book renders by title alone. The 54-page collection is listed by its three
-titles rather than as "Books 1–3". Every conflict is enumerated on `#/status`.
+The six finished books use one settled Book 1-6 order across filenames,
+catalog metadata, marketplace cards, and downloadable editions. The release
+verifier rejects missing, reordered, duplicated, or checksum-mismatched files.
 
 ### 3. The Legacy Inventory has nothing to type into
 
@@ -108,10 +103,9 @@ the screen worksheet into a fill-in sheet with ruled space under every prompt.
 
 ## Production status
 
-`#/status` is a working page, not decoration. It carries the open blockers,
-the numbering collisions, the fixed-in-text legal defects, the outstanding
-written releases, and the items that need a human to confirm (F4, the social
-handle). It is linked from the sidebar and from the series page.
+`#/status` is a working page, not decoration. It carries the release safeguards,
+the fixed-in-text legal positioning, and the library-integrity contract. It is
+linked from the sidebar and from the series page.
 
 ## Public compassion messages
 
@@ -171,18 +165,18 @@ needed — Vercel serves these as static files automatically.
 
 ## Known limitations
 
-- Payment forms are UI only. No processor is connected; nothing charges. The
-  sales stack is Gumroad, and product links need wiring in `src/data.js`
-  before launch.
+- No payment processor is connected. The app does not collect card data or
+  pretend a payment succeeded: checkout prepares an itemized email request so
+  Pamella can reply with a secure payment link. Paid files stay gated until
+  ownership is confirmed.
 - Scripture is quoted KJV throughout, per series canon. It should still get a
   word-for-word proof against a printed KJV before launch.
-- `@acupofcompassion` is printed in the canonical footer but deliberately
-  linked nowhere — it is not yet confirmed claimed on Instagram or Facebook
-  (Bible §11).
+- `@acupofcompassion` links to the confirmed Instagram profile:
+  `https://www.instagram.com/acupofcompassion`.
 - Reading progress, inventory ticks, cart, and library persist in
   `localStorage` on the device only; there is no account or cross-device sync.
 - Compassion messages are the exception: approved messages and moderated
   submissions use the dedicated Supabase project so visitors share one public
   wall across devices.
-- Six-book set and set-plus-workbook are priced but not purchasable. They
-  cannot ship until the numbering is locked and the Confusion content exists.
+- The six-book set, both workbooks, and The Compassion Legacy Journal are
+  represented by their corrected cover art and complete release files.

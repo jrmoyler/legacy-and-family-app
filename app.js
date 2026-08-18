@@ -5,7 +5,7 @@
  * Screen markup lives in src/screens.js; state lives in src/state.js.
  */
 
-import { $, $$ } from './src/dom.js';
+import { $ } from './src/dom.js';
 import { screens, compassionMessageList } from './src/screens.js';
 import { sidebar, appbar, tabbar, overlays, hrefFor } from './src/components.js';
 import {
@@ -13,7 +13,7 @@ import {
 } from './src/data.js';
 import {
   state, loadState, saveState, toggleSection, toggleLesson,
-  toggleCart, removeFromCart, addToLibrary,
+  addToCart, removeFromCart,
 } from './src/state.js';
 
 const view = $('#view');
@@ -108,7 +108,6 @@ const TITLES = {
   shop: 'Shop',
   cart: 'Your cart',
   checkout: 'Checkout',
-  'checkout-done': 'Thank you',
   about: BRAND.author,
   disclaimer: 'Disclaimers',
   status: 'Production status',
@@ -202,100 +201,12 @@ function toast(message) {
 }
 
 /* ==========================================================================
-   Sheets (bottom sheet on phones, modal dialog on desktop)
-   ========================================================================== */
-let openSheetEl = null;
-let sheetOpener = null;
-
-const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
-
-function openSheet(name) {
-  const sheet = document.getElementById(`sheet-${name}`);
-  if (!sheet) return;
-
-  sheetOpener = document.activeElement;
-  openSheetEl = sheet;
-
-  const backdrop = $('#backdrop');
-  backdrop.hidden = false;
-  sheet.hidden = false;
-
-  // Force a reflow so the transition runs from the hidden position.
-  void sheet.offsetHeight;
-  backdrop.classList.add('open');
-  sheet.classList.add('open');
-  document.body.classList.add('no-scroll');
-
-  // focus() is a no-op while the element is still visibility:hidden, so wait
-  // for the browser to commit the class change before moving focus in.
-  requestAnimationFrame(() => {
-    requestAnimationFrame(() => sheet.querySelector(FOCUSABLE)?.focus());
-  });
-}
-
-function closeSheet() {
-  if (!openSheetEl) return;
-
-  const sheet = openSheetEl;
-  const backdrop = $('#backdrop');
-  openSheetEl = null;
-
-  sheet.classList.remove('open');
-  backdrop.classList.remove('open');
-  document.body.classList.remove('no-scroll');
-
-  setTimeout(() => {
-    if (!sheet.classList.contains('open')) sheet.hidden = true;
-    if (!$('.sheet.open')) backdrop.hidden = true;
-  }, 320);
-
-  sheetOpener?.focus?.();
-  sheetOpener = null;
-}
-
-/** Keep Tab inside an open sheet, and let Escape dismiss it. */
-document.addEventListener('keydown', (event) => {
-  if (!openSheetEl) return;
-
-  if (event.key === 'Escape') {
-    event.preventDefault();
-    closeSheet();
-    return;
-  }
-  if (event.key !== 'Tab') return;
-
-  const focusable = $$(FOCUSABLE, openSheetEl);
-  if (!focusable.length) return;
-
-  const first = focusable[0];
-  const last = focusable[focusable.length - 1];
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault();
-    last.focus();
-  } else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault();
-    first.focus();
-  }
-});
-
-/* ==========================================================================
    Event delegation
    ========================================================================== */
 document.addEventListener('click', (event) => {
   const hit = (selector) => event.target.closest(selector);
   let el;
 
-  /* --- overlays --- */
-  if ((el = hit('[data-close-sheet]'))) {
-    const then = el.dataset.then;
-    closeSheet();
-    if (then) setTimeout(() => go(then), 200);
-    return;
-  }
-  if (event.target.closest('#backdrop')) {
-    closeSheet();
-    return;
-  }
   /* --- fire-and-forget feedback --- */
   if ((el = hit('[data-toast]'))) {
     toast(el.dataset.toast);
@@ -326,12 +237,6 @@ document.addEventListener('click', (event) => {
   }
 
   /* --- checkout --- */
-  if ((el = hit('[data-pay]'))) {
-    state.payMethod = el.dataset.pay;
-    saveState();
-    refresh();
-    return;
-  }
   if (hit('[data-checkout]')) {
     if (!state.cart.length) return;
     go('checkout');
@@ -346,11 +251,6 @@ document.addEventListener('click', (event) => {
     refresh();
     return;
   }
-  if ((el = hit('[data-cart-toggle]'))) {
-    toast(toggleCart(el.dataset.cartToggle) ? 'Added to cart' : 'Removed from cart');
-    refresh();
-    return;
-  }
   if ((el = hit('[data-remove]'))) {
     removeFromCart(el.dataset.remove);
     refresh();
@@ -359,17 +259,8 @@ document.addEventListener('click', (event) => {
   if ((el = hit('[data-buy]'))) {
     const product = productById(el.dataset.buy);
     if (!product) return;
-    addToLibrary([product.id]);
-    $('#lib-copy').textContent = `${product.title} is now saved to your library.`;
-    refresh();
-    openSheet('library');
-    return;
-  }
-  if (hit('[data-purchase]')) {
-    const bought = state.cart.map(productById).filter(Boolean);
-    if (!bought.length) return;
-    addToLibrary(bought.map((p) => p.id));
-    go('checkout-done');
+    addToCart(product.id);
+    go('checkout');
     return;
   }
 

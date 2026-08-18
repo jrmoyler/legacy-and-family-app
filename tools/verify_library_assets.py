@@ -20,8 +20,10 @@ import urllib.error
 import urllib.request
 import xml.etree.ElementTree as ET
 import zipfile
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
+
+from PIL import Image
 
 
 EXPECTED_IDS = [
@@ -33,11 +35,14 @@ EXPECTED_IDS = [
     "book-6",
     "companion-workbook",
     "legacy-inventory-workbook",
+    "compassion-legacy-journal",
 ]
-EXPECTED_AUTHOR = "Pamella Foster-Grear"
-INCORRECT_AUTHOR = "Pamela Foster-Grear"
-INCORRECT_NAME_PATTERN = re.compile(r"(?<![A-Za-z])Pamela(?![A-Za-z])", re.IGNORECASE)
-EXPECTED_AUTHOR_PATTERN = re.compile(r"\bPamella Foster-Grear\b", re.IGNORECASE)
+EXPECTED_AUTHOR = "Pamella Grear"
+LEGACY_SURNAME = "Foster-" + "Grear"
+INCORRECT_AUTHOR = f"{'Pam' + 'ela'} {LEGACY_SURNAME}"
+INCORRECT_NAME_PATTERN = re.compile(r"(?<![A-Za-z])Pam" + r"ela(?![A-Za-z])", re.IGNORECASE)
+RETIRED_BYLINE_PATTERN = re.compile(r"\bPamell?a\s+Foster" + r"-Grear\b", re.IGNORECASE)
+EXPECTED_AUTHOR_PATTERN = re.compile(r"\bPamella Grear\b", re.IGNORECASE)
 EPUB_TEXT_SUFFIXES = (".css", ".htm", ".html", ".ncx", ".opf", ".svg", ".txt", ".xhtml", ".xml")
 PDF_MAGIC = b"%PDF-"
 
@@ -117,6 +122,8 @@ def epub_details(path: Path) -> dict[str, Any]:
                 text = archive.read(member).decode("utf-8")
                 if INCORRECT_NAME_PATTERN.search(text):
                     fail(f"{path.name}: {member.filename} still contains the misspelled author name.")
+                if RETIRED_BYLINE_PATTERN.search(text):
+                    fail(f"{path.name}: {member.filename} still contains the retired author byline.")
                 text_name_occurrences += len(EXPECTED_AUTHOR_PATTERN.findall(text))
             if text_name_occurrences < 1:
                 fail(f"{path.name}: EPUB text contains no corrected author name.")
@@ -124,12 +131,26 @@ def epub_details(path: Path) -> dict[str, Any]:
             spine = [node for node in package.iter() if node.tag.endswith("itemref")]
             if not manifest or not spine:
                 fail(f"{path.name}: EPUB package must contain a manifest and reading spine.")
+            cover_href = next(
+                (
+                    node.attrib.get("href")
+                    for node in manifest
+                    if ("cover-image" in node.attrib.get("properties", "") or "cover" in node.attrib.get("id", "").lower())
+                    and node.attrib.get("media-type", "").startswith("image/")
+                ),
+                None,
+            )
+            if not cover_href:
+                fail(f"{path.name}: EPUB package has no cover image.")
+            cover_member = (PurePosixPath(rootfile).parent / cover_href).as_posix()
+            cover_sha = hashlib.sha256(archive.read(cover_member)).hexdigest()
             return {
                 "author": creators[0],
                 "zipMembers": len(members),
                 "manifestItems": len(manifest),
                 "spineItems": len(spine),
                 "textNameOccurrences": text_name_occurrences,
+                "coverSha256": cover_sha,
             }
     except (KeyError, ET.ParseError, zipfile.BadZipFile) as error:
         fail(f"{path.name}: invalid EPUB package ({error}).")
@@ -173,6 +194,8 @@ def pdf_details(path: Path) -> dict[str, Any]:
         fail(f"{path.name}: pdftotext failed: {text_result.stderr.strip()}")
     if INCORRECT_NAME_PATTERN.search(text_result.stdout):
         fail(f"{path.name}: reader-visible PDF text still contains the misspelled author name.")
+    if RETIRED_BYLINE_PATTERN.search(text_result.stdout):
+        fail(f"{path.name}: reader-visible PDF text still contains the retired author byline.")
     text_name_occurrences = len(EXPECTED_AUTHOR_PATTERN.findall(text_result.stdout))
     if text_name_occurrences < 1:
         fail(f"{path.name}: reader-visible PDF text contains no corrected author name.")
@@ -209,7 +232,7 @@ def verify(root: Path, base_url: str | None) -> dict[str, Any]:
     catalog = json.loads((library / "catalog.json").read_text(encoding="utf-8"))
     titles = catalog.get("titles")
     if not isinstance(titles, list) or [entry.get("id") for entry in titles] != EXPECTED_IDS:
-        fail("catalog.json titles must be Book 1 through Book 6, then both workbooks.")
+        fail("catalog.json titles must be Book 1 through Book 6, both workbooks, then the journal.")
 
     manifest = parse_manifest(library / "SHA256SUMS.txt")
     expected_manifest_paths: set[str] = set()
@@ -218,10 +241,16 @@ def verify(root: Path, base_url: str | None) -> dict[str, Any]:
     screen_source = (root / "src" / "screens.js").read_text(encoding="utf-8")
     if 'href="${esc(assets.pdf)}" download' not in screen_source or 'href="${esc(assets.epub)}" download' not in screen_source:
         fail("The book screen no longer exposes both download links.")
+    if "product.free || owned" not in screen_source:
+        fail("Paid download links are not gated behind ownership.")
 
     for title in titles:
         title_report: dict[str, Any] = {"id": title["id"], "title": title["title"], "formats": {}}
-        for format_name in ("pdf", "epub"):
+        expected_formats = ("pdf",) if title["id"] == "compassion-legacy-journal" else ("pdf", "epub")
+        present_formats = tuple(name for name in ("pdf", "epub") if isinstance(title.get(name), dict))
+        if present_formats != expected_formats:
+            fail(f"{title['id']}: expected formats {expected_formats}; found {present_formats}.")
+        for format_name in expected_formats:
             edition = title.get(format_name)
             if not isinstance(edition, dict):
                 fail(f"{title['id']}: missing {format_name} edition in catalog.")
@@ -240,9 +269,19 @@ def verify(root: Path, base_url: str | None) -> dict[str, Any]:
             if actual_sha != edition.get("sha256") or manifest.get(relative_path) != actual_sha:
                 fail(f"{path.name}: checksum does not match catalog and manifest.")
             stem = path.stem
-            if f"bookAssets('{stem}')" not in data_source:
+            if f"bookAssets('{stem}')" not in data_source and public_path not in data_source:
                 fail(f"{path.name}: app data does not reference this edition stem.")
+            cover = library / "covers" / f"{stem}.jpg"
+            if not cover.is_file():
+                fail(f"{path.name}: marketplace cover is missing.")
+            try:
+                with Image.open(cover) as cover_image:
+                    cover_image.verify()
+            except OSError as error:
+                fail(f"{cover.name}: invalid marketplace cover ({error}).")
             details = pdf_details(path) if format_name == "pdf" else epub_details(path)
+            if format_name == "epub" and details["coverSha256"] != digest_file(cover):
+                fail(f"{path.name}: embedded EPUB cover does not match the corrected marketplace cover.")
             item: dict[str, Any] = {"path": public_path, "bytes": actual_size, "sha256": actual_sha, **details}
             if base_url:
                 download = downloaded_digest(base_url, public_path, actual_size)
@@ -253,8 +292,8 @@ def verify(root: Path, base_url: str | None) -> dict[str, Any]:
             report["editionCount"] += 1
         report["editions"].append(title_report)
 
-    if report["editionCount"] != 16 or set(manifest) != expected_manifest_paths:
-        fail("The catalog and checksum manifest must describe exactly 16 editions.")
+    if report["editionCount"] != 17 or set(manifest) != expected_manifest_paths:
+        fail("The catalog and checksum manifest must describe exactly 17 editions.")
     return report
 
 

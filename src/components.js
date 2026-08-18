@@ -2,11 +2,11 @@
  * Shared chrome: sidebar, app bar, tab bar, overlays.
  */
 
-import { esc, join } from './dom.js';
-import { TABS, TAB_OF, BRAND, FOOTER_LINE } from './data.js';
+import { esc } from './dom.js';
+import { TABS, TAB_OF, BRAND } from './data.js';
 import { state } from './state.js';
 import {
-  cupMark, cupMarkOnDark, arrowLeft, cartIcon, bigCheck,
+  cupMark, cupMarkOnDark, arrowLeft, cartIcon,
 } from './icons.js';
 
 /** Hash route for a screen id. */
@@ -38,6 +38,7 @@ export function sidebar() {
   <div class="side-foot">
     <nav class="side-minor" aria-label="Secondary">
       <a href="${hrefFor('about')}">About Pamella</a>
+      <a href="${esc(BRAND.socialUrl)}" target="_blank" rel="noreferrer">Instagram</a>
       <a href="${hrefFor('disclaimer')}">Disclaimers</a>
       <a href="${hrefFor('status')}">Production status</a>
     </nav>
@@ -79,28 +80,18 @@ export function tabbar() {
 export const backButton = (screen, label = 'Back') =>
   `<a class="back-btn" href="${hrefFor(screen)}">${arrowLeft}${esc(label)}</a>`;
 
-/**
- * The canonical book footer (Bible §1), reused on every long-form screen.
- * The social handle is printed as text but never linked — it is not confirmed
- * claimed on Instagram or Facebook yet (Bible §11).
- */
 export const brandFooter = () => `
   <footer class="brand-foot">
-    <p class="line">${esc(FOOTER_LINE)}</p>
+    <p class="line">
+      <span>${esc(BRAND.site)}</span>
+      <span aria-hidden="true"> | </span>
+      <a href="mailto:${esc(BRAND.email)}">${esc(BRAND.email)}</a>
+      <span aria-hidden="true"> | </span>
+      <a href="${esc(BRAND.socialUrl)}" target="_blank" rel="noreferrer">${esc(BRAND.social)}</a>
+    </p>
     <p class="tag">${esc(BRAND.tagline)}</p>
     <p class="sign">${esc(BRAND.closing)} — ${esc(BRAND.blessing)}</p>
   </footer>`;
 
-/** Rendered once at boot and never re-rendered, so focus and timers survive. */
-export const overlays = () => join([
-  '<div class="sheet-backdrop" id="backdrop" hidden></div>',
-  `
-  <div class="sheet" id="sheet-library" role="dialog" aria-modal="true" aria-labelledby="lib-title" hidden>
-    <span class="badge solid">${bigCheck(32)}</span>
-    <h2 id="lib-title">Added to your library</h2>
-    <p id="lib-copy">Saved to your library.</p>
-    <button class="btn btn-gold" data-close-sheet data-then="shop">Keep browsing</button>
-    <button class="btn btn-dark" data-close-sheet data-then="home">Back to home</button>
-  </div>`,
-  '<div class="toast" id="toast" role="status" aria-live="polite"></div>',
-]);
+/** Rendered once at boot and never re-rendered, so timers survive. */
+export const overlays = () => '<div class="toast" id="toast" role="status" aria-live="polite"></div>';
