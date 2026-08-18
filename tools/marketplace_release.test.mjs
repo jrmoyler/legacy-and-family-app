@@ -7,6 +7,7 @@ import { screens } from '../src/screens.js';
 import { state } from '../src/state.js';
 
 const canonicalAuthor = 'Pamella Grear';
+const coverRevision = '20260818-pamella-grear-2';
 const retiredByline = /Pamell?a\s+Foster-Grear/i;
 const misspelledGivenName = /\bPamela\b/i;
 
@@ -41,9 +42,34 @@ test('Compassion Legacy Journal is a $37 product on sale for $25', async () => {
   assert.equal(journal.originalPrice, 37);
   assert.equal(journal.buyable, true);
   assert.equal(journal.assets.pdf, '/assets/library/pdf/The-Compassion-Legacy-Journal.pdf');
-  assert.equal(journal.assets.cover, '/assets/library/covers/The-Compassion-Legacy-Journal.jpg');
+  assert.equal(
+    journal.assets.cover,
+    `/assets/library/covers/The-Compassion-Legacy-Journal.jpg?v=${coverRevision}`,
+  );
   await access(new URL(`..${journal.assets.pdf}`, import.meta.url));
-  await access(new URL(`..${journal.assets.cover}`, import.meta.url));
+  await access(new URL(`../assets/library/covers/The-Compassion-Legacy-Journal.jpg`, import.meta.url));
+});
+
+test('every mobile and desktop cover rendition uses the corrected revision', () => {
+  assert.equal(data.COVER_ASSET_REVISION, coverRevision);
+  const coverUrls = stringsIn(data).filter((value) =>
+    /^\/assets\/library\/covers\/.*\.jpg\?v=/.test(value)
+  );
+  assert.equal(coverUrls.length, 36, `expected 36 cover references, found ${coverUrls.length}`);
+  for (const url of coverUrls) assert.ok(url.endsWith(`?v=${coverRevision}`), url);
+
+  state.category = 'Free';
+  const html = screens.shop();
+  assert.match(
+    html,
+    new RegExp(`Legacy-Inventory-Workbook-Illustrated\\.jpg\\?v=${coverRevision}`),
+  );
+  assert.match(
+    html,
+    new RegExp(`40-Second-Compassion-Card\\.jpg\\?v=${coverRevision}`),
+  );
+  assert.equal((html.match(new RegExp(`\\?v=${coverRevision}`, 'g')) || []).length, 24);
+  assert.doesNotMatch(html, /Foster-Grear|\bPamela\b/i);
 });
 
 test('shop renders journal sale pricing without a duplicate cart control', () => {

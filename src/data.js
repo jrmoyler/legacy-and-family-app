@@ -189,6 +189,15 @@ export const formatById = (id) => FORMATS.find((f) => f.id === id);
 /** Short form for cart lines and library rows. */
 export const FORMAT_SHORT = { both: 'PDF + EPUB', pdf: 'PDF', epub: 'EPUB' };
 
+/**
+ * Cover JPGs previously shipped with a one-year immutable cache lifetime.
+ * Keep a shared revision on every preview URL so mobile `src`, desktop
+ * `srcset`, full-size links, and social previews all move together whenever
+ * corrected artwork is published.
+ */
+export const COVER_ASSET_REVISION = '20260818-pamella-grear-2';
+const revisionedCover = (path) => `${path}?v=${COVER_ASSET_REVISION}`;
+
 /* ==========================================================================
    The books and their verified download editions
    ========================================================================== */
@@ -212,8 +221,8 @@ export const BOOK_STATUS = {
 const bookAssets = (slug) => ({
   epub: `/assets/library/epub/${slug}.epub`,
   pdf: `/assets/library/pdf/${slug}.pdf`,
-  cover: `/assets/library/covers/${slug}.jpg`,
-  coverThumb: `/assets/library/covers/thumbs/${slug}.jpg`,
+  cover: revisionedCover(`/assets/library/covers/${slug}.jpg`),
+  coverThumb: revisionedCover(`/assets/library/covers/thumbs/${slug}.jpg`),
 });
 
 /**
@@ -222,8 +231,8 @@ const bookAssets = (slug) => ({
  * so every grid and detail screen can render them through `coverArt()`.
  */
 const productCoverAssets = (slug) => ({
-  cover: `/assets/library/covers/products/${slug}.jpg`,
-  coverThumb: `/assets/library/covers/products/thumbs/${slug}.jpg`,
+  cover: revisionedCover(`/assets/library/covers/products/${slug}.jpg`),
+  coverThumb: revisionedCover(`/assets/library/covers/products/thumbs/${slug}.jpg`),
 });
 
 /** The flagship series cover displayed on the Compassion Hub home page. */
@@ -400,8 +409,8 @@ export const PRODUCTS = [
     buyable: true,
     assets: {
       pdf: '/assets/library/pdf/The-Compassion-Legacy-Journal.pdf',
-      cover: '/assets/library/covers/The-Compassion-Legacy-Journal.jpg',
-      coverThumb: '/assets/library/covers/thumbs/The-Compassion-Legacy-Journal.jpg',
+      cover: revisionedCover('/assets/library/covers/The-Compassion-Legacy-Journal.jpg'),
+      coverThumb: revisionedCover('/assets/library/covers/thumbs/The-Compassion-Legacy-Journal.jpg'),
       coverFit: 'contain',
     },
     note: '13 pages · illustrated PDF · twelve guided letters',
