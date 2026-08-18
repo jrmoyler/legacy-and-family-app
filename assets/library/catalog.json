@@ -261,13 +261,13 @@
       "height": 900,
       "image": {
         "path": "/assets/library/covers/The-Compassion-Legacy-Journal.jpg",
-        "bytes": 206407,
-        "sha256": "dd4a5b6e9411858cc76af84b6104f595e6300bfb500c2a63fbbecf34115e60d6"
+        "bytes": 206382,
+        "sha256": "ed7d4d90320ef21e7a98c3efd72aade2ba1f5d26c7f941fea6179897c7179ad0"
       },
       "thumb": {
         "path": "/assets/library/covers/thumbs/The-Compassion-Legacy-Journal.jpg",
-        "bytes": 43958,
-        "sha256": "e9724dc74589311448732e71e89420b6d5265628978dfcb4f5a43ac1a21e4595"
+        "bytes": 44110,
+        "sha256": "87ed637187eba1fa7964c37cec68298cba26722f6bd5ab46ed31aa05e147bef4"
       }
     }
   ],

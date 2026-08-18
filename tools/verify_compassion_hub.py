@@ -14,6 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "https://zfpjgedcjdhxvdbthikt.supabase.co/functions/v1/compassion-messages"
+COVER_ASSET_REVISION = "20260818-pamella-grear-2"
 APP_PATHS = [
     ROOT / "index.html",
     ROOT / "manifest.webmanifest",
@@ -134,6 +135,7 @@ def verify_sources() -> None:
         require(not retired.search(text), f"Retired author byline in {path.relative_to(ROOT)}")
 
     data = (ROOT / "src" / "data.js").read_text(encoding="utf-8")
+    index = (ROOT / "index.html").read_text(encoding="utf-8")
     screens = (ROOT / "src" / "screens.js").read_text(encoding="utf-8")
     app = (ROOT / "app.js").read_text(encoding="utf-8")
     edge = (ROOT / "supabase" / "functions" / "compassion-messages" / "index.ts").read_text(encoding="utf-8")
@@ -141,6 +143,14 @@ def verify_sources() -> None:
 
     require("app: 'The Compassion Hub'" in data, "Canonical app name is missing")
     require("author: 'Pamella Grear'" in data, "Canonical author is missing")
+    require(
+        f"COVER_ASSET_REVISION = '{COVER_ASSET_REVISION}'" in data,
+        "Corrected cover revision is missing",
+    )
+    require(
+        index.count(f"?v={COVER_ASSET_REVISION}") == 2,
+        "Open Graph and Twitter preview images do not use the corrected revision",
+    )
     require("series: 'A Cup of Compassion'" in data, "Canonical series name is missing")
     require("https://www.instagram.com/acupofcompassion" in data, "Correct Instagram profile is missing")
     require("INDIVIDUAL_EBOOK_PRICE = 7.99" in data, "Individual ebook price is not $7.99")
@@ -167,6 +177,17 @@ def verify_sources() -> None:
     require("serviceFetch" in edge and "AbortSignal.timeout" in edge, "Edge requests need timeouts")
     require("pg_advisory_xact_lock" in migration, "Atomic rate-limit lock is missing")
     require("'The Compassion Hub', 'A note from us'" in migration, "Seed messages are not marked as examples")
+
+    vercel = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    cover_headers = next(
+        (entry["headers"] for entry in vercel["headers"] if entry.get("source") == "/assets/library/covers/(.*).jpg"),
+        [],
+    )
+    cache_control = next(
+        (header.get("value") for header in cover_headers if header.get("key") == "Cache-Control"),
+        None,
+    )
+    require(cache_control == "public, max-age=0, must-revalidate", "Cover previews are still cached as immutable")
 
 def verify_live_api() -> None:
     request = urllib.request.Request(API_URL, headers={"Accept": "application/json"})
