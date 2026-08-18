@@ -41,6 +41,47 @@ create index if not exists compassion_messages_approved_created_idx
 create index if not exists compassion_messages_fingerprint_created_idx
   on public.compassion_messages (request_fingerprint, created_at desc);
 
+create or replace function public.submit_compassion_message(
+  p_display_name text,
+  p_community text,
+  p_message text,
+  p_request_fingerprint text
+)
+returns text
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  submission_count integer;
+begin
+  -- Serialize submissions for the same daily fingerprint. Hash collisions only
+  -- serialize unrelated requests; they cannot weaken the three-message limit.
+  perform pg_advisory_xact_lock(hashtextextended(p_request_fingerprint, 0));
+
+  select count(*)
+    into submission_count
+    from public.compassion_messages
+   where request_fingerprint = p_request_fingerprint;
+
+  if submission_count >= 3 then
+    return 'rate_limited';
+  end if;
+
+  insert into public.compassion_messages
+    (display_name, community, message, approved, request_fingerprint)
+  values
+    (p_display_name, p_community, p_message, false, p_request_fingerprint);
+
+  return 'pending';
+end;
+$$;
+
+revoke all on function public.submit_compassion_message(text, text, text, text)
+  from public, anon, authenticated;
+grant execute on function public.submit_compassion_message(text, text, text, text)
+  to service_role;
+
 insert into public.compassion_messages
   (display_name, community, message, approved, request_fingerprint, seed_key, created_at, reviewed_at)
 values

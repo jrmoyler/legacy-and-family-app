@@ -85,7 +85,7 @@ screens.welcome = () => `
         <a class="btn btn-gold" href="${hrefFor('home')}">Start reading</a>
         <a class="btn btn-ghost-dark" href="${hrefFor('series')}">See the series</a>
       </div>
-      <p class="welcome-foot">Free to read · Nothing stored about you</p>
+      <p class="welcome-foot">Free to read · No account or analytics</p>
     </div>
     <blockquote class="scripture">
       <p>“A good man leaveth an inheritance to his children’s children.”</p>

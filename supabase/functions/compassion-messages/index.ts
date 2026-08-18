@@ -1,6 +1,7 @@
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL') ?? '';
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
 const TABLE_URL = `${SUPABASE_URL}/rest/v1/compassion_messages`;
+const SUBMIT_URL = `${SUPABASE_URL}/rest/v1/rpc/submit_compassion_message`;
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -92,38 +93,30 @@ Deno.serve(async (request) => {
   const day = new Date().toISOString().slice(0, 10);
   const fingerprint = await digest(`${SERVICE_ROLE_KEY}:${remote}:${day}`);
 
-  const countQuery = new URLSearchParams({
-    select: 'id',
-    request_fingerprint: `eq.${fingerprint}`,
-  });
-  const countResult = await fetch(`${TABLE_URL}?${countQuery}`, {
-    headers: { ...serviceHeaders, Prefer: 'count=exact', Range: '0-0' },
-  });
-  const total = Number((countResult.headers.get('content-range') || '').split('/')[1] || 0);
-  if (!countResult.ok) {
-    return response({ error: 'Your message could not be checked. Please try again.' }, 502);
-  }
-  if (total >= 3) {
-    return response({ error: 'You have shared several messages today. Please return tomorrow.' }, 429);
-  }
-
-  const insertResult = await fetch(TABLE_URL, {
+  // The RPC holds a transaction-scoped advisory lock for this daily fingerprint,
+  // so parallel requests cannot race between a count and an insert.
+  const insertResult = await fetch(SUBMIT_URL, {
     method: 'POST',
     headers: {
       ...serviceHeaders,
       'Content-Type': 'application/json',
-      Prefer: 'return=minimal',
     },
     body: JSON.stringify({
-      display_name: displayName,
-      community: community || null,
-      message,
-      approved: false,
-      request_fingerprint: fingerprint,
+      p_display_name: displayName,
+      p_community: community || null,
+      p_message: message,
+      p_request_fingerprint: fingerprint,
     }),
   });
 
   if (!insertResult.ok) {
+    return response({ error: 'Your message could not be saved. Please try again.' }, 502);
+  }
+  const submissionStatus = await insertResult.json().catch(() => null);
+  if (submissionStatus === 'rate_limited') {
+    return response({ error: 'You have shared several messages today. Please return tomorrow.' }, 429);
+  }
+  if (submissionStatus !== 'pending') {
     return response({ error: 'Your message could not be saved. Please try again.' }, 502);
   }
   return response({ ok: true, status: 'pending' }, 202);

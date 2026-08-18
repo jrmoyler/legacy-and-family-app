@@ -41,6 +41,8 @@ def verify_sources() -> None:
     data = (ROOT / "src" / "data.js").read_text(encoding="utf-8")
     screens = (ROOT / "src" / "screens.js").read_text(encoding="utf-8")
     app = (ROOT / "app.js").read_text(encoding="utf-8")
+    edge = (ROOT / "supabase" / "functions" / "compassion-messages" / "index.ts").read_text(encoding="utf-8")
+    migration = (ROOT / "supabase" / "migrations" / "20260818022152_create_compassion_messages.sql").read_text(encoding="utf-8")
 
     require("name: 'The Compassion Hub'" in data, "Canonical app name is missing")
     require("author: 'Pamella Foster-Grear'" in data, "Canonical author is missing")
@@ -49,8 +51,13 @@ def verify_sources() -> None:
     require(data.count("price: INDIVIDUAL_EBOOK_PRICE") == 12, "Expected 12 canonical individual-price uses")
     require("screens.messages" in screens, "Messages page is missing")
     require("data-compassion-form" in screens, "Compassion form is missing")
+    require("Nothing stored about you" not in screens, "Welcome privacy promise conflicts with public messages")
+    require("No account or analytics" in screens, "Qualified welcome privacy text is missing")
     require("loadCompassionMessages" in app, "Message loading behavior is missing")
     require("COMPASSION_API_URL" in app, "Message API wiring is missing")
+    require("rpc/submit_compassion_message" in edge, "Atomic submission RPC is not wired")
+    require("countQuery" not in edge, "Non-atomic count-then-insert flow remains")
+    require("pg_advisory_xact_lock" in migration, "Atomic rate-limit lock is missing")
 
     json.loads((ROOT / "manifest.webmanifest").read_text(encoding="utf-8"))
     json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
