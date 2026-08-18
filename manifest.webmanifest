@@ -2,18 +2,54 @@
   "name": "The Compassion Hub",
   "short_name": "Compassion Hub",
   "description": "Books, free reading, legacy tools, and public messages of compassion by Pamella Foster-Grear.",
+  "name": "Compassion Hub by Cup of Compassion",
+  "short_name": "Compassion Hub",
+  "description": "The A Cup of Compassion series by Pamela Foster-Grear on compassion, legacy, and what gets passed on — six books in PDF and EPUB, and a free, printable Legacy Inventory.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait-primary",
+  "orientation": "any",
   "background_color": "#F6F1E7",
   "theme_color": "#3A2150",
+  "categories": ["books", "education", "lifestyle"],
   "icons": [
     {
       "src": "./icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    },
+    {
+      "src": "./assets/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "The Legacy Inventory",
+      "short_name": "Inventory",
+      "description": "The free, printable worksheet",
+      "url": "./#/legacy"
+    },
+    {
+      "name": "Free reading",
+      "short_name": "Read",
+      "description": "Every lesson, free and in full",
+      "url": "./#/read"
     }
   ]
 }

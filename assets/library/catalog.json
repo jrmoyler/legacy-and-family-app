@@ -2,54 +2,500 @@
   "schemaVersion": 1,
   "verifiedOn": "2026-08-17",
   "verification": "Every file in this catalog is committed as a binary asset and is covered by assets/library/SHA256SUMS.txt.",
+  "schemaVersion": 2,
+  "verifiedOn": "2026-08-16",
+  "verification": "Every publication edition is covered by assets/library/SHA256SUMS.txt; every publication, product, and home cover is recorded here with exact byte counts and SHA-256 hashes.",
   "titles": [
     {
       "id": "book-1",
       "title": "The Benefit of Having Compassion",
       "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.pdf", "bytes": 4173181, "sha256": "4f0032c50c76b189e88eb93b372043569f3797f06e10199f11e192c6a48c33f5" },
       "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.epub", "bytes": 2530353, "sha256": "cdd5f8b7c9e302594815a72ec843108d21046aa539bffd84189f174d037f93dd" }
+      "pdf": {
+        "path": "/assets/library/pdf/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.pdf",
+        "bytes": 2722560,
+        "sha256": "07c1fe2ec655fd2e5dd835fd900858bc513adf095013929d58397080ae23f5d2"
+      },
+      "epub": {
+        "path": "/assets/library/epub/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.epub",
+        "bytes": 2416151,
+        "sha256": "49104c3fd8f3ae758e973ce57e24ecc01cec461fc9be10894f3c9d2132fefeaa"
+      }
     },
     {
       "id": "book-2",
       "title": "Are You Born in Compassion or Nurtured in It?",
       "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.pdf", "bytes": 4597691, "sha256": "7f7b73012a03cf3a30d9de140c2cd2f25d01f26f33269e602178c175610d19b2" },
       "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.epub", "bytes": 2839754, "sha256": "9585a5e9b35282aa9caedae6b594941cc234e3a4672849a912f32f0765dc5835" }
+      "pdf": {
+        "path": "/assets/library/pdf/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.pdf",
+        "bytes": 3033196,
+        "sha256": "2439037cfe3b0b87e4914c2058f6a28b2416172ff651ea9eb3536d5f15bd511f"
+      },
+      "epub": {
+        "path": "/assets/library/epub/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.epub",
+        "bytes": 2710463,
+        "sha256": "6ed2fb1b9d105c417721aeff796f537c7ed2dd059056d2587be075e657f30655"
+      }
     },
     {
       "id": "book-3",
       "title": "Compassion and Legacy",
       "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-03-Compassion-and-Legacy.pdf", "bytes": 4480903, "sha256": "fb4f03bf806d97764c48fd502d6be4ceabcb946c7d939dfe1ada3726de459b33" },
       "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-03-Compassion-and-Legacy.epub", "bytes": 2706404, "sha256": "69a3d992a2b7633f54d1d33db2b03709500ce4167b8ec6698d9611064a2496c6" }
+      "pdf": {
+        "path": "/assets/library/pdf/A-Cup-of-Compassion-03-Compassion-and-Legacy.pdf",
+        "bytes": 2957541,
+        "sha256": "e6fa999a7d9b2157e364080a1c792441aff9d0cba104c0e323ea90088d36362d"
+      },
+      "epub": {
+        "path": "/assets/library/epub/A-Cup-of-Compassion-03-Compassion-and-Legacy.epub",
+        "bytes": 2585805,
+        "sha256": "54a1e59c56b7a2de064a4288b765905d089a2bbe1ea676b6ec7a4584ffdcb3aa"
+      }
     },
     {
       "id": "book-4",
       "title": "Compassion or Confusion?",
       "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-04-Compassion-or-Confusion.pdf", "bytes": 10535105, "sha256": "480c4d7f19457bce4b8eca939e03106fa196fa7ccb1fa76557824749b4a9b85c" },
       "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-04-Compassion-or-Confusion.epub", "bytes": 5990397, "sha256": "0fddcd2b33c210210e308eeec429090f1233f8d52054b31351b0fdbc9cf2c011" }
+      "pdf": {
+        "path": "/assets/library/pdf/A-Cup-of-Compassion-04-Compassion-or-Confusion.pdf",
+        "bytes": 10598325,
+        "sha256": "4cc65b18d50db6c4103e619d3ee2560bf6807b07477aa1263a02672ed85abd53"
+      },
+      "epub": {
+        "path": "/assets/library/epub/A-Cup-of-Compassion-04-Compassion-or-Confusion.epub",
+        "bytes": 5856095,
+        "sha256": "1bbd3c607434bea811306d066d6848586ed40101cf233c99af7b052e9073e2c8"
+      }
     },
     {
       "id": "book-5",
       "title": "Compassion and Commitment",
       "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-05-Compassion-and-Commitment.pdf", "bytes": 11512885, "sha256": "31f8d7495ec9f31f17b7255d1fd03c4762c334863c9c7c5ec6b9d03668c45a51" },
       "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-05-Compassion-and-Commitment.epub", "bytes": 6938467, "sha256": "965dd97b761fb14656778f5bf6e42a41ea4ad5954649502bcf0e63419aaa1242" }
+      "pdf": {
+        "path": "/assets/library/pdf/A-Cup-of-Compassion-05-Compassion-and-Commitment.pdf",
+        "bytes": 11578163,
+        "sha256": "1777fcfcb9a378cef70b75d48360122d6e439a11327a41974d43243c9c7da9fd"
+      },
+      "epub": {
+        "path": "/assets/library/epub/A-Cup-of-Compassion-05-Compassion-and-Commitment.epub",
+        "bytes": 6779124,
+        "sha256": "c34d1dc70e4e67b61e833341d364b99dda35a125f3bde0e73951bfd33232dca6"
+      }
     },
     {
       "id": "book-6",
       "title": "Compassion and Companionship",
       "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-06-Compassion-and-Companionship.pdf", "bytes": 12303490, "sha256": "f8314e51dd5c445cfc041728d0beb4d8a72d0bcd80464cc1fd960c2e7fc96154" },
       "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-06-Compassion-and-Companionship.epub", "bytes": 7512879, "sha256": "035dd80b1c739e4e7a7265d417ea012d9d6f59c2b865e805aa067b5175fdd393" }
+      "pdf": {
+        "path": "/assets/library/pdf/A-Cup-of-Compassion-06-Compassion-and-Companionship.pdf",
+        "bytes": 12404780,
+        "sha256": "9a951433af9f54906b932f96a186ebd5796f7cecd9ddce317a7dad129342c9f9"
+      },
+      "epub": {
+        "path": "/assets/library/epub/A-Cup-of-Compassion-06-Compassion-and-Companionship.epub",
+        "bytes": 7338513,
+        "sha256": "a5abb4d98ebec1be6421f51c0b6afc7bb19dab60b5e8b8391eef0e4cf1eb7df8"
+      }
     },
     {
       "id": "companion-workbook",
       "title": "The Companion Workbook",
       "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-Companion-Workbook.pdf", "bytes": 361954, "sha256": "701af1e1b9ea9f7275f78a1a148512897fc3c0f9ae5585822b275d0a988febae" },
       "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-Companion-Workbook.epub", "bytes": 308117, "sha256": "4a7bd29d3ac8366f8d553658769f0e3beaadee4973ffd57bd3f3a2d26c9f5234" }
+      "pdf": {
+        "path": "/assets/library/pdf/A-Cup-of-Compassion-Companion-Workbook.pdf",
+        "bytes": 361690,
+        "sha256": "e291819bbd7abbf06413d1d0fa00716585cc36d5b711ffc42dd37d573c122779"
+      },
+      "epub": {
+        "path": "/assets/library/epub/A-Cup-of-Compassion-Companion-Workbook.epub",
+        "bytes": 307723,
+        "sha256": "3b8e8eaf184f9d7c8319c13e47092207dff8e4c03e43388ea416e7331255bd06"
+      }
     },
     {
       "id": "legacy-inventory-workbook",
       "title": "The Legacy Inventory Workbook",
       "pdf": { "path": "/assets/library/pdf/A-Cup-of-Compassion-Legacy-Inventory-Workbook.pdf", "bytes": 335802, "sha256": "b397f36720c67b3030d9a32a763aeb19b76f7d183a368c8fea1caed373ad1a3a" },
       "epub": { "path": "/assets/library/epub/A-Cup-of-Compassion-Legacy-Inventory-Workbook.epub", "bytes": 305272, "sha256": "ca05d2856468f0c618fb62b40412b8507c9b1d50c06a9fe54076ac885b490556" }
+      "pdf": {
+        "path": "/assets/library/pdf/A-Cup-of-Compassion-Legacy-Inventory-Workbook.pdf",
+        "bytes": 335512,
+        "sha256": "4d72fd4c3df34a6920ec0e2360aebce989a69ccbac2b8b2c651ce1ce31e063d4"
+      },
+      "epub": {
+        "path": "/assets/library/epub/A-Cup-of-Compassion-Legacy-Inventory-Workbook.epub",
+        "bytes": 304872,
+        "sha256": "5aee2fbe86345556dbcd164cf09d35216a655479f1dea9f5a6074d02283b95d9"
+      }
+    }
+  ],
+  "covers": [
+    {
+      "id": "book-1",
+      "title": "The Benefit of Having Compassion",
+      "width": 1600,
+      "height": 2560,
+      "image": {
+        "path": "/assets/library/covers/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.jpg",
+        "bytes": 555088,
+        "sha256": "29d5819fb87dd14953ef2c1b751225ed12a33c6bb7e6f328a7b352eaab32a621"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/thumbs/A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion.jpg",
+        "bytes": 114194,
+        "sha256": "147d72a719f06afb15c48abc16843c5e33b19a3dac83d1b5d3f3d54a385b9027"
+      }
+    },
+    {
+      "id": "book-2",
+      "title": "Are You Born in Compassion or Nurtured in It?",
+      "width": 1600,
+      "height": 2560,
+      "image": {
+        "path": "/assets/library/covers/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.jpg",
+        "bytes": 626964,
+        "sha256": "b4aceed0a42063bd86c5170e4d82c3a198e0fb1aa750c22f167e487a7a8036a2"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/thumbs/A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion.jpg",
+        "bytes": 132765,
+        "sha256": "b5226152e8c0855c4e94ef6ad01f4ae00666c9f1ba3e56d24acc59e223fc5f2b"
+      }
+    },
+    {
+      "id": "book-3",
+      "title": "Compassion and Legacy",
+      "width": 1600,
+      "height": 2560,
+      "image": {
+        "path": "/assets/library/covers/A-Cup-of-Compassion-03-Compassion-and-Legacy.jpg",
+        "bytes": 597974,
+        "sha256": "53fe882ec84954e6b7d7fd72c203c7b099c1d6435a7a938f5181ec037676be90"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/thumbs/A-Cup-of-Compassion-03-Compassion-and-Legacy.jpg",
+        "bytes": 121614,
+        "sha256": "343aeb9d21c0c0079c7bfb5c37838aa03d6a362af2ed1253f24ecf22aacaaa9e"
+      }
+    },
+    {
+      "id": "book-4",
+      "title": "Compassion or Confusion?",
+      "width": 1600,
+      "height": 2560,
+      "image": {
+        "path": "/assets/library/covers/A-Cup-of-Compassion-04-Compassion-or-Confusion.jpg",
+        "bytes": 391954,
+        "sha256": "5c077979cf18977cfa593b48981ffb90a4d209d9ff124021d18ba2c541641f4b"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/thumbs/A-Cup-of-Compassion-04-Compassion-or-Confusion.jpg",
+        "bytes": 83869,
+        "sha256": "ebc1b16666a65b6a05d1afecb51416c2c4396ef1731acb5151df9ab5fb02c450"
+      }
+    },
+    {
+      "id": "book-5",
+      "title": "Compassion and Commitment",
+      "width": 1600,
+      "height": 2560,
+      "image": {
+        "path": "/assets/library/covers/A-Cup-of-Compassion-05-Compassion-and-Commitment.jpg",
+        "bytes": 439427,
+        "sha256": "982e26e7cf84ddf05801806643f09b6bb0a93e14e2df3d150a3c1eb1a732db3d"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/thumbs/A-Cup-of-Compassion-05-Compassion-and-Commitment.jpg",
+        "bytes": 85378,
+        "sha256": "a3d820677adc85d9bd6ed186fe7e21e200075a9e70904ed14da4b071bf66480d"
+      }
+    },
+    {
+      "id": "book-6",
+      "title": "Compassion and Companionship",
+      "width": 1600,
+      "height": 2560,
+      "image": {
+        "path": "/assets/library/covers/A-Cup-of-Compassion-06-Compassion-and-Companionship.jpg",
+        "bytes": 554956,
+        "sha256": "3d399ba1eace97ac92e4c7727a342f0d2c3181b1ab1f6bfe3e0ef4042f6fe4f0"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/thumbs/A-Cup-of-Compassion-06-Compassion-and-Companionship.jpg",
+        "bytes": 113000,
+        "sha256": "4f75d93afc53a3ff36a632f0b49bc5274773b2fac0d4497d19a64a7c506a56d5"
+      }
+    },
+    {
+      "id": "companion-workbook",
+      "title": "The Companion Workbook",
+      "width": 1600,
+      "height": 2560,
+      "image": {
+        "path": "/assets/library/covers/A-Cup-of-Compassion-Companion-Workbook.jpg",
+        "bytes": 111698,
+        "sha256": "c8b961cd7ac1f86e35c7c3a1cb62ecbb0bc500950db374b550c2ea1dc9a0fd92"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/thumbs/A-Cup-of-Compassion-Companion-Workbook.jpg",
+        "bytes": 28926,
+        "sha256": "fe96208d94574ebf9477dc7e60d188482a2cea2e68a4b5d27d8d068307465436"
+      }
+    },
+    {
+      "id": "legacy-inventory-workbook",
+      "title": "The Legacy Inventory Workbook",
+      "width": 1600,
+      "height": 2560,
+      "image": {
+        "path": "/assets/library/covers/A-Cup-of-Compassion-Legacy-Inventory-Workbook.jpg",
+        "bytes": 110062,
+        "sha256": "dba686b19792a6d4a929834c9bb529fcff23b91450a5ecd54195c52dca1b9666"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/thumbs/A-Cup-of-Compassion-Legacy-Inventory-Workbook.jpg",
+        "bytes": 28609,
+        "sha256": "916eb18872bdc9b64c3a704300627e6d28237202f203292bff30d7917911676f"
+      }
+    }
+  ],
+  "productCovers": [
+    {
+      "id": "workbook",
+      "title": "The Companion Workbook",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Companion-Workbook-Illustrated.jpg",
+        "bytes": 377023,
+        "sha256": "1c4c9b5572807b472c73dc98df7ad4927564548d297a3123b1b2eb9e1fb45dcc"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Companion-Workbook-Illustrated.jpg",
+        "bytes": 751522,
+        "sha256": "876a0b52dfe27ed21257605df71b118c6c9c003a38fde0b9daa8953e70e6318c"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Companion-Workbook-Illustrated.jpg",
+        "bytes": 141306,
+        "sha256": "6c95dfc89edbbd50b665eb170230cb41fd25bec941506527f8170fe3e6518322"
+      }
+    },
+    {
+      "id": "inventory-worksheet",
+      "title": "The Legacy Inventory Workbook",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Legacy-Inventory-Workbook-Illustrated.jpg",
+        "bytes": 375869,
+        "sha256": "35f7a91c34205d3c4c6311818eac2a209a1b4abcb645c3357182fc701e12d305"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Legacy-Inventory-Workbook-Illustrated.jpg",
+        "bytes": 754923,
+        "sha256": "fa7ce94882c14d9bb3e8363bee08c845b9e9a5ccaa570a9fa76c6a062e32cc5b"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Legacy-Inventory-Workbook-Illustrated.jpg",
+        "bytes": 143219,
+        "sha256": "981111ffcc7af41c2b150430b1853d52f20aad24929367e0b442a6383c42dc18"
+      }
+    },
+    {
+      "id": "compassion-card",
+      "title": "The 40-Second Compassion Card",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-40-Second-Compassion-Card.jpg",
+        "bytes": 307055,
+        "sha256": "e909892c66e4ecc9cce352cb9d3192f14f5a928bc8216ac295c539ed632447a6"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-40-Second-Compassion-Card.jpg",
+        "bytes": 645437,
+        "sha256": "3b429fce82d97d5eb504e52a62f4e005c41b56f38eed609ea56fc8c14a1176c2"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-40-Second-Compassion-Card.jpg",
+        "bytes": 121733,
+        "sha256": "2f9d5d37f806b607c96b257ab37b15641c420c747adb4dcaf9fc8bacb458d318"
+      }
+    },
+    {
+      "id": "church-license",
+      "title": "Church & Small-Group Licence",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Church-Small-Group-Licence.jpg",
+        "bytes": 341682,
+        "sha256": "53ac43f1d500be41b9bf851a28269678fcbd55232e969005441e9da7ff858ce7"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Church-Small-Group-Licence.jpg",
+        "bytes": 723281,
+        "sha256": "c794ad91e9cc1f2d197feed29db20dd1613c02026d7741cdd86dcaa327692c29"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Church-Small-Group-Licence.jpg",
+        "bytes": 141310,
+        "sha256": "fac4e717dece4e9865757758ce2d6b7acc62da99aaff5632b99d49ab97c34717"
+      }
+    },
+    {
+      "id": "conversation-kit",
+      "title": "The Family Legacy Conversation Kit",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Family-Legacy-Conversation-Kit.jpg",
+        "bytes": 376400,
+        "sha256": "6f05ebfdea848e0a1a2e56010de86c65dfbe2801f52b800e1da025821d7578fa"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Family-Legacy-Conversation-Kit.jpg",
+        "bytes": 750624,
+        "sha256": "c15ba8bd3d6176315af482e3e3a70241733f94f3d37c61c30f55db1fc07569cd"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Family-Legacy-Conversation-Kit.jpg",
+        "bytes": 145150,
+        "sha256": "882d03590f2a159374276baa13860d53730ef8eb9d1f494a8c0bf740f1526860"
+      }
+    },
+    {
+      "id": "devotional",
+      "title": "The 30-Day Compassion Devotional",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-30-Day-Devotional.jpg",
+        "bytes": 283928,
+        "sha256": "ff8297e9c37151936e003f9c4f665a1defaf895bd38e5a5da571eafe2667de93"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-30-Day-Devotional.jpg",
+        "bytes": 644869,
+        "sha256": "f5ad3e9a5de163e438bd9705e7ed4e148c2a6942bb80e0559c2228ea88c73238"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-30-Day-Devotional.jpg",
+        "bytes": 127434,
+        "sha256": "4e546a6b9a774308d07be06fa2e96a36f48c784cc854fab722511e1503a3f291"
+      }
+    },
+    {
+      "id": "caregiving",
+      "title": "Compassion in Caregiving: Burnout & Boundaries",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Caregiving-Burnout-Boundaries.jpg",
+        "bytes": 332786,
+        "sha256": "eeaca6442fc4a523c7fc5bebce852fcd9bc54cccf98db7a83f9d372c61d3bece"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Caregiving-Burnout-Boundaries.jpg",
+        "bytes": 702409,
+        "sha256": "79265ec42a3f6c09c54529d219570e593cf9757558ea841dbda865f9baabcfe9"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Caregiving-Burnout-Boundaries.jpg",
+        "bytes": 137870,
+        "sha256": "bf15f234a2cd06390182b5b1a6fb1e50a9f2dad0a84e6e418fd8586da85b0b11"
+      }
+    },
+    {
+      "id": "leaders-kit",
+      "title": "Church & Small-Group Leader's Kit",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Church-Small-Group-Leaders-Kit.jpg",
+        "bytes": 330549,
+        "sha256": "e5bfa6be3a2e4dce76c864a65a76387689cc77707e31cd73a293e1c63c07e4ab"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Church-Small-Group-Leaders-Kit.jpg",
+        "bytes": 694665,
+        "sha256": "b7cf0914365bdf36931bf73948a429f58250c57260a6d516535ef31e389f41f1"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Church-Small-Group-Leaders-Kit.jpg",
+        "bytes": 145856,
+        "sha256": "7e3345ded9a8aaa63d35e48f2be1996a7bfff9466878b912e267a940ca30c7cd"
+      }
+    },
+    {
+      "id": "youth",
+      "title": "Youth & School Edition",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Youth-School-Edition.jpg",
+        "bytes": 332834,
+        "sha256": "8b38a011e7a304bff255af66b46d15794ab4d5b918cfb5de83b3819cedf3c434"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Youth-School-Edition.jpg",
+        "bytes": 698484,
+        "sha256": "3ca8989eda78ab36d83e01cf6727b8b4069b6630228f78a41882d06e425ec1d0"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Youth-School-Edition.jpg",
+        "bytes": 137947,
+        "sha256": "88eb149455375dea80e6adea49178ef20107481af7b34bf118d45e5bfaac89a9"
+      }
+    },
+    {
+      "id": "training-deck",
+      "title": "Caregiver Team Training Deck",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Caregiver-Team-Training-Deck.jpg",
+        "bytes": 300903,
+        "sha256": "95cf07d5a4e91c66360213b306de1c177633b65c4972787b526702b0d97bfc26"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Caregiver-Team-Training-Deck.jpg",
+        "bytes": 640761,
+        "sha256": "d9c56ff0b70ebf9942805c3673b1e08ecde8ece64ea5193de8883782ddcd4819"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Caregiver-Team-Training-Deck.jpg",
+        "bytes": 123161,
+        "sha256": "43ba3035f9218503db5168e509709bea7b890cabf57bba501269800def082d63"
+      }
+    },
+    {
+      "id": "home",
+      "title": "A Cup of Compassion",
+      "width": 1600,
+      "height": 2560,
+      "source": {
+        "path": "/assets/library/covers/product-art/A-Cup-of-Compassion-Home.jpg",
+        "bytes": 366516,
+        "sha256": "d6a130a8d2d91a0608c1d2bfa70141f1ec8b78837f6fd7b70e422bb452cebb4f"
+      },
+      "image": {
+        "path": "/assets/library/covers/products/A-Cup-of-Compassion-Home.jpg",
+        "bytes": 742575,
+        "sha256": "5ba9762f91292eb478e80dcbe11180f51370499a28da8bdf3b8b07158da37ec9"
+      },
+      "thumb": {
+        "path": "/assets/library/covers/products/thumbs/A-Cup-of-Compassion-Home.jpg",
+        "bytes": 144669,
+        "sha256": "7eb1e91f6475c055129abf1ef9df070a40ef9c31263a708ce0064b296c923362"
+      }
     }
   ]
 }

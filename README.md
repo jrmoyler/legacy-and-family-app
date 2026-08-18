@@ -2,9 +2,20 @@
 
 The home for **Pamella Foster-Grear’s** A Cup of Compassion series, free reading,
 legacy tools, and a moderated public wall of compassionate messages.
+# Compassion Hub by Cup of Compassion
+
+The app for **A Cup of Compassion** — the series by **Pamela Foster-Grear** on
+compassion, legacy, and what gets passed on.
 **Build it. Document it. Pass it on.**
 
 Published by Pam Grear Publishing LLC, Columbus, Ohio.
+
+> **Two names, on purpose.** *Compassion Hub* is the app — what the reader
+> opens, installs, and navigates. *A Cup of Compassion* is the series and the
+> publishing imprint it carries, and it stays on every book footer, disclaimer,
+> and copyright line, because that is what is printed inside the editions
+> themselves. In code that split is `BRAND.app` / `BRAND.appFull` versus
+> `BRAND.name`.
 
 ---
 
@@ -13,6 +24,8 @@ Published by Pam Grear Publishing LLC, Columbus, Ohio.
 A responsive web app with no frontend build step or runtime dependencies.
 Static HTML/CSS/ES modules are paired with one Supabase Edge Function for the
 moderated public message wall.
+A responsive web app — 18 screens, no build step, no dependencies. Static
+HTML/CSS/ES modules. Drop it on any host and it runs.
 
 It is a real web app at every width, not a phone mockup: the page scrolls
 normally, layouts reflow, and desktop gets a persistent sidebar instead of a
@@ -34,12 +47,20 @@ source.
 | `src/components.js` | Sidebar, app bar, tab bar, sheets, toast, brand footer |
 | `src/state.js` | State + localStorage persistence |
 | `src/data.js` | Brand, books, catalogue, reading, inventory, production status |
+| `src/covers.js` | Accessible typographic fallback for any future item without commissioned art |
 | `src/icons.js` | Inline SVG icons and the cup-and-heart brand mark |
 | `src/dom.js` | `esc()` and small DOM helpers |
 | `supabase/functions/compassion-messages/` | Public read + moderated submit API |
 | `supabase/migrations/` | Message table, constraints, RLS, and seed content |
+| `assets/` | PWA icons and the link-preview image |
 | `manifest.webmanifest` | Installable-app metadata |
 | `vercel.json` | Clean URLs, caching, security headers |
+| `assets/library/` | The 16 publication files, the cover art, and `catalog.json` |
+| `assets/books/` | Older EPUB masters, superseded by `assets/library/` — see its own README |
+| `assets/network/` | Headshots for the Network page (see its README) |
+| `tools/extract_library_covers.py` | Lifts cover art out of the EPUB masters |
+| `tools/build_product_covers.py` | Builds illustrated workbook, resource, and home covers from commissioned source art |
+| `tools/verify_library_assets.py` | Release check: editions, covers, checksums, app wiring |
 
 ## Screens
 
@@ -50,6 +71,8 @@ source.
 **Shop** — Shop, Product detail, Cart, Checkout, Confirmation
 **Messages** — Approved public notes + moderated visitor submission form
 **Standing pages** — About Pamella, Disclaimers, Production status
+**Tools** — Tools index, My Library, Network
+**Standing pages** — About Pamela, Disclaimers, Production status
 
 ## Routing
 
@@ -59,9 +82,16 @@ Hash-based, so every screen is linkable and the browser Back button works:
 #/            welcome
 #/home        #/series     #/read      #/legacy    #/shop     #/messages
 #/cart        #/checkout   #/checkout-done
+#/tools       #/library    #/network
 #/about       #/disclaimer #/status
 #/book/<book-id>       #/lesson/<lesson-id>       #/product/<product-id>
 ```
+
+Scroll position is remembered per route and restored on Back and Forward only,
+so returning to the series lands on the book you clicked while a fresh
+navigation always starts at the top. Route changes scroll instantly —
+`scroll-behavior: smooth` is right for an in-page anchor and wrong for a page
+that should already be at the top when it appears.
 
 Unknown routes fall back to the welcome screen; an unknown detail id falls
 back to that section's index.
@@ -106,6 +136,80 @@ their device.
 no field anywhere in this app that accepts an account number. Print styles turn
 the screen worksheet into a fill-in sheet with ruled space under every prompt.
 
+## Buying a title, and in which format
+
+Every one of the six books is sold on its own as well as inside the sets, and
+the reader picks the file format before buying: **both** (the default), **PDF
+only**, or **EPUB only**. The choice is per product, kept in `state.formats`,
+and it follows the title through the cart, the checkout summary, the download
+panel, and My Library. It is a preference rather than a lock — both editions
+exist for every title, so a reader can switch at any time and the other format
+is still there.
+
+`Save for later` puts anything — a book, a set, or a free download — into My
+Library without buying it. Purchases and saves both live in `localStorage`, on
+the device only.
+
+## Cover art
+
+The production covers ship inside the EPUB masters at 1600 × 2560.
+`tools/extract_library_covers.py` lifts each one out and writes two web
+renditions, then records both in `catalog.json` with their byte counts and
+SHA-256 hashes:
+
+```
+assets/library/covers/<stem>.jpg          1600 x 2560, the full-size preview
+assets/library/covers/thumbs/<stem>.jpg     640 x 1024, what grids load
+```
+
+`<stem>` is the same publication stem the PDF and EPUB use, so one slug in
+`bookAssets()` addresses all four files. Re-running the tool on an unchanged
+EPUB produces byte-identical output, and `verify_library_assets.py` fails the
+release if a cover is missing, resized, or does not match its checksum.
+
+Regenerate after replacing any EPUB:
+
+```bash
+pip install pillow
+python3 tools/extract_library_covers.py --root .
+```
+
+The two workbooks, eight standalone resources, and the flagship home cover use
+commissioned painterly illustration layers. Their exact titles, brand panel,
+border, author line, and thumbnail renditions are rendered deterministically so
+the art stays expressive without trusting generated typography:
+
+```
+assets/library/covers/product-art/<stem>.jpg        commissioned source art
+assets/library/covers/products/<stem>.jpg           1600 x 2560 final cover
+assets/library/covers/products/thumbs/<stem>.jpg      640 x 1024 grid cover
+```
+
+Rebuild those covers after changing source art or cover copy:
+
+```bash
+python3 tools/build_product_covers.py --root .
+```
+
+## The Network page
+
+`#/network` lists the people around the series with the one contact detail each
+of them supplied — an email or a website — plus a `.vcf` export built in the
+page (nothing is uploaded). All four entries now carry their own headshot. The
+`headshot` field may still be `null` for anyone added later, in which case the
+card renders a lettered placeholder of exactly the same size, so adding a photo
+never moves the grid. See `assets/network/README.md` for the file naming and
+sizes.
+
+Pamella's headshot is also the portrait in the `#/about` header — the About page
+reads it straight off her Network entry (`AUTHOR_PORTRAIT` in `src/data.js`), so
+one file serves both screens.
+
+Long addresses in the contact rows are run through `escBreakable()` from
+`src/dom.js`, which marks the seams — after a dot, a slash, a hyphen, an
+underscore, or an interior `@` — where a line may wrap. Without it a four-column
+grid split `www.manninsurancegroup.com` as "manninsurancegro / up.com".
+
 ## Production status
 
 `#/status` is a working page, not decoration. It carries the open blockers,
@@ -149,10 +253,44 @@ Palette and type follow Bible §6.
 The Bible specifies Times + Helvetica; those govern the **print interiors**.
 The app uses their screen-optimised counterparts — Spectral (serif) and DM Sans
 (sans) — with Georgia and system-sans fallbacks if the font CDN is unreachable.
+Those fallbacks are declared as `@font-face` rules carrying `size-adjust` and
+ascent/descent overrides, so the first paint sits on the same metrics as the
+webfont and nothing reflows when it arrives.
 
 Scripture styling matches the print spec: italic serif with a gold small-caps
 reference line. Callouts are centred bold-italic purple on cream with a gold
 left border.
+
+## Cover fallbacks
+
+Every current book, workbook, shop resource, and the home page now carries
+production raster cover art. `src/covers.js` remains as the accessible fallback
+for a future catalogue record added before its commissioned art arrives. Six
+brand fields and five motifs are assigned deterministically by id, so even a
+temporary item stays identifiable and never collapses the 5:8 cover rhythm.
+
+## Accessibility
+
+Audited with axe-core across all 14 routes at 390px and 1440px: no violations.
+Specifically:
+
+- **Focus** is a 3px deep-plum ring, which holds up on cream, gold, and teal;
+  anything sitting on a dark plum field inverts it to gold.
+- **The payment options** are a real radiogroup — arrow keys move within it,
+  Tab moves past it, and only the checked option is in the tab order. The shop
+  filter chips take arrow keys too.
+- **Checkout fields carry visible labels.** A placeholder is not a label: it
+  vanishes on the first keystroke and leaves anyone returning to a half-filled
+  form with nothing to read.
+- **Filtering the shop is announced** through a live region, since it silently
+  redraws a grid.
+- **Touch targets**: buttons are at least 52px tall, the inventory ticks reach
+  48px through a transparent extension, and "Remove" in the cart is padded out
+  from a bare 12px word.
+- **Motion** is removed wholesale under `prefers-reduced-motion`, and nothing
+  that fades or rises in is left invisible when it is.
+- **Hover lifts are gated behind `@media (hover: hover)`** so a tap on a phone
+  does not leave a card latched in its hover state.
 
 ## Local preview
 
@@ -186,3 +324,13 @@ needed — Vercel serves these as static files automatically.
   wall across devices.
 - Six-book set and set-plus-workbook are priced but not purchasable. They
   cannot ship until the numbering is locked and the Confusion content exists.
+- `@acupofcompassion` is still printed as text in the canonical footer, matching
+  the print interiors. Pamela's Instagram, TikTok, and YouTube links are
+  confirmed by her and are linked from the sidebar, the About page, the book
+  footer, and her Network card. Any further platform needs the same
+  confirmation before it goes in (Bible §11).
+- Reading progress, inventory ticks, cart, saves, format choices, and library
+  persist in `localStorage` on the device only; there is no account or
+  cross-device sync.
+- Everyone on the Network page is listed with the contact detail they supplied,
+  and every entry now carries the headshot that person provided.
