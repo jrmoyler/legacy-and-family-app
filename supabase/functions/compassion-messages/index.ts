@@ -34,6 +34,12 @@ const serviceHeaders = {
   Authorization: `Bearer ${SERVICE_ROLE_KEY}`,
 };
 
+const isTimeout = (error: unknown) =>
+  error instanceof DOMException && (error.name === 'TimeoutError' || error.name === 'AbortError');
+
+const serviceFetch = (input: string, init: RequestInit = {}) =>
+  fetch(input, { ...init, signal: AbortSignal.timeout(8000) });
+
 Deno.serve(async (request) => {
   if (request.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: corsHeaders });
@@ -49,7 +55,14 @@ Deno.serve(async (request) => {
       order: 'created_at.desc',
       limit: '50',
     });
-    const result = await fetch(`${TABLE_URL}?${query}`, { headers: serviceHeaders });
+    let result: Response;
+    try {
+      result = await serviceFetch(`${TABLE_URL}?${query}`, { headers: serviceHeaders });
+    } catch (error) {
+      return isTimeout(error)
+        ? response({ error: 'Messages took too long to load.' }, 504)
+        : response({ error: 'Messages could not be loaded.' }, 502);
+    }
     if (!result.ok) return response({ error: 'Messages could not be loaded.' }, 502);
     return response({ messages: await result.json() });
   }
@@ -95,19 +108,26 @@ Deno.serve(async (request) => {
 
   // The RPC holds a transaction-scoped advisory lock for this daily fingerprint,
   // so parallel requests cannot race between a count and an insert.
-  const insertResult = await fetch(SUBMIT_URL, {
-    method: 'POST',
-    headers: {
-      ...serviceHeaders,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      p_display_name: displayName,
-      p_community: community || null,
-      p_message: message,
-      p_request_fingerprint: fingerprint,
-    }),
-  });
+  let insertResult: Response;
+  try {
+    insertResult = await serviceFetch(SUBMIT_URL, {
+      method: 'POST',
+      headers: {
+        ...serviceHeaders,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        p_display_name: displayName,
+        p_community: community || null,
+        p_message: message,
+        p_request_fingerprint: fingerprint,
+      }),
+    });
+  } catch (error) {
+    return isTimeout(error)
+      ? response({ error: 'Your message took too long to save. Please try again.' }, 504)
+      : response({ error: 'Your message could not be saved. Please try again.' }, 502);
+  }
 
   if (!insertResult.ok) {
     return response({ error: 'Your message could not be saved. Please try again.' }, 502);

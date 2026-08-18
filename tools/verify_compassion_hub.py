@@ -46,18 +46,23 @@ def verify_sources() -> None:
 
     require("name: 'The Compassion Hub'" in data, "Canonical app name is missing")
     require("author: 'Pamella Foster-Grear'" in data, "Canonical author is missing")
+    require("series: 'A Cup of Compassion'" in data, "Canonical series name is missing")
     require("INDIVIDUAL_EBOOK_PRICE = 7.99" in data, "Individual ebook price is not $7.99")
     require("price: 4.99" not in data, "A stale $4.99 price remains")
     require(data.count("price: INDIVIDUAL_EBOOK_PRICE") == 12, "Expected 12 canonical individual-price uses")
     require("screens.messages" in screens, "Messages page is missing")
     require("data-compassion-form" in screens, "Compassion form is missing")
+    require("message-requirements" in screens, "Required-field guidance is missing")
     require("Nothing stored about you" not in screens, "Welcome privacy promise conflicts with public messages")
     require("No account or analytics" in screens, "Qualified welcome privacy text is missing")
     require("loadCompassionMessages" in app, "Message loading behavior is missing")
     require("COMPASSION_API_URL" in app, "Message API wiring is missing")
+    require(app.count("signal: timeoutSignal(") == 2, "Browser message requests need timeouts")
     require("rpc/submit_compassion_message" in edge, "Atomic submission RPC is not wired")
     require("countQuery" not in edge, "Non-atomic count-then-insert flow remains")
+    require("serviceFetch" in edge and "AbortSignal.timeout" in edge, "Edge requests need timeouts")
     require("pg_advisory_xact_lock" in migration, "Atomic rate-limit lock is missing")
+    require("'The Compassion Hub', 'A note from us'" in migration, "Seed messages are not marked as examples")
 
     json.loads((ROOT / "manifest.webmanifest").read_text(encoding="utf-8"))
     json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
@@ -68,10 +73,14 @@ def verify_live_api() -> None:
     with urllib.request.urlopen(request, timeout=20) as response:
         require(response.status == 200, f"Message API returned HTTP {response.status}")
         payload = json.load(response)
+    require(isinstance(payload, dict), "Message API returned a non-object payload")
     messages = payload.get("messages")
     require(isinstance(messages, list) and messages, "Message API returned no approved messages")
     required = {"id", "display_name", "community", "message", "created_at"}
-    require(all(required <= set(item) for item in messages), "Message API returned an incomplete record")
+    require(
+        all(isinstance(item, dict) and required <= set(item) for item in messages),
+        "Message API returned an incomplete record",
+    )
 
 
 def main() -> None:

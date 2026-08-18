@@ -115,7 +115,16 @@ const TITLES = {
   messages: 'Messages of Compassion',
 };
 
+let compassionLoadRequest = 0;
+
+function timeoutSignal(milliseconds) {
+  const controller = new AbortController();
+  window.setTimeout(() => controller.abort(), milliseconds);
+  return controller.signal;
+}
+
 async function loadCompassionMessages() {
+  const requestId = ++compassionLoadRequest;
   state.compassionMessagesStatus = 'loading';
   if (state.screen === 'messages') {
     const list = view.querySelector('[data-compassion-list]');
@@ -126,12 +135,15 @@ async function loadCompassionMessages() {
     const response = await fetch(COMPASSION_API_URL, {
       headers: { Accept: 'application/json' },
       cache: 'no-store',
+      signal: timeoutSignal(10000),
     });
     if (!response.ok) throw new Error('message service unavailable');
     const payload = await response.json();
+    if (requestId !== compassionLoadRequest) return;
     state.compassionMessages = Array.isArray(payload.messages) ? payload.messages : [];
     state.compassionMessagesStatus = 'ready';
   } catch {
+    if (requestId !== compassionLoadRequest) return;
     state.compassionMessagesStatus = 'error';
   }
 
@@ -397,6 +409,7 @@ document.addEventListener('submit', async (event) => {
     const response = await fetch(COMPASSION_API_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      signal: timeoutSignal(12000),
       body: JSON.stringify({
         displayName: values.get('displayName'),
         community: values.get('community'),
@@ -415,7 +428,10 @@ document.addEventListener('submit', async (event) => {
       'Your message has been received and is now under review. We appreciate your kindness.',
     );
   } catch (error) {
-    setCompassionFormStatus(form, 'error', error.message || 'Please try again in a moment.');
+    const message = error.name === 'AbortError'
+      ? 'The message service took too long to respond. Please try again.'
+      : error.message || 'Please try again in a moment.';
+    setCompassionFormStatus(form, 'error', message);
   } finally {
     submit.textContent = 'Share compassion';
     updateCompassionForm(form);

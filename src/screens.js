@@ -243,6 +243,7 @@ screens.messages = () => `
             <textarea class="field message-textarea" name="message" minlength="15" maxlength="500" required placeholder="Write a short message of encouragement or hope…"></textarea>
           </label>
           <div class="message-counter"><span data-message-count>0</span> / 500</div>
+          <p class="message-requirements">Enter your name, write at least 15 characters, and confirm the review notice to enable sharing.</p>
 
           <label class="message-consent">
             <input type="checkbox" name="consent" required>
