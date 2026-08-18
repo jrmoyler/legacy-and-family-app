@@ -3,6 +3,12 @@
  */
 
 import { esc, join } from './dom.js';
+import {
+  TABS, TAB_OF, BRAND, FOOTER_LINE, ONBOARDING,
+} from './data.js';
+import { state } from './state.js';
+import {
+  cupMark, cupMarkOnDark, arrowLeft, cartIcon, bigCheck, closeIcon,
 import { TABS, TOOLS, TAB_OF, BRAND, FOOTER_LINE, SOCIAL_LINKS } from './data.js';
 import { state } from './state.js';
 import {
@@ -65,6 +71,7 @@ export function sidebar() {
   <div class="side-foot">
     <nav class="side-minor" aria-label="Secondary">
       <a href="${hrefFor('about')}">About Pamella</a>
+      <button type="button" class="side-minor-btn" data-open-sheet="onboarding">Read the welcome note</button>
       <a href="${hrefFor('disclaimer')}">Disclaimers</a>
       <a href="${hrefFor('status')}">Production status</a>
     </nav>
@@ -153,6 +160,25 @@ export const overlays = () => join([
     <p id="lib-copy">Saved to your library.</p>
     <button class="btn btn-gold" data-close-sheet data-then="library">Open My Library</button>
     <button class="btn btn-dark" data-close-sheet data-then="shop">Keep browsing</button>
+  </div>`,
+  `
+  <div class="sheet sheet-onboarding" id="sheet-onboarding" role="dialog" aria-modal="true" aria-labelledby="onboarding-title" hidden>
+    <button class="sheet-dismiss" type="button" data-close-sheet aria-label="Close">${closeIcon('#6E6478')}</button>
+    <img class="onboarding-portrait" src="${esc(BRAND.headshot)}" alt="Portrait of ${esc(BRAND.author)}" width="88" height="88">
+    <p class="onboarding-eyebrow">${esc(ONBOARDING.eyebrow)}</p>
+    <h2 id="onboarding-title">${esc(ONBOARDING.title)}</h2>
+    <div class="onboarding-body">
+      ${ONBOARDING.letter.map((p) => `<p>${esc(p)}</p>`).join('')}
+    </div>
+    <blockquote class="onboarding-quote"><p>“${esc(ONBOARDING.quote)}”</p></blockquote>
+    <div class="onboarding-features">
+      <p class="onboarding-features-label">${esc(ONBOARDING.featuresLabel)}</p>
+      <ul>
+        ${ONBOARDING.features.map((f) => `<li><strong>${esc(f.title)}</strong><span>${esc(f.body)}</span></li>`).join('')}
+      </ul>
+    </div>
+    <p class="onboarding-sign">${esc(ONBOARDING.closing)}<br><strong>${esc(BRAND.author)}</strong></p>
+    <button class="btn btn-gold" data-close-sheet data-then="home">Enter the Hub</button>
   </div>`,
   '<div class="toast" id="toast" role="status" aria-live="polite"></div>',
   /* For changes that are obvious on screen and silent otherwise — filtering

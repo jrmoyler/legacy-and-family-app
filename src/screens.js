@@ -26,6 +26,7 @@ import {
 import { cover, coverMini } from './covers.js';
 import {
   cupMarkOnDark, chevron, goldCheck, bigCheck,
+  starOutline, printIcon, shieldIcon, cartIcon, bookIcon, messageIcon,
   starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon, messageIcon,
   cupMark, cupMarkOnDark, chevron, goldCheck, bigCheck,
   starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon,
@@ -148,7 +149,9 @@ screens.home = () => {
         <p class="bless">${esc(BRAND.blessing)}</p>
         <h1>${esc(BRAND.app)}</h1>
       </div>
-      <span class="avatar-tile" aria-hidden="true">${cupMarkOnDark(26)}</span>
+      <a class="avatar-tile" href="${hrefFor('about')}" aria-label="About ${esc(BRAND.author)}">
+        <img src="${esc(BRAND.headshot)}" alt="" width="46" height="46">
+      </a>
     </header>
 
     <div class="home-grid">
@@ -197,6 +200,7 @@ screens.home = () => {
       <div class="quick-grid span-all">
         <a class="quick-tile" href="${hrefFor('read')}"><span class="icon-tile it-gold">${bookIcon(22, '#96771F', 1.9)}</span>Free reading<small>${read} of ${LESSON_TOTAL} read</small></a>
         <a class="quick-tile" href="${hrefFor('shop')}"><span class="icon-tile it-teal">${cartIcon(22, '#23636A', 1.9)}</span>The shop<small>Books, sets &amp; kits</small></a>
+        <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile icon-tile-photo"><img src="${esc(BRAND.headshot)}" alt="" width="44" height="44"></span>About Pamella<small>And the movement</small></a>
         <a class="quick-tile" href="${hrefFor('about')}"><span class="icon-tile it-gold">${peopleIcon(22, '#96771F', 1.9)}</span>About Pamella<small>And the movement</small></a>
         ${quickTile(hrefFor('read'), 'it-gold', bookIcon(22, '#96771F', 1.9), 'Free reading', `${read} of ${LESSON_TOTAL} read`)}
         ${quickTile(hrefFor('shop'), 'it-teal', cartIcon(22, '#23636A', 1.9), 'The shop', 'Books, sets & kits')}
@@ -647,6 +651,7 @@ screens.legacy = () => {
       <h2>Seven sections</h2>
       <span class="count">${done} of ${INVENTORY.length} gathered</span>
     </div>
+    <p class="section-hint no-print">Tap the gold circle beside a section once you’ve gathered it on paper — that tick is the only thing saved.</p>
 
     <div class="steps-wrap">
       ${INVENTORY.map((section, i) => `
@@ -661,7 +666,8 @@ screens.legacy = () => {
                   data-section="${esc(section.id)}"
                   data-focus-key="section-${esc(section.id)}"
                   aria-pressed="${sectionDone(section.id)}"
-                  aria-label="Mark “${esc(section.title)}” as gathered">
+                  aria-label="Mark “${esc(section.title)}” as gathered"
+                  title="${sectionDone(section.id) ? 'Gathered — tap to unmark' : 'Tap once you’ve gathered this section on paper'}">
             ${bigCheck(14)}
           </button>
         </div>
@@ -1328,6 +1334,7 @@ screens.about = () => `
 
   <div class="shell about-layout">
     <div>
+      <img class="author-portrait" src="${esc(BRAND.headshot)}" alt="Portrait of ${esc(BRAND.author)}" width="168" height="168">
       <div class="prose">
         ${ABOUT_AUTHOR.map((p) => `<p>${esc(p)}</p>`).join('')}
       </div>

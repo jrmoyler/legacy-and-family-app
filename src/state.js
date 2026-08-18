@@ -23,6 +23,7 @@ const defaults = () => ({
   formats: {},
   payMethod: 'card',
   category: 'Books',
+  onboardingSeen: false,
 });
 
 export const state = {
@@ -82,6 +83,7 @@ export function loadState() {
   state.formats = formatMap(saved.formats);
   if (['card', 'invoice'].includes(saved.payMethod)) state.payMethod = saved.payMethod;
   if (CATEGORIES.includes(saved.category)) state.category = saved.category;
+  state.onboardingSeen = saved.onboardingSeen === true;
 }
 
 /**
@@ -101,11 +103,19 @@ export function saveState() {
         formats: state.formats,
         payMethod: state.payMethod,
         category: state.category,
+        onboardingSeen: state.onboardingSeen,
       }),
     );
   } catch {
     /* storage unavailable — run in memory for this session */
   }
+}
+
+/** True the first time only — the onboarding sheet shows once, ever. */
+export function markOnboardingSeen() {
+  if (state.onboardingSeen) return;
+  state.onboardingSeen = true;
+  saveState();
 }
 
 export const hasReadLesson = (id) => state.lessonsRead.includes(id);

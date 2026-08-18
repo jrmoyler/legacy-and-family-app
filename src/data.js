@@ -46,6 +46,7 @@ export const BRAND = {
   tagline: 'Build it. Document it. Pass it on.',
   author: 'Pamella Foster-Grear',
   authorTagline: 'Author | Legacy Advocate | Community Leader | Compassion Educator',
+  headshot: '/assets/library/brand/pamella-foster-grear.jpg',
   publisher: 'Pam Grear Publishing LLC · Columbus, Ohio',
   site: 'www.acupofcompassion.com',
   email: 'pamella@acupofcompassion.com',
@@ -95,6 +96,29 @@ export const PERSONAL_INVITATION =
 
 /** Verbatim from Bible §7 — the fix for defect L1. */
 export const LEGAL_POSITIONING = 'We do not prepare legal documents. We help families arrive prepared.';
+
+/**
+ * The first-visit welcome message, condensed from Pamella's welcome letter.
+ * Shown once, in the onboarding sheet — never as a wall of the full letter.
+ * Points at screens that actually exist in this app (Bible §1's rule against
+ * promising what has not been built applies here too).
+ */
+export const ONBOARDING = {
+  eyebrow: `A note from ${BRAND.author}`,
+  title: 'Welcome to The Compassion Hub',
+  letter: [
+    'It is my honor to welcome you into a community built on one simple belief: compassion has the power to change lives, strengthen families, and transform generations.',
+    'Whether you are here to preserve your family history, organize your legacy, or simply grow into the person you were created to be, The Compassion Hub is a place to learn, a place to grow, and a place to build something that outlasts you.',
+  ],
+  quote: 'Compassion is love put into action.',
+  featuresLabel: 'What you’ll find here',
+  features: [
+    { title: 'Six free books', body: 'The full Compassion series, ready to read in the app.' },
+    { title: 'The Legacy Inventory', body: 'A free, printable worksheet for what your family will need to know.' },
+    { title: 'The shop', body: 'Full editions, workbooks, and group licences for your church or team.' },
+  ],
+  closing: 'Welcome home.',
+};
 
 /* ==========================================================================
    Navigation

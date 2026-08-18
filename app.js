@@ -16,6 +16,7 @@ import {
 } from './src/data.js';
 import {
   state, loadState, saveState, toggleSection, toggleLesson,
+  toggleCart, removeFromCart, addToLibrary, markOnboardingSeen,
   toggleCart, removeFromCart, addToLibrary, toggleSaved, setFormat, formatFor,
 } from './src/state.js';
 
@@ -469,6 +470,10 @@ document.addEventListener('click', (event) => {
     if (then) setTimeout(() => go(then), 200);
     return;
   }
+  if ((el = hit('[data-open-sheet]'))) {
+    openSheet(el.dataset.openSheet);
+    return;
+  }
   if (event.target.closest('#backdrop')) {
     closeSheet();
     return;
@@ -651,3 +656,8 @@ loadState();
 overlayRoot.innerHTML = overlays();
 window.addEventListener('hashchange', renderRoute);
 renderRoute();
+
+if (!state.onboardingSeen) {
+  markOnboardingSeen();
+  requestAnimationFrame(() => openSheet('onboarding'));
+}

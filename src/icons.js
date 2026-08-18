@@ -65,6 +65,11 @@ export const shieldIcon = (stroke) => `
   <path d="M9 12.2l2.2 2.2 4-4.4" stroke="${stroke}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
+export const closeIcon = (stroke) => `
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <path d="M6 6l12 12M18 6 6 18" stroke="${stroke}" stroke-width="2.2" stroke-linecap="round"/>
+</svg>`;
+
 export const lockIcon = (stroke) => `
 <svg width="12" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
   <rect x="5" y="10" width="14" height="10" rx="2.4" stroke="${stroke}" stroke-width="1.9"/>
