@@ -21,15 +21,28 @@
 
 import {
   homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon, messageIcon,
+  homeIcon, booksIcon, bookIcon, cartIcon, clipboardIcon, peopleIcon, shelfIcon,
 } from './icons.js';
 
 /* ==========================================================================
    Brand (Bible §1, §6, §7)
    ========================================================================== */
 
+/**
+ * Two names live here, and they are not interchangeable.
+ *
+ * `app` is the product the reader opens: the Compassion Hub. `name` is the
+ * publishing imprint and book series the Hub carries — A Cup of Compassion —
+ * and it stays on every book footer, disclaimer, and copyright line, because
+ * that is what is printed inside the editions themselves.
+ */
 export const BRAND = {
   name: 'The Compassion Hub',
   series: 'A Cup of Compassion',
+  app: 'Compassion Hub',
+  appBy: 'by Cup of Compassion',
+  appFull: 'Compassion Hub by Cup of Compassion',
+  name: 'A Cup of Compassion',
   tagline: 'Build it. Document it. Pass it on.',
   author: 'Pamella Foster-Grear',
   authorTagline: 'Author | Legacy Advocate | Community Leader | Compassion Educator',
@@ -41,6 +54,31 @@ export const BRAND = {
   closing: 'Keep on giving. Keep on being.',
   blessing: 'Blessings.',
 };
+
+/**
+ * Pamela's platforms, supplied and confirmed by her directly — which is what
+ * the app was waiting on before linking any of them (Bible §11).
+ */
+export const SOCIAL_LINKS = [
+  {
+    id: 'instagram',
+    label: 'Instagram',
+    handle: '@familykeepers',
+    url: 'https://www.instagram.com/familykeepers/',
+  },
+  {
+    id: 'tiktok',
+    label: 'TikTok',
+    handle: '@pamelafostergrear',
+    url: 'https://www.tiktok.com/@pamelafostergrear?_r=1&_t=ZT-98gpo4iN0ZB',
+  },
+  {
+    id: 'youtube',
+    label: 'YouTube',
+    handle: '@acupofcompassion7490',
+    url: 'https://youtube.com/@acupofcompassion7490?si=qkfTArSfOUSsmA-u',
+  },
+];
 
 /** The canonical footer that appears on every book (Bible §1). */
 export const FOOTER_LINE = `${BRAND.site} | ${BRAND.email} | ${BRAND.social}`;
@@ -95,6 +133,26 @@ export const TABS = [
   { id: 'messages', label: 'Messages', icon: messageIcon },
 ];
 
+/**
+ * Tools: the two screens that are about the reader's own material and the
+ * people around it, rather than about the series. They hang off one button in
+ * the sidebar and one tab on a phone.
+ */
+export const TOOLS = [
+  {
+    id: 'library',
+    label: 'My Library',
+    icon: shelfIcon,
+    blurb: 'Everything you have saved or bought, with both file formats ready to download.',
+  },
+  {
+    id: 'network',
+    label: 'Network',
+    icon: peopleIcon,
+    blurb: 'The people Pamela works alongside, and how to reach each of them directly.',
+  },
+];
+
 /** Which nav tab should read as current for a given screen. */
 export const TAB_OF = {
   home: 'home',
@@ -109,12 +167,36 @@ export const TAB_OF = {
   checkout: 'shop',
   'checkout-done': 'shop',
   messages: 'messages',
+  tools: 'tools',
+  library: 'tools',
+  network: 'tools',
 };
 
 export const COMPASSION_API_URL =
   'https://zfpjgedcjdhxvdbthikt.supabase.co/functions/v1/compassion-messages';
 
 export const INDIVIDUAL_EBOOK_PRICE = 7.99;
+
+/* ==========================================================================
+   File formats
+   ========================================================================== */
+
+/**
+ * Every paid title ships as both a PDF and an EPUB, and the reader says which
+ * one they actually want before they buy. `both` is the default because it
+ * costs the same and covers the reader who prints at home and reads on a phone.
+ */
+export const FORMATS = [
+  { id: 'both', label: 'Both formats', sub: 'PDF and EPUB — recommended' },
+  { id: 'pdf', label: 'PDF only', sub: 'Fixed layout, best for printing' },
+  { id: 'epub', label: 'EPUB only', sub: 'Reflowable, best for e-readers and phones' },
+];
+
+export const DEFAULT_FORMAT = 'both';
+export const FORMAT_IDS = FORMATS.map((f) => f.id);
+export const formatById = (id) => FORMATS.find((f) => f.id === id);
+/** Short form for cart lines and library rows. */
+export const FORMAT_SHORT = { both: 'PDF + EPUB', pdf: 'PDF', epub: 'EPUB' };
 
 /* ==========================================================================
    The books and their verified download editions
@@ -127,10 +209,34 @@ export const BOOK_STATUS = {
   drafting: { label: 'Being written', tone: 'neutral' },
 };
 
+/**
+ * Every publication is addressed by one slug. The two download editions and
+ * the two cover renditions all hang off it, so a title can never end up with
+ * a PDF from one book and a cover from another.
+ *
+ * The covers are the production cover art lifted out of the EPUBs at
+ * 1600 x 2560 by tools/extract_library_covers.py, with a 640px thumbnail for
+ * grids. Both are listed with checksums in assets/library/catalog.json.
+ */
 const bookAssets = (slug) => ({
   epub: `/assets/library/epub/${slug}.epub`,
   pdf: `/assets/library/pdf/${slug}.pdf`,
+  cover: `/assets/library/covers/${slug}.jpg`,
+  coverThumb: `/assets/library/covers/thumbs/${slug}.jpg`,
 });
+
+/**
+ * Commissioned illustrated covers for resources that are not embedded inside
+ * an EPUB. They use the same full/thumbnail contract as the production books,
+ * so every grid and detail screen can render them through `coverArt()`.
+ */
+const productCoverAssets = (slug) => ({
+  cover: `/assets/library/covers/products/${slug}.jpg`,
+  coverThumb: `/assets/library/covers/products/thumbs/${slug}.jpg`,
+});
+
+/** The flagship series cover displayed on the Compassion Hub home page. */
+export const HOME_COVER = productCoverAssets('A-Cup-of-Compassion-Home');
 
 export const BOOKS = [
   {
@@ -208,7 +314,10 @@ export const PRODUCTS = [
     buyable: true,
     free: true,
     goTo: 'legacy',
-    assets: bookAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
+    assets: {
+      ...bookAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
+      ...productCoverAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook-Illustrated'),
+    },
     note: '10 pages · PDF & EPUB',
     about: 'Pulled straight out of Compassion and Legacy: every asset, policy, document, heirloom, and story your family will need you to have written down. Open it, print it, and fill it in on paper or on your own device. Nothing you write is sent anywhere.',
   },
@@ -221,6 +330,7 @@ export const PRODUCTS = [
     cats: ['Free'],
     buyable: true,
     free: true,
+    assets: productCoverAssets('A-Cup-of-Compassion-40-Second-Compassion-Card'),
     note: 'One page · bulletin insert',
     about: 'A single page for a church bulletin or a break room wall: what forty seconds of real attention does for a person, and the four things to do with them.',
   },
@@ -281,7 +391,10 @@ export const PRODUCTS = [
     badge: '',
     cats: ['Companions'],
     buyable: true,
-    assets: bookAssets('A-Cup-of-Compassion-Companion-Workbook'),
+    assets: {
+      ...bookAssets('A-Cup-of-Compassion-Companion-Workbook'),
+      ...productCoverAssets('A-Cup-of-Compassion-Companion-Workbook-Illustrated'),
+    },
     note: '28 pages · PDF & EPUB',
     about: 'Seven parts for every book in the series: overview, key concepts, reflection, a guided exercise, journaling pages, a discussion guide, and action steps. Built for kitchen tables and small groups alike.',
   },
@@ -293,6 +406,7 @@ export const PRODUCTS = [
     badge: '',
     cats: ['Collections'],
     buyable: true,
+    assets: productCoverAssets('A-Cup-of-Compassion-Church-Small-Group-Licence'),
     note: '25 copies · one invoice',
     about: 'Twenty-five copies of the collection for a congregation, a ministry, or a small group, on a single invoice. One study, one language, everybody on the same page.',
   },
@@ -330,6 +444,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'In production',
+    assets: productCoverAssets('A-Cup-of-Compassion-Family-Legacy-Conversation-Kit'),
     note: 'Scripts & checklists',
     about: 'Word-for-word scripts for raising estate planning with a parent who will not discuss it, a sibling who resents it, or an adult child who thinks it is morbid — plus the inventory and a first-72-hours checklist.',
   },
@@ -342,6 +457,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-30-Day-Devotional'),
     note: '30 days · KJV',
     about: 'A month of short readings, each anchored in a KJV passage, each ending with one thing to actually do that day.',
   },
@@ -354,6 +470,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-Caregiving-Burnout-Boundaries'),
     note: 'For family caregivers',
     about: 'For the daughter who became a nurse overnight and the husband who has not slept properly in two years. What burnout does, what boundaries protect, and why neither is a failure of love.',
   },
@@ -366,6 +483,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-Church-Small-Group-Leaders-Kit'),
     note: 'Six sessions · slides',
     about: 'Everything a ministry leader needs to run the series as a six-week study: session plans, discussion prompts, slides, and handouts.',
   },
@@ -378,6 +496,7 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-Youth-School-Edition'),
     note: 'Classroom-ready',
     about: 'The series rewritten for younger readers, with classroom activities and a family take-home page for each unit.',
   },
@@ -390,12 +509,45 @@ export const PRODUCTS = [
     cats: ['Companions'],
     buyable: false,
     status: 'Planned',
+    assets: productCoverAssets('A-Cup-of-Compassion-Caregiver-Team-Training-Deck'),
     note: 'For agencies & facilities',
     about: 'A staff training deck for home-care agencies and residential facilities — compassion as a measurable clinical practice, not a personality trait.',
   },
 ];
 
 export const productById = (id) => PRODUCTS.find((p) => p.id === id);
+
+/** Every buyable book, in series order — the six individual editions. */
+export const BOOK_PRODUCTS = BOOKS
+  .map((book) => PRODUCTS.find((p) => p.book === book.id))
+  .filter(Boolean);
+
+/**
+ * The publications a product delivers, each with its downloads and cover art.
+ * One title for a single book or workbook; every included title for a set.
+ * Drives both the download panel and the cover previews.
+ */
+export function titlesForProduct(product) {
+  const titles = [];
+  const add = (title, assets) => {
+    const key = assets?.pdf || assets?.cover;
+    if (assets && key && !titles.some((t) => (t.assets.pdf || t.assets.cover) === key)) {
+      titles.push({ title, assets });
+    }
+  };
+
+  if (product.book) {
+    const book = bookById(product.book);
+    if (book) add(book.title, book.assets);
+  }
+  add(product.title, product.assets);
+  (product.includes || []).map(bookById).filter(Boolean)
+    .forEach((book) => add(book.title, book.assets));
+  (product.includesProducts || []).map(productById).filter(Boolean)
+    .forEach((included) => add(included.title, included.assets));
+
+  return titles;
+}
 
 /* ==========================================================================
    Free reading (drawn from the content spines, Bible §8)
@@ -648,6 +800,80 @@ export const INVENTORY = [
 ];
 
 /* ==========================================================================
+   The network
+   ========================================================================== */
+
+/**
+ * The people around the series, each with one way to reach them — the email
+ * or the website they gave, and nothing they did not.
+ *
+ * `headshot` is the person's own photo, filed under assets/network/ as
+ * `<id>.jpg` at 512 x 512 (see the README there). Where one is still null the
+ * card renders a lettered placeholder tile of exactly the same size, so the
+ * grid keeps its shape whether a photo has arrived or not.
+ */
+export const NETWORK = [
+  {
+    id: 'pamella-grear',
+    name: 'Pamella Grear',
+    title: 'Compassion Legacy Planner',
+    org: BRAND.name,
+    email: 'acupofcompassion@gmail.com',
+    website: null,
+    headshot: '/assets/network/pamella-grear.jpg',
+    socials: SOCIAL_LINKS,
+    note: 'Author of the series and the person behind the Legacy Inventory.',
+  },
+  {
+    id: 'j-douglas-bailey',
+    name: 'J. Douglas Bailey',
+    title: 'Identity Protection',
+    org: null,
+    email: 'JLJJ7@yahoo.com',
+    website: null,
+    headshot: '/assets/network/j-douglas-bailey.jpg',
+    socials: [],
+    note: 'Identity protection — safeguarding the records a family plan depends on.',
+  },
+  {
+    id: 'james-mann',
+    name: 'James Mann',
+    title: 'Licensed Insurance Agent',
+    org: 'Mann Insurance Group',
+    email: null,
+    website: 'http://www.manninsurancegroup.com',
+    headshot: '/assets/network/james-mann.jpg',
+    socials: [],
+    note: 'Licensed insurance agent — policies, beneficiaries, and final expense cover.',
+  },
+  {
+    id: 'john-ross-moyler',
+    name: 'John-Ross Moyler',
+    title: 'AI & Business Consultant',
+    org: 'Collective AI',
+    email: null,
+    website: 'https://collectiveai.info',
+    headshot: '/assets/network/john-ross-moyler.jpg',
+    socials: [],
+    note: 'AI and business consulting — the systems side of building something that lasts.',
+  },
+];
+
+export const networkById = (id) => NETWORK.find((person) => person.id === id);
+
+/**
+ * The About page portrait is Pamella's own Network headshot rather than a
+ * second copy of the same photograph, so replacing that one file updates both
+ * screens. Null if the headshot is ever removed — the About header simply
+ * renders without a portrait, exactly as it did before there was one.
+ */
+export const AUTHOR_PORTRAIT = networkById('pamella-grear')?.headshot ?? null;
+
+/** Nobody on this page prepares legal documents either (Bible §7). */
+export const NETWORK_NOTE =
+  'These are independent professionals, listed so you can reach them directly. A Cup of Compassion does not employ them, take a commission on their work, or prepare legal documents itself — and listing someone here is an introduction, not an endorsement of any product they sell.';
+
+/* ==========================================================================
    Library status
    ========================================================================== */
 
@@ -658,9 +884,10 @@ export const STATUS_GROUPS = [
     severity: 'fixed-in-text',
     intro: 'Every A Cup of Compassion book is now included in the app in both PDF and EPUB editions, alongside the two companion workbooks.',
     items: [
-      'Six individual books, each with a PDF and an EPUB edition.',
+      'Six individual books, each with a PDF and an EPUB edition, each sold on its own as well as inside the sets.',
       'The Companion Workbook in a 28-page printable PDF and a reflowable EPUB edition.',
       'The Legacy Inventory Workbook in a 10-page printable PDF and a reflowable EPUB edition.',
+      'Production cover art for all eight titles at 1600 × 2560, extracted from the EPUB masters and served with a 640px thumbnail.',
       'All download files have a published checksum in the library catalog so damaged or incomplete copies can be detected immediately.',
     ],
   },
@@ -672,7 +899,8 @@ export const STATUS_GROUPS = [
     items: [
       'Keep the education-only legal framing and disclaimer wherever legacy-planning material is promoted.',
       'Retain the traditional-use wellness framing in Book 1 and avoid presenting it as medical advice.',
-      'Confirm any future social-media links before adding them to the app.',
+      'Pamela’s Instagram, TikTok, and YouTube links are confirmed by her and now linked from the app. Confirm any further platform before adding it.',
+      'Everyone on the Network page is listed with the contact detail and the headshot they supplied. Re-confirm before changing or adding an entry.',
     ],
   },
 ];
