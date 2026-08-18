@@ -19,7 +19,6 @@ const defaults = () => ({
   lessonsRead: [],
   cart: [],
   library: [],
-  payMethod: 'card',
   category: 'Books',
 });
 
@@ -53,7 +52,6 @@ export function loadState() {
   state.lessonsRead = strings(saved.lessonsRead, () => true);
   state.cart = strings(saved.cart, isValidProduct);
   state.library = strings(saved.library, isValidProduct);
-  if (['card', 'invoice'].includes(saved.payMethod)) state.payMethod = saved.payMethod;
   if (CATEGORIES.includes(saved.category)) state.category = saved.category;
 }
 
@@ -70,7 +68,6 @@ export function saveState() {
         lessonsRead: state.lessonsRead,
         cart: state.cart,
         library: state.library,
-        payMethod: state.payMethod,
         category: state.category,
       }),
     );
@@ -93,23 +90,15 @@ export function toggleLesson(id) {
 export const inCart = (id) => state.cart.includes(id);
 export const inLibrary = (id) => state.library.includes(id);
 
-export function toggleCart(id) {
-  const wasInCart = inCart(id);
-  state.cart = wasInCart ? state.cart.filter((v) => v !== id) : [...state.cart, id];
+export function addToCart(id) {
+  if (!isValidProduct(id) || state.cart.includes(id)) return false;
+  state.cart.push(id);
   saveState();
-  return !wasInCart;
+  return true;
 }
 
 export function removeFromCart(id) {
   state.cart = state.cart.filter((v) => v !== id);
-  saveState();
-}
-
-export function addToLibrary(ids) {
-  for (const id of ids) {
-    if (!state.library.includes(id)) state.library.push(id);
-  }
-  state.cart = state.cart.filter((id) => !ids.includes(id));
   saveState();
 }
 

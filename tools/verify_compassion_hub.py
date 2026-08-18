@@ -33,10 +33,12 @@ def require(condition: bool, message: str) -> None:
 
 
 def verify_sources() -> None:
-    incorrect = re.compile(r"(?<![A-Za-z])Pamela(?![A-Za-z])", re.IGNORECASE)
+    incorrect = re.compile(r"(?<![A-Za-z])Pam" + r"ela(?![A-Za-z])", re.IGNORECASE)
+    retired_byline = re.compile(r"\bPamell?a\s+Foster" + r"-Grear\b", re.IGNORECASE)
     for path in APP_PATHS:
         text = path.read_text(encoding="utf-8")
         require(not incorrect.search(text), f"Incorrect author spelling in {path.relative_to(ROOT)}")
+        require(not retired_byline.search(text), f"Retired author byline in {path.relative_to(ROOT)}")
 
     data = (ROOT / "src" / "data.js").read_text(encoding="utf-8")
     screens = (ROOT / "src" / "screens.js").read_text(encoding="utf-8")
@@ -45,11 +47,19 @@ def verify_sources() -> None:
     migration = (ROOT / "supabase" / "migrations" / "20260818022152_create_compassion_messages.sql").read_text(encoding="utf-8")
 
     require("name: 'The Compassion Hub'" in data, "Canonical app name is missing")
-    require("author: 'Pamella Foster-Grear'" in data, "Canonical author is missing")
+    require("author: 'Pamella Grear'" in data, "Canonical author is missing")
+    require("socialUrl: 'https://www.instagram.com/acupofcompassion'" in data, "Instagram URL is incorrect")
     require("series: 'A Cup of Compassion'" in data, "Canonical series name is missing")
     require("INDIVIDUAL_EBOOK_PRICE = 7.99" in data, "Individual ebook price is not $7.99")
     require("price: 4.99" not in data, "A stale $4.99 price remains")
     require(data.count("price: INDIVIDUAL_EBOOK_PRICE") == 12, "Expected 12 canonical individual-price uses")
+    require("id: 'compassion-legacy-journal'" in data, "Compassion Legacy Journal is missing")
+    require("originalPrice: 37" in data and "price: 25" in data, "Journal sale pricing is incorrect")
+    require("The-Compassion-Legacy-Journal.pdf" in data, "Journal PDF is not wired to the marketplace")
+    require("product.free || owned" in screens, "Paid downloads are not gated behind ownership")
+    require("autocomplete=\"cc-number\"" not in screens, "A fake card-entry form remains")
+    require("data-purchase" not in screens and "data-purchase" not in app, "A simulated purchase action remains")
+    require('class="cart-btn"' not in screens, "A duplicate screen-level cart button remains")
     require("screens.messages" in screens, "Messages page is missing")
     require("data-compassion-form" in screens, "Compassion form is missing")
     require("message-requirements" in screens, "Required-field guidance is missing")
