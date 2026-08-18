@@ -303,7 +303,7 @@ def draw_cover(c: canvas.Canvas, title: str, subtitle: str, label: str) -> None:
     draw_wrapped(c, subtitle, 1.0 * inch, 3.65 * inch, PAGE_W - 2 * inch, font=SERIF, size=13, leading=17, color=colors.HexColor("#F7E7B6"), max_lines=3)
     c.setFont(SANS_BOLD, 10)
     c.setFillColor(colors.white)
-    c.drawCentredString(PAGE_W / 2, 1.14 * inch, "PAMELA FOSTER-GREAR")
+    c.drawCentredString(PAGE_W / 2, 1.14 * inch, "PAMELLA FOSTER-GREAR")
     c.setFont(SANS, 8)
     c.drawCentredString(PAGE_W / 2, 0.88 * inch, "AUTHOR | LEGACY ADVOCATE | COMPASSION EDUCATOR")
 
@@ -311,7 +311,7 @@ def draw_cover(c: canvas.Canvas, title: str, subtitle: str, label: str) -> None:
 def companion_pdf(output: Path) -> None:
     c = canvas.Canvas(str(output), pagesize=letter, pageCompression=1)
     c.setTitle("A Cup of Compassion Companion Workbook")
-    c.setAuthor("Pamela Foster-Grear")
+    c.setAuthor("Pamella Foster-Grear")
     c.setSubject("28-page companion workbook for the A Cup of Compassion series")
     draw_cover(c, "The Companion Workbook", "Six books. One place to reflect, practice, discuss, and make compassion visible.", "A Cup of Compassion Series")
     c.showPage()
@@ -490,7 +490,7 @@ def companion_pdf(output: Path) -> None:
 def inventory_pdf(output: Path) -> None:
     c = canvas.Canvas(str(output), pagesize=letter, pageCompression=1)
     c.setTitle("The Legacy Inventory Workbook")
-    c.setAuthor("Pamela Foster-Grear")
+    c.setAuthor("Pamella Foster-Grear")
     c.setSubject("A private family preparation workbook")
     draw_cover(c, "The Legacy Inventory", "A private, practical guide to gathering what your family will need to know.", "A Cup of Compassion")
     c.showPage()
@@ -595,8 +595,8 @@ def cover_image(path: Path, title: str, subtitle: str, label: str) -> None:
         panel = Image.new("RGBA", (1020, 390), "#FFFFFF")
         panel.alpha_composite(logo, ((1020 - logo.width) // 2, (390 - logo.height) // 2))
         image.paste(panel.convert("RGB"), ((width - 1020) // 2, 1700))
-    author_box = draw.textbbox((0, 0), "PAMELA FOSTER-GREAR", font=sans_bold)
-    draw.text(((width - (author_box[2] - author_box[0])) / 2, 2240), "PAMELA FOSTER-GREAR", fill="#FFFFFF", font=sans_bold)
+    author_box = draw.textbbox((0, 0), "PAMELLA FOSTER-GREAR", font=sans_bold)
+    draw.text(((width - (author_box[2] - author_box[0])) / 2, 2240), "PAMELLA FOSTER-GREAR", fill="#FFFFFF", font=sans_bold)
     image.save(path, quality=92)
 
 
@@ -655,7 +655,7 @@ li { margin-bottom: .5em; } hr { border: 0; border-top: 1px solid #D89B1F; margi
 <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="bookid" version="3.0" xml:lang="en">
 <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
   <dc:identifier id="bookid">{identifier}</dc:identifier><dc:title>{html.escape(title)}</dc:title>
-  <dc:creator>Pamela Foster-Grear</dc:creator><dc:language>en</dc:language><dc:publisher>Pam Grear Publishing LLC</dc:publisher>
+  <dc:creator>Pamella Foster-Grear</dc:creator><dc:language>en</dc:language><dc:publisher>Pam Grear Publishing LLC</dc:publisher>
   <dc:description>{html.escape(subtitle)}</dc:description><meta property="dcterms:modified">2026-08-14T00:00:00Z</meta>
 </metadata><manifest>
   <item id="cover" href="cover.xhtml" media-type="application/xhtml+xml" properties="svg"/>

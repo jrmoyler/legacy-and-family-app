@@ -153,3 +153,10 @@ export const peopleIcon = (size, stroke, w) => `
   <path class="stroke" d="M3.4 19.5c.6-3 2.9-4.8 5.6-4.8s5 1.8 5.6 4.8" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round"/>
   <path class="stroke" d="M15.4 5.6a3.2 3.2 0 1 1 1.4 6.1M17.4 14.9c2.1.5 3.5 2.1 4 4.6" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round"/>
 </svg>`;
+
+/** A speech bubble carrying a small heart, for the public compassion wall. */
+export const messageIcon = (size, stroke, w) => `
+<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <path class="stroke" d="M20 11.2a8 8 0 0 1-8.2 7.8c-1.3 0-2.5-.3-3.6-.8L4 20l1.2-4A7.6 7.6 0 0 1 4 11.8 8 8 0 0 1 12.2 4 7.9 7.9 0 0 1 20 11.2Z" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>
+  <path class="stroke" d="M12 14.3c-2-1.4-3.1-2.4-3.1-3.6a1.6 1.6 0 0 1 3.1-.7 1.6 1.6 0 0 1 3.1.7c0 1.2-1.1 2.2-3.1 3.6Z" stroke="${stroke}" stroke-width="${w}" stroke-linejoin="round"/>
+</svg>`;

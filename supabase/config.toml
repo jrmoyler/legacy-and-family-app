@@ -1,0 +1,4 @@
+project_id = "zfpjgedcjdhxvdbthikt"
+
+[functions.compassion-messages]
+verify_jwt = false

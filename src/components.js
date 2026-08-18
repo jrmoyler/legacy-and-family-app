@@ -64,7 +64,7 @@ export function sidebar() {
   </nav>
   <div class="side-foot">
     <nav class="side-minor" aria-label="Secondary">
-      <a href="${hrefFor('about')}">About Pamela</a>
+      <a href="${hrefFor('about')}">About Pamella</a>
       <a href="${hrefFor('disclaimer')}">Disclaimers</a>
       <a href="${hrefFor('status')}">Production status</a>
     </nav>
