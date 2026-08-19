@@ -20,7 +20,8 @@ Published by Pam Grear Publishing LLC, Columbus, Ohio.
 
 A responsive web app with no frontend build step or runtime dependencies.
 Static HTML/CSS/ES modules are paired with one Supabase Edge Function for the
-moderated public message wall.
+moderated public message wall and two Vercel functions for Stripe Checkout.
+
 It is a real web app at every width, not a phone mockup: the page scrolls
 normally, layouts reflow, and desktop gets a persistent sidebar instead of a
 simulated device frame.
@@ -42,11 +43,12 @@ source.
 | `src/state.js` | State + localStorage persistence |
 | `src/data.js` | Brand, books, catalogue, reading, inventory, production status |
 | `src/covers.js` | Accessible typographic fallback for any future item without commissioned art |
-| `src/icons.js` | Inline SVG icons and the cup-and-heart brand mark |
+| `src/icons.js` | Inline SVG icons, incl. the cup-and-heart fallback cover mark |
 | `src/dom.js` | `esc()` and small DOM helpers |
 | `supabase/functions/compassion-messages/` | Public read + moderated submit API |
 | `supabase/migrations/` | Message table, constraints, RLS, and seed content |
 | `assets/` | PWA icons and the link-preview image |
+| `assets/library/brand/` | The official logo and Pamella's portrait used across the app's chrome |
 | `manifest.webmanifest` | Installable-app metadata |
 | `vercel.json` | Clean URLs, caching, security headers |
 | `assets/library/` | The 17 publication files, the cover art, and `catalog.json` |
@@ -55,6 +57,10 @@ source.
 | `tools/extract_library_covers.py` | Lifts cover art out of the EPUB masters |
 | `tools/build_product_covers.py` | Builds illustrated workbook, resource, and home covers from commissioned source art |
 | `tools/verify_library_assets.py` | Release check: editions, covers, checksums, app wiring |
+| `api/create-checkout-session.js` | Server-priced Stripe Checkout Session creation |
+| `api/checkout-session.js` | Paid-session verification before download unlock |
+| `api/stripe-catalog.js` | Server-authoritative product names and prices |
+| `package.json` | Stripe server SDK and verification command |
 
 ## Screens
 
@@ -62,7 +68,7 @@ source.
 **The series** — Series index, Book detail (×6)
 **Reading** — Read index, Lesson (×6, free, full text)
 **Legacy** — The Legacy Inventory worksheet (printable)
-**Shop** — Shop, Product detail, Cart, gated downloads, payment-link request
+**Shop** — Shop, Product detail, Cart, Stripe Checkout, verified download unlock
 **Messages** — Approved public notes + moderated visitor submission form
 **Standing pages** — About Pamella, Disclaimers, Production status
 **Tools** — Tools index, My Library, Network
@@ -75,7 +81,7 @@ Hash-based, so every screen is linkable and the browser Back button works:
 ```
 #/            welcome
 #/home        #/series     #/read      #/legacy    #/shop     #/messages
-#/cart        #/checkout
+#/cart        #/checkout   #/checkout-success
 #/tools       #/library    #/network
 #/about       #/disclaimer #/status
 #/book/<book-id>       #/lesson/<lesson-id>       #/product/<product-id>
@@ -295,13 +301,29 @@ python3 -m http.server 8000
 ## Deployment
 
 Pushing to `main` triggers the connected Vercel project. No build command
-needed — Vercel serves these as static files automatically.
+is needed for the frontend; Vercel installs the pinned Stripe SDK for the API
+functions automatically.
+
+Set this secret in every Vercel environment that should accept payment:
+
+```text
+STRIPE_SECRET_KEY=sk_test_...   # Preview/testing
+STRIPE_SECRET_KEY=sk_live_...   # Production
+```
+
+Hosted Checkout does not expose or require a Stripe publishable key in the
+browser. `PUBLIC_SITE_URL=https://your-production-domain.example` is optional;
+when absent, the API safely derives the current deployment origin for success
+and cancellation redirects. Stripe payment methods stay dynamic and are
+managed in the Stripe Dashboard.
 
 ## Known limitations
 
-- No payment processor is connected. The app does not collect card data or
-  pretend payment succeeded; checkout prepares an itemized request for a
-  secure payment link, and paid files remain gated until purchase is confirmed.
+- Stripe-hosted Checkout handles payment details. Product IDs are submitted by
+  the browser, while names and prices are resolved on the server. Downloads
+  unlock only after the server retrieves the Checkout Session and confirms a
+  paid status. Because the app has no account system, that unlock is stored in
+  the purchasing browser.
 - Scripture is quoted KJV throughout, per series canon. It should still get a
   word-for-word proof against a printed KJV before launch.
 - Instagram links to `https://www.instagram.com/acupofcompassion`.

@@ -15,7 +15,7 @@ import {
 import {
   state, loadState, saveState, toggleSection, toggleLesson,
   addToCart, removeFromCart, markOnboardingSeen,
-  toggleSaved, setFormat,
+  toggleSaved, setFormat, unlockPurchasedProducts,
 } from './src/state.js';
 
 const view = $('#view');
@@ -113,6 +113,7 @@ function renderRoute() {
   if (state.screen === 'messages' && state.compassionMessagesStatus === 'idle') {
     loadCompassionMessages();
   }
+  if (state.screen === 'checkout-success') verifyCheckoutSession();
   syncAppbar();
 }
 
@@ -141,6 +142,7 @@ const TITLES = {
   shop: 'Shop',
   cart: 'Your cart',
   checkout: 'Checkout',
+  'checkout-success': 'Order confirmed',
   tools: 'Tools',
   library: 'My Library',
   network: 'Network',
@@ -151,6 +153,7 @@ const TITLES = {
 };
 
 let compassionLoadRequest = 0;
+let checkoutVerifyRequest = 0;
 
 function timeoutSignal(milliseconds) {
   const controller = new AbortController();
@@ -186,6 +189,70 @@ async function loadCompassionMessages() {
     const list = view.querySelector('[data-compassion-list]');
     if (list) list.innerHTML = compassionMessageList();
   }
+}
+
+async function startStripeCheckout(button) {
+  if (!state.cart.length || button.disabled) return;
+  const originalText = button.textContent;
+  button.disabled = true;
+  button.textContent = 'Opening secure checkout…';
+
+  try {
+    const response = await fetch('/api/create-checkout-session', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      cache: 'no-store',
+      signal: timeoutSignal(15000),
+      body: JSON.stringify({ items: state.cart }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.url) throw new Error(payload.error || 'Checkout could not be opened.');
+    window.location.assign(payload.url);
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = originalText;
+    toast(error.name === 'AbortError' ? 'Stripe took too long to respond. Please try again.' : error.message);
+  }
+}
+
+async function verifyCheckoutSession() {
+  const sessionId = new URLSearchParams(location.search).get('session_id') || '';
+  if (state.checkoutStatus === 'loading' && state.checkoutSessionId === sessionId) return;
+  if (state.checkoutStatus === 'ready' && state.checkoutSessionId === sessionId) return;
+
+  const requestId = ++checkoutVerifyRequest;
+  state.checkoutSessionId = sessionId;
+  state.checkoutStatus = 'loading';
+  state.checkoutError = '';
+  refresh();
+
+  if (!sessionId) {
+    state.checkoutStatus = 'error';
+    state.checkoutError = 'This confirmation link is missing its Stripe session ID.';
+    refresh();
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/checkout-session?session_id=${encodeURIComponent(sessionId)}`, {
+      headers: { Accept: 'application/json' },
+      cache: 'no-store',
+      signal: timeoutSignal(15000),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || !payload.paid) throw new Error(payload.error || 'Payment could not be confirmed.');
+    if (requestId !== checkoutVerifyRequest) return;
+    state.checkoutProducts = unlockPurchasedProducts(payload.productIds);
+    state.checkoutEmail = payload.customerEmail || '';
+    state.checkoutStatus = 'ready';
+  } catch (error) {
+    if (requestId !== checkoutVerifyRequest) return;
+    state.checkoutStatus = 'error';
+    state.checkoutError = error.name === 'AbortError'
+      ? 'Stripe took too long to confirm the order. Refresh this page to try again.'
+      : error.message || 'Payment could not be confirmed.';
+  }
+  refresh();
 }
 
 function updateCompassionForm(form) {
@@ -483,6 +550,10 @@ document.addEventListener('click', (event) => {
   if (hit('[data-checkout]')) {
     if (!state.cart.length) return;
     go('checkout');
+    return;
+  }
+  if ((el = hit('[data-stripe-checkout]'))) {
+    startStripeCheckout(el);
     return;
   }
 

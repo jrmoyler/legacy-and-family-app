@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -15,6 +16,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 API_URL = "https://zfpjgedcjdhxvdbthikt.supabase.co/functions/v1/compassion-messages"
 COVER_ASSET_REVISION = "20260818-pamella-grear-2"
+PORTRAIT_PATH = ROOT / "assets" / "network" / "pamella-grear.jpg"
+EXPECTED_PORTRAIT_SHA256 = "526d04756015463727fc43fdb8adc8b858d41ac1412ba8c222b7a442d9cc1df5"
+LOGO_PATH = ROOT / "assets" / "library" / "brand" / "a-cup-of-compassion-logo.png"
+EXPECTED_LOGO_SHA256 = "3118bff9b6db2c89ec3d56f03a71dde649c71c796b84911cb58a152849e2cd9b"
 APP_PATHS = [
     ROOT / "index.html",
     ROOT / "manifest.webmanifest",
@@ -22,8 +27,9 @@ APP_PATHS = [
     ROOT / "app.js",
     ROOT / "app.css",
     ROOT / "vercel.json",
-    ROOT / "icon.svg",
+    ROOT / "package.json",
     *sorted((ROOT / "src").glob("*.js")),
+    *sorted((ROOT / "api").glob("*.js")),
     ROOT / "supabase" / "config.toml",
     ROOT / "supabase" / "functions" / "compassion-messages" / "index.ts",
     ROOT / "supabase" / "migrations" / "20260818022152_create_compassion_messages.sql",
@@ -151,6 +157,23 @@ def verify_sources() -> None:
         index.count(f"?v={COVER_ASSET_REVISION}") == 2,
         "Open Graph and Twitter preview images do not use the corrected revision",
     )
+    require(PORTRAIT_PATH.is_file(), "Pamella's Network headshot is missing")
+    require(
+        hashlib.sha256(PORTRAIT_PATH.read_bytes()).hexdigest() == EXPECTED_PORTRAIT_SHA256,
+        "Pamella's Network headshot does not match the approved photo",
+    )
+    require(LOGO_PATH.is_file(), "Official A Cup of Compassion logo is missing")
+    require(
+        hashlib.sha256(LOGO_PATH.read_bytes()).hexdigest() == EXPECTED_LOGO_SHA256,
+        "Official logo does not match the approved attachment",
+    )
+    require("logo: '/assets/library/brand/a-cup-of-compassion-logo.png?v=official-brand-20260819'" in data, "Official logo is not wired")
+    components = (ROOT / "src" / "components.js").read_text(encoding="utf-8")
+    require("cupMark" not in components, "A substitute logo mark remains in the app's shared chrome")
+    require(components.count("brandLogo(") >= 3, "The official logo is not used across the app's shared chrome")
+    require(index.count("assets/icon-192.png") == 2, "Official logo icon set is not used for browser install branding")
+    manifest = (ROOT / "manifest.webmanifest").read_text(encoding="utf-8")
+    require("icon-192.png" in manifest and "icon.svg" not in manifest, "Manifest does not use the official logo icon set")
     require("series: 'A Cup of Compassion'" in data, "Canonical series name is missing")
     require("https://www.instagram.com/acupofcompassion" in data, "Correct Instagram profile is missing")
     require("INDIVIDUAL_EBOOK_PRICE = 7.99" in data, "Individual ebook price is not $7.99")
@@ -162,6 +185,20 @@ def verify_sources() -> None:
     require("product.free || owned" in screens, "Paid downloads are not gated behind ownership")
     require("autocomplete=\"cc-number\"" not in screens, "A fake card-entry form remains")
     require("data-purchase" not in screens and "data-purchase" not in app, "A simulated purchase action remains")
+    require("data-stripe-checkout" in screens, "Stripe checkout action is missing")
+    require("/api/create-checkout-session" in app, "Stripe Checkout Session endpoint is not wired")
+    require("/api/checkout-session?session_id=" in app, "Paid Checkout Session verification is missing")
+    require("unlockPurchasedProducts(payload.productIds)" in app, "Paid products do not unlock after server verification")
+    stripe_create = (ROOT / "api" / "create-checkout-session.js").read_text(encoding="utf-8")
+    stripe_verify = (ROOT / "api" / "checkout-session.js").read_text(encoding="utf-8")
+    stripe_catalog = (ROOT / "api" / "stripe-catalog.js").read_text(encoding="utf-8")
+    require("checkout.sessions.create" in stripe_create, "Hosted Stripe Checkout Sessions are not used")
+    require("price_data" in stripe_create and "unit_amount: product.unitAmount" in stripe_create, "Server-authoritative Stripe pricing is missing")
+    require("payment_method_types" not in stripe_create, "Stripe payment methods should be managed dynamically in Dashboard")
+    require("process.env.STRIPE_SECRET_KEY" in stripe_create and "process.env.STRIPE_SECRET_KEY" in stripe_verify, "Stripe secret key env wiring is missing")
+    require("payment_status !== 'paid'" in stripe_verify, "Checkout success is not verified as paid")
+    require(stripe_catalog.count("unitAmount: 799") == 6, "Stripe catalogue is missing the six $7.99 eBooks")
+    require("unitAmount: 2500" in stripe_catalog and "unitAmount: 14900" in stripe_catalog, "Stripe catalogue prices are incomplete")
     require('class="cart-btn"' not in screens, "A duplicate screen-level cart button remains")
     require("data-cart-toggle" not in screens and "data-cart-toggle" not in app, "Duplicate purchase controls remain")
     require("screens.messages" in screens, "Messages page is missing")
@@ -171,13 +208,14 @@ def verify_sources() -> None:
     require("No account or analytics" in screens, "Qualified welcome privacy text is missing")
     require("loadCompassionMessages" in app, "Message loading behavior is missing")
     require("COMPASSION_API_URL" in app, "Message API wiring is missing")
-    require(app.count("signal: timeoutSignal(") == 2, "Browser message requests need timeouts")
+    require(app.count("signal: timeoutSignal(") == 4, "Browser network requests need timeouts")
     require("rpc/submit_compassion_message" in edge, "Atomic submission RPC is not wired")
     require("countQuery" not in edge, "Non-atomic count-then-insert flow remains")
     require("serviceFetch" in edge and "AbortSignal.timeout" in edge, "Edge requests need timeouts")
     require("pg_advisory_xact_lock" in migration, "Atomic rate-limit lock is missing")
     require("'The Compassion Hub', 'A note from us'" in migration, "Seed messages are not marked as examples")
 
+    json.loads(manifest)
     vercel = json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
     cover_headers = next(
         (entry["headers"] for entry in vercel["headers"] if entry.get("source") == "/assets/library/covers/(.*).jpg"),
@@ -188,6 +226,9 @@ def verify_sources() -> None:
         None,
     )
     require(cache_control == "public, max-age=0, must-revalidate", "Cover previews are still cached as immutable")
+    package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+    require(package.get("dependencies", {}).get("stripe") == "22.5.0", "Stripe SDK is not pinned to the verified release")
+
 
 def verify_live_api() -> None:
     request = urllib.request.Request(API_URL, headers={"Accept": "application/json"})

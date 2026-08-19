@@ -21,7 +21,7 @@ import {
   inCart, inLibrary, isSaved, formatFor,
 } from './state.js';
 import {
-  backButton, brandFooter, coverArt, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
+  backButton, brandFooter, brandLogo, coverArt, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
 } from './components.js';
 import { cover, coverMini } from './covers.js';
 import {
@@ -125,7 +125,7 @@ screens.welcome = () => `
   <div class="shell welcome-body">
     <div>
       <div class="brand-row">
-        <span class="brand-mark">${cupMarkOnDark(32)}</span>
+        ${brandLogo('welcome-logo', BRAND.series)}
         <span>
           <span class="name">${esc(BRAND.app)}</span>
           <span class="tag">${esc(BRAND.tagline)}</span>
@@ -164,6 +164,7 @@ screens.home = () => {
         <p class="bless">${esc(BRAND.blessing)}</p>
         <h1>${esc(BRAND.app)}</h1>
       </div>
+      <span class="home-brand" aria-hidden="true">${brandLogo('home-logo')}</span>
     </header>
 
     <div class="home-grid">
@@ -242,7 +243,7 @@ function featuredLessonCard() {
   <a class="feature-card" href="${hrefForLesson(lesson.id)}">
     <span class="feature-cover">
       <span class="pill pill-gold">Free to read</span>
-      <span class="cover-mark" aria-hidden="true">${cupMarkOnDark(56)}</span>
+      <span class="cover-logo" aria-hidden="true">${brandLogo('feature-logo')}</span>
       <span class="kicker">Start here</span>
       <span class="t">${esc(lesson.title)}</span>
     </span>
@@ -1001,13 +1002,6 @@ const checkoutFormat = (product) => product.assets?.pdf && !product.assets?.epub
   ? 'PDF'
   : FORMAT_SHORT[formatFor(product.id)];
 
-const orderRequestHref = (items, subtotal) => {
-  const lines = items.map((product) => `- ${product.title} (${checkoutFormat(product)}): ${money(product.price)}`).join('\n');
-  const subject = `A Cup of Compassion order request · ${money(subtotal)}`;
-  const body = `Hello Pamella,\n\nI would like to purchase:\n${lines}\n\nTotal: ${money(subtotal)}\n\nPlease send me a secure payment link.\n`;
-  return `mailto:${BRAND.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
-};
-
 screens.checkout = () => {
   const items = state.cart.map(productById).filter(Boolean);
   const subtotal = items.reduce((sum, p) => sum + p.price, 0);
@@ -1043,22 +1037,73 @@ screens.checkout = () => {
           <span class="t">${esc(p.title)} <small>${esc(checkoutFormat(p))}</small></span>
           <span class="p">${money(p.price)}</span>
         </div>`).join('')}
-        <p class="s">Review the order, then ask Pamella for a secure payment link. No card details are collected by this static site.</p>
+        <p class="s">Review the order, then continue to Stripe’s secure checkout. No card details are collected by this app.</p>
         <ul class="check-list">
-          <li>${goldCheck}Itemized order request</li>
-          <li>${goldCheck}Secure payment link sent directly</li>
+          <li>${goldCheck}Prices verified on the server</li>
+          <li>${goldCheck}Secure payment handled by Stripe</li>
           <li>${goldCheck}30-day money-back guarantee</li>
         </ul>
       </section>
     </div>
 
-    <section class="payment-request">
-      <span class="payment-icon" aria-hidden="true">${shieldIcon('#4A2A63')}</span>
-      <h2 class="pay-cap">Request a secure payment link</h2>
-      <p>This opens an itemized email to Pamella. She can confirm the order and reply with the appropriate secure payment link.</p>
-      <a class="btn btn-gold" href="${esc(orderRequestHref(items, subtotal))}">Request payment link · ${money(subtotal)}</a>
-      <p class="fine">This site does not collect or store card information.</p>
+    <div>
+      <section class="payment-request">
+        <span class="payment-icon" aria-hidden="true">${shieldIcon('#4A2A63')}</span>
+        <h2 class="pay-cap">Secure checkout with Stripe</h2>
+        <p>Continue to Stripe’s hosted checkout to pay by an available card, wallet, or other payment method. Prices are verified on the server before Stripe opens.</p>
+        <button class="btn btn-gold" data-stripe-checkout>Pay securely · ${money(subtotal)}</button>
+        <p class="fine">Card details are handled by Stripe and never touch this app.</p>
+      </section>
       <div class="screen-foot"></div>
+    </div>
+  </div>`;
+};
+
+screens['checkout-success'] = () => {
+  const purchased = state.checkoutProducts.map(productById).filter(Boolean);
+
+  if (state.checkoutStatus === 'loading' || state.checkoutStatus === 'idle') {
+    return `
+    <div class="shell checkout-result-wrap">
+      <section class="checkout-result" aria-live="polite">
+        <span class="checkout-result-icon loading" aria-hidden="true">${shieldIcon('#4A2A63')}</span>
+        <p class="eyebrow">Secure payment</p>
+        <h1>Confirming your order…</h1>
+        <p>Stripe is verifying the payment before any downloads are unlocked.</p>
+      </section>
+    </div>`;
+  }
+
+  if (state.checkoutStatus === 'error') {
+    return `
+    <div class="shell checkout-result-wrap">
+      <section class="checkout-result" role="alert">
+        <span class="checkout-result-icon error" aria-hidden="true">!</span>
+        <p class="eyebrow">Confirmation pending</p>
+        <h1>We could not confirm the order yet.</h1>
+        <p>${esc(state.checkoutError)}</p>
+        <div class="checkout-result-actions">
+          <button class="btn btn-gold btn-auto" data-go="checkout-success">Try confirmation again</button>
+          <a class="btn btn-ghost btn-auto" href="${hrefFor('shop')}">Return to the shop</a>
+        </div>
+      </section>
+    </div>`;
+  }
+
+  return `
+  <div class="shell checkout-result-wrap">
+    <section class="checkout-result success" aria-live="polite">
+      <span class="checkout-result-icon success" aria-hidden="true">${bigCheck(34)}</span>
+      <p class="eyebrow">Payment confirmed</p>
+      <h1>Thank you for supporting Pamella’s work.</h1>
+      <p>${purchased.length === 1 ? 'Your purchase is' : 'Your purchases are'} unlocked in this browser${state.checkoutEmail ? `, and Stripe sent the receipt to ${esc(state.checkoutEmail)}` : ''}.</p>
+      <ul class="checkout-purchased">
+        ${purchased.map((product) => `<li><span>${esc(product.title)}</span><a href="${hrefForProduct(product.id)}">Open downloads</a></li>`).join('')}
+      </ul>
+      <div class="checkout-result-actions">
+        <a class="btn btn-gold btn-auto" href="${hrefFor('shop')}">Continue shopping</a>
+        <a class="btn btn-ghost btn-auto" href="${hrefFor('home')}">Return home</a>
+      </div>
     </section>
   </div>`;
 };
