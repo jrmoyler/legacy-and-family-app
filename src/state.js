@@ -35,6 +35,11 @@ export const state = {
   compassionMessages: [],
   compassionMessagesStatus: 'idle',
   toolsOpen: false,
+  checkoutStatus: 'idle',
+  checkoutSessionId: '',
+  checkoutProducts: [],
+  checkoutEmail: '',
+  checkoutError: '',
 };
 
 const isValidProduct = (id) => PRODUCTS.some((p) => p.id === id && p.buyable && !p.free);
@@ -155,6 +160,15 @@ export function addToCart(id) {
 export function removeFromCart(id) {
   state.cart = state.cart.filter((v) => v !== id);
   saveState();
+}
+
+/** Unlock only product IDs returned by the server after Stripe confirms payment. */
+export function unlockPurchasedProducts(ids) {
+  const purchased = strings(ids, isValidProduct);
+  state.library = [...new Set([...state.library, ...purchased])];
+  state.cart = state.cart.filter((id) => !purchased.includes(id));
+  saveState();
+  return purchased;
 }
 
 export const sectionDone = (id) => state.inventoryDone.includes(id);

@@ -8,7 +8,7 @@ import {
 } from './data.js';
 import { state } from './state.js';
 import {
-  cupMark, cupMarkOnDark, arrowLeft, cartIcon, bigCheck, closeIcon, chevron, toolsIcon,
+  arrowLeft, cartIcon, bigCheck, closeIcon, chevron, toolsIcon,
 } from './icons.js';
 
 /** Hash route for a screen id. */
@@ -45,11 +45,15 @@ function toolsGroup(active) {
   </div>`;
 }
 
+/** The official "A Cup of Compassion" wordmark, used across every screen of chrome. */
+export const brandLogo = (className = 'official-logo', alt = `${BRAND.series} — ${BRAND.name}`) =>
+  `<img class="${className}" src="${esc(BRAND.logo)}" alt="${esc(alt)}" width="972" height="558" decoding="async">`;
+
 export function sidebar() {
   const active = currentTab();
   return `
   <a class="side-brand" href="${hrefFor('home')}">
-    <span class="mark">${cupMarkOnDark(26)}</span>
+    ${brandLogo('side-logo')}
     <span>
       <span class="name">${esc(BRAND.app)}</span>
       <span class="tag">${esc(BRAND.appBy)}</span>
@@ -83,8 +87,7 @@ export function sidebar() {
 export function appbar() {
   return `
   <a class="brand" href="${hrefFor('home')}">
-    <span class="mark">${cupMark(20)}</span>
-    <span class="name">${esc(BRAND.app)}</span>
+    ${brandLogo('app-logo')}
   </a>
   <span class="spacer"></span>
   <a class="cart-btn" href="${hrefFor('cart')}" aria-label="Cart, ${state.cart.length} item${state.cart.length === 1 ? '' : 's'}">
@@ -137,6 +140,7 @@ export const backButton = (screen, label = 'Back') =>
  */
 export const brandFooter = () => `
   <footer class="brand-foot">
+    ${brandLogo('footer-logo', BRAND.series)}
     <p class="line">${esc(FOOTER_LINE)}</p>
     <p class="social">
       ${SOCIAL_LINKS.map((link) => `
