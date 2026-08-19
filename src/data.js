@@ -33,6 +33,7 @@ export const BRAND = {
   tagline: 'Build it. Document it. Pass it on.',
   author: 'Pamella Grear',
   portrait: '/assets/library/brand/pamella-grear.jpg',
+  logo: '/assets/library/brand/a-cup-of-compassion-logo.jpg?v=official-brand-20260818',
   authorTagline: 'Author | Legacy Advocate | Community Leader | Compassion Educator',
   publisher: 'Pam Grear Publishing LLC · Columbus, Ohio',
   site: 'www.acupofcompassion.com',
@@ -82,6 +83,7 @@ export const TAB_OF = {
   product: 'shop',
   cart: 'shop',
   checkout: 'shop',
+  'checkout-success': 'shop',
   messages: 'messages',
 };
 

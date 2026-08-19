@@ -5,23 +5,6 @@
  * accessible name — so each one is marked aria-hidden.
  */
 
-/**
- * The series mark: a cup with a heart rising from it, in purple / gold / teal
- * (Design & Information Bible §6). Colours are parameterised because the mark
- * sits on cream, on gold, and on deep plum, and needs to hold up on all three.
- */
-export const cupMark = (size, { cup = '#4A2A63', heart = '#B08D2E', saucer = '#2E7D82' } = {}) => `
-<svg width="${size}" height="${size}" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-  <path d="M24 18.6c-4.9-3.4-7.4-5.9-7.4-8.8a3.9 3.9 0 0 1 7.4-1.6 3.9 3.9 0 0 1 7.4 1.6c0 2.9-2.5 5.4-7.4 8.8z" fill="${heart}"/>
-  <path d="M11.6 23.2h21.6l-1.7 11.2a5.2 5.2 0 0 1-5.1 4.4h-8a5.2 5.2 0 0 1-5.1-4.4z" fill="${cup}"/>
-  <path d="M34 26.4h1.8a4.1 4.1 0 0 1 0 8.2h-1.1" stroke="${cup}" stroke-width="2.6" stroke-linecap="round"/>
-  <path d="M8.4 42.4h28.2" stroke="${saucer}" stroke-width="2.8" stroke-linecap="round"/>
-</svg>`;
-
-/** The mark as it appears on deep plum — lighter cup so it does not vanish. */
-export const cupMarkOnDark = (size) =>
-  cupMark(size, { cup: '#F3ECDC', heart: '#D0AC4C', saucer: '#7FC3C7' });
-
 export const chevron = (color) => `
 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
   <path d="M9 5.5 15.5 12 9 18.5" stroke="${color}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>

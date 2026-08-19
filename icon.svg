@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="The Compassion Hub">
-  <rect width="48" height="48" rx="12" fill="#3A2150"/>
-  <path d="M24 18.6c-4.9-3.4-7.4-5.9-7.4-8.8a3.9 3.9 0 0 1 7.4-1.6 3.9 3.9 0 0 1 7.4 1.6c0 2.9-2.5 5.4-7.4 8.8z" fill="#D0AC4C"/>
-  <path d="M11.6 23.2h21.6l-1.7 11.2a5.2 5.2 0 0 1-5.1 4.4h-8a5.2 5.2 0 0 1-5.1-4.4z" fill="#F3ECDC"/>
-  <path d="M34 26.4h1.8a4.1 4.1 0 0 1 0 8.2h-1.1" stroke="#F3ECDC" stroke-width="2.6" stroke-linecap="round" fill="none"/>
-  <path d="M8.4 42.4h28.2" stroke="#7FC3C7" stroke-width="2.8" stroke-linecap="round"/>
-</svg>
