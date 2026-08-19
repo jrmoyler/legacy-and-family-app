@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { screens } from '../src/screens.js';
 import { state } from '../src/state.js';
 
-const LOGO = '/assets/library/brand/a-cup-of-compassion-logo.jpg?v=official-brand-20260818';
-const PORTRAIT = '/assets/library/brand/pamella-grear.jpg';
+const LOGO = '/assets/library/brand/a-cup-of-compassion-logo.png?v=official-brand-20260819';
+const PORTRAIT = '/assets/network/pamella-grear.jpg';
 
 for (const [name, render] of Object.entries(screens)) {
   const html = render();
@@ -20,7 +20,7 @@ const home = screens.home();
 assert.ok(home.includes(LOGO), 'Home screen does not use the official logo');
 
 const about = screens.about();
-assert.equal((about.match(new RegExp(PORTRAIT, 'g')) || []).length, 1, 'About must render one canonical portrait');
+assert.equal((about.match(new RegExp(PORTRAIT, 'g')) || []).length, 2, 'About must render the canonical portrait in the header and the framed prose portrait');
 assert.ok(about.includes(LOGO), 'About footer does not use the official logo');
 
 state.cart = ['benefit'];
