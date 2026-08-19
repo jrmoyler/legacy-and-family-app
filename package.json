@@ -1,0 +1,14 @@
+{
+  "name": "the-compassion-hub",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "python3 tools/verify_compassion_hub.py && python3 tools/verify_library_assets.py && node tools/verify_stripe_checkout.js && node tools/verify_rendered_screens.mjs && node --check app.js && node --check api/create-checkout-session.js && node --check api/checkout-session.js && node --check api/stripe-catalog.js"
+  },
+  "dependencies": {
+    "stripe": "22.5.0"
+  }
+}

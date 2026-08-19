@@ -15,6 +15,8 @@ ROOT = Path(__file__).resolve().parents[1]
 API_URL = "https://zfpjgedcjdhxvdbthikt.supabase.co/functions/v1/compassion-messages"
 PORTRAIT_PATH = ROOT / "assets" / "library" / "brand" / "pamella-grear.jpg"
 EXPECTED_PORTRAIT_SHA256 = "9adbbbc2efea4c4ddce105960cb7a114c9f0eef7b5e8e5c40fc24296be3f682d"
+LOGO_PATH = ROOT / "assets" / "library" / "brand" / "a-cup-of-compassion-logo.jpg"
+EXPECTED_LOGO_SHA256 = "727737f7a7ac557eef20ee06009080183cb175f75afa434ffe66697da4c83ddc"
 APP_PATHS = [
     ROOT / "index.html",
     ROOT / "manifest.webmanifest",
@@ -22,8 +24,9 @@ APP_PATHS = [
     ROOT / "app.js",
     ROOT / "app.css",
     ROOT / "vercel.json",
-    ROOT / "icon.svg",
+    ROOT / "package.json",
     *sorted((ROOT / "src").glob("*.js")),
+    *sorted((ROOT / "api").glob("*.js")),
     ROOT / "supabase" / "config.toml",
     ROOT / "supabase" / "functions" / "compassion-messages" / "index.ts",
     ROOT / "supabase" / "migrations" / "20260818022152_create_compassion_messages.sql",
@@ -65,6 +68,16 @@ def verify_sources() -> None:
     require(pamella_images == [PORTRAIT_PATH], "More than one Pamella portrait asset is present")
     require(screens.count('data-author-portrait') == 1, "Pamella portrait must render exactly once")
     require(screens.count('BRAND.portrait') == 1, "Pamella portrait must have exactly one app reference")
+    require(LOGO_PATH.is_file(), "Official A Cup of Compassion logo is missing")
+    require(
+        hashlib.sha256(LOGO_PATH.read_bytes()).hexdigest() == EXPECTED_LOGO_SHA256,
+        "Official logo does not match the approved attachment",
+    )
+    require("logo: '/assets/library/brand/a-cup-of-compassion-logo.jpg?v=official-brand-20260818'" in data, "Official logo is not wired")
+    require("cupMark" not in screens and "cupMark" not in (ROOT / "src" / "components.js").read_text(encoding="utf-8"), "A substitute logo remains in the app UI")
+    require(index.count("a-cup-of-compassion-logo.jpg") == 2, "Official logo is not used for browser install branding")
+    manifest = (ROOT / "manifest.webmanifest").read_text(encoding="utf-8")
+    require("a-cup-of-compassion-logo.jpg" in manifest and "icon.svg" not in manifest, "Manifest does not use the official logo")
     require("COVER_ASSET_REVISION = 'pamella-grear-20260818'" in data, "Corrected cover revision is missing")
     require(index.count("?v=pamella-grear-20260818") == 2, "Social cover previews are not revisioned")
     require("socialUrl: 'https://www.instagram.com/acupofcompassion'" in data, "Instagram URL is incorrect")
@@ -78,6 +91,20 @@ def verify_sources() -> None:
     require("product.free || owned" in screens, "Paid downloads are not gated behind ownership")
     require("autocomplete=\"cc-number\"" not in screens, "A fake card-entry form remains")
     require("data-purchase" not in screens and "data-purchase" not in app, "A simulated purchase action remains")
+    require("data-stripe-checkout" in screens, "Stripe checkout action is missing")
+    require("/api/create-checkout-session" in app, "Stripe Checkout Session endpoint is not wired")
+    require("/api/checkout-session?session_id=" in app, "Paid Checkout Session verification is missing")
+    require("unlockPurchasedProducts(payload.productIds)" in app, "Paid products do not unlock after server verification")
+    stripe_create = (ROOT / "api" / "create-checkout-session.js").read_text(encoding="utf-8")
+    stripe_verify = (ROOT / "api" / "checkout-session.js").read_text(encoding="utf-8")
+    stripe_catalog = (ROOT / "api" / "stripe-catalog.js").read_text(encoding="utf-8")
+    require("checkout.sessions.create" in stripe_create, "Hosted Stripe Checkout Sessions are not used")
+    require("price_data" in stripe_create and "unit_amount: product.unitAmount" in stripe_create, "Server-authoritative Stripe pricing is missing")
+    require("payment_method_types" not in stripe_create, "Stripe payment methods should be managed dynamically in Dashboard")
+    require("process.env.STRIPE_SECRET_KEY" in stripe_create and "process.env.STRIPE_SECRET_KEY" in stripe_verify, "Stripe secret key env wiring is missing")
+    require("payment_status !== 'paid'" in stripe_verify, "Checkout success is not verified as paid")
+    require(stripe_catalog.count("unitAmount: 799") == 6, "Stripe catalogue is missing the six $7.99 eBooks")
+    require("unitAmount: 2500" in stripe_catalog and "unitAmount: 14900" in stripe_catalog, "Stripe catalogue prices are incomplete")
     require('class="cart-btn"' not in screens, "A duplicate screen-level cart button remains")
     require("screens.messages" in screens, "Messages page is missing")
     require("data-compassion-form" in screens, "Compassion form is missing")
@@ -86,15 +113,17 @@ def verify_sources() -> None:
     require("No account or analytics" in screens, "Qualified welcome privacy text is missing")
     require("loadCompassionMessages" in app, "Message loading behavior is missing")
     require("COMPASSION_API_URL" in app, "Message API wiring is missing")
-    require(app.count("signal: timeoutSignal(") == 2, "Browser message requests need timeouts")
+    require(app.count("signal: timeoutSignal(") == 4, "Browser network requests need timeouts")
     require("rpc/submit_compassion_message" in edge, "Atomic submission RPC is not wired")
     require("countQuery" not in edge, "Non-atomic count-then-insert flow remains")
     require("serviceFetch" in edge and "AbortSignal.timeout" in edge, "Edge requests need timeouts")
     require("pg_advisory_xact_lock" in migration, "Atomic rate-limit lock is missing")
     require("'The Compassion Hub', 'A note from us'" in migration, "Seed messages are not marked as examples")
 
-    json.loads((ROOT / "manifest.webmanifest").read_text(encoding="utf-8"))
+    json.loads(manifest)
     json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
+    package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
+    require(package.get("dependencies", {}).get("stripe") == "22.5.0", "Stripe SDK is not pinned to the verified release")
 
 
 def verify_live_api() -> None:

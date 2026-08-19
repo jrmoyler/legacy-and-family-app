@@ -6,7 +6,7 @@ import { esc } from './dom.js';
 import { TABS, TAB_OF, BRAND } from './data.js';
 import { state } from './state.js';
 import {
-  cupMark, cupMarkOnDark, arrowLeft, cartIcon,
+  arrowLeft, cartIcon,
 } from './icons.js';
 
 /** Hash route for a screen id. */
@@ -17,11 +17,14 @@ export const hrefForProduct = (id) => `#/product/${encodeURIComponent(id)}`;
 
 const currentTab = () => TAB_OF[state.screen] || null;
 
+export const brandLogo = (className = 'official-logo', alt = '') =>
+  `<img class="${className}" src="${esc(BRAND.logo)}" alt="${esc(alt)}" width="1536" height="255" decoding="async">`;
+
 export function sidebar() {
   const active = currentTab();
   return `
   <a class="side-brand" href="${hrefFor('home')}">
-    <span class="mark">${cupMarkOnDark(26)}</span>
+    ${brandLogo('side-logo')}
     <span>
       <span class="name">${esc(BRAND.name)}</span>
       <span class="tag">${esc(BRAND.tagline)}</span>
@@ -50,8 +53,7 @@ export function sidebar() {
 export function appbar() {
   return `
   <a class="brand" href="${hrefFor('home')}">
-    <span class="mark">${cupMark(20)}</span>
-    <span class="name">${esc(BRAND.name)}</span>
+    ${brandLogo('app-logo', `${BRAND.series} — ${BRAND.name}`)}
   </a>
   <span class="spacer"></span>
   <a class="cart-btn" href="${hrefFor('cart')}" aria-label="Cart, ${state.cart.length} item${state.cart.length === 1 ? '' : 's'}">
@@ -82,6 +84,7 @@ export const backButton = (screen, label = 'Back') =>
 
 export const brandFooter = () => `
   <footer class="brand-foot">
+    ${brandLogo('footer-logo', BRAND.series)}
     <p class="line">
       <span>${esc(BRAND.site)}</span>
       <span aria-hidden="true"> | </span>

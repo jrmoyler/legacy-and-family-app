@@ -10,9 +10,9 @@
   "theme_color": "#3A2150",
   "icons": [
     {
-      "src": "./icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "./assets/library/brand/a-cup-of-compassion-logo.jpg",
+      "sizes": "1536x255",
+      "type": "image/jpeg",
       "purpose": "any"
     }
   ]
