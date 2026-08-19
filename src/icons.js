@@ -42,11 +42,6 @@ export const bigCheck = (size) => `
   <path d="M4.5 12.5l5 5L19.5 7" stroke="#B08D2E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>`;
 
-export const starSolid = (size, fill) => `
-<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" aria-hidden="true">
-  <path d="M12 2.6l2.8 5.9 6.4.8-4.7 4.4 1.2 6.3L12 17l-5.7 3 1.2-6.3L2.8 9.3l6.4-.8z"/>
-</svg>`;
-
 export const starOutline = (size, stroke) => `
 <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
   <path d="M12 3.6l2.5 5.2 5.7.7-4.2 3.9 1.1 5.6L12 16.2 6.9 19l1.1-5.6-4.2-3.9 5.7-.7z" stroke="${stroke}" stroke-width="1.9" stroke-linejoin="round"/>
@@ -68,12 +63,6 @@ export const shieldIcon = (stroke) => `
 export const closeIcon = (stroke) => `
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
   <path d="M6 6l12 12M18 6 6 18" stroke="${stroke}" stroke-width="2.2" stroke-linecap="round"/>
-</svg>`;
-
-export const lockIcon = (stroke) => `
-<svg width="12" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-  <rect x="5" y="10" width="14" height="10" rx="2.4" stroke="${stroke}" stroke-width="1.9"/>
-  <path d="M8.5 10V7.6a3.5 3.5 0 0 1 7 0V10" stroke="${stroke}" stroke-width="1.9"/>
 </svg>`;
 
 /* --- navigation icons: all accept (size, stroke, width) --- */

@@ -446,19 +446,18 @@ const ARROWS = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 };
 
 /**
  * A radiogroup and a chip group are single-stop widgets: Tab moves past the
- * whole set, and the arrow keys move within it. Without this the payment
- * options, the format picker, and the shop filters are buttons that merely
- * look like radios and tabs.
+ * whole set, and the arrow keys move within it. Without this the format picker
+ * and the shop filters are buttons that merely look like radios and tabs.
  */
 function moveWithinGroup(event) {
   const step = ARROWS[event.key];
   if (!step) return false;
 
-  const el = event.target.closest('.pay-opt, .format-opt, .cat-chip');
+  const el = event.target.closest('.format-opt, .cat-chip');
   if (!el) return false;
 
-  const group = el.closest('.pay-opts, .format-opts, .cat-chips');
-  const items = $$('.pay-opt, .format-opt, .cat-chip', group);
+  const group = el.closest('.format-opts, .cat-chips');
+  const items = $$('.format-opt, .cat-chip', group);
   const next = items[(items.indexOf(el) + step + items.length) % items.length];
 
   event.preventDefault();

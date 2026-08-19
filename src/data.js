@@ -187,7 +187,6 @@ export const FORMATS = [
 
 export const DEFAULT_FORMAT = 'both';
 export const FORMAT_IDS = FORMATS.map((f) => f.id);
-export const formatById = (id) => FORMATS.find((f) => f.id === id);
 /** Short form for cart lines and library rows. */
 export const FORMAT_SHORT = { both: 'PDF + EPUB', pdf: 'PDF', epub: 'EPUB' };
 
@@ -867,6 +866,19 @@ export const NETWORK = [
     note: 'Licensed insurance agent — policies, beneficiaries, and final expense cover.',
   },
   {
+    id: 'anthony-t-scott',
+    name: 'Anthony T. Scott',
+    title: 'Founder & CEO',
+    org: 'My Last Farewell',
+    email: 'info@mylastfarewell.com',
+    website: 'https://www.mylastfarewell.com',
+    headshot: '/assets/network/anthony-t-scott.jpg',
+    socials: [
+      { id: 'linkedin', label: 'LinkedIn', handle: 'anthony-t-scott-mlf', url: 'https://www.linkedin.com/in/anthony-t-scott-mlf/' },
+    ],
+    note: 'Legacy Videos and Digital Wills — a person’s stories, and their written will read aloud, recorded on camera and kept encrypted.',
+  },
+  {
     id: 'john-ross-moyler',
     name: 'John-Ross Moyler',
     title: 'AI & Business Consultant',
@@ -874,7 +886,9 @@ export const NETWORK = [
     email: null,
     website: 'https://collectiveai.info',
     headshot: '/assets/network/john-ross-moyler.jpg',
-    socials: [],
+    socials: [
+      { id: 'linkedin', label: 'LinkedIn', handle: 'jr-moyler', url: 'https://www.linkedin.com/in/jr-moyler' },
+    ],
     note: 'AI and business consulting — the systems side of building something that lasts.',
   },
 ];
