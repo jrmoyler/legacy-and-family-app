@@ -823,6 +823,21 @@ export const INVENTORY = [
    ========================================================================== */
 
 /**
+ * Pamella's LegalShield associate link, carried exactly as she supplied it.
+ * The tracking parameters on the end are what credit the referral to her, so
+ * the address is never tidied up or shortened — it is copied verbatim or not
+ * used at all. It hangs off her Network entry rather than SOCIAL_LINKS, which
+ * is the series' own Instagram and YouTube and is printed in the sidebar and
+ * the footer on every screen.
+ */
+export const LEGALSHIELD_LINK = {
+  id: 'legalshield',
+  label: 'LegalShield',
+  handle: 'pamelafostergrear',
+  url: 'https://pamelafostergrear.prospectbylegalshield.com/presentation/video.basic-preferred-premium-idshield-product-overview?utm_campaign=legalshield&utm_medium=sms&utm_source=ios&utm_content=video_5515&utm_term=basic-preferred-premium-idshield-product-overview&utm_distributor=131552002&utm_contact=6206003&third_party_username=pamelafostergrear',
+};
+
+/**
  * The people around the series, each with one way to reach them — the email
  * or the website they gave, and nothing they did not.
  *
@@ -840,7 +855,7 @@ export const NETWORK = [
     email: 'acupofcompassion@gmail.com',
     website: null,
     headshot: '/assets/network/pamella-grear.jpg',
-    socials: SOCIAL_LINKS,
+    socials: [...SOCIAL_LINKS, LEGALSHIELD_LINK],
     note: 'Author of the series and the person behind the Legacy Inventory.',
   },
   {
