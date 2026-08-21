@@ -536,6 +536,30 @@ export const PRODUCTS = [
 
 export const productById = (id) => PRODUCTS.find((p) => p.id === id);
 
+/**
+ * Every product ID a purchase of `id` entitles the reader to.
+ *
+ * A set is sold as one line on the receipt, so the library only ever records
+ * the set. Without this expansion someone who paid $39 for the six-book set
+ * was still shown "Buy now" on all six books, and every book page told them
+ * the files were available after purchase — which they already were.
+ *
+ * `includes` lists book IDs and `includesProducts` lists product IDs; the two
+ * are resolved separately because a book's own product is found by its `book`
+ * field rather than by a matching ID.
+ */
+export function entitledProductIds(id) {
+  const product = productById(id);
+  if (!product) return [];
+
+  const fromBooks = (product.includes || [])
+    .map((bookId) => PRODUCTS.find((p) => p.book === bookId))
+    .filter(Boolean)
+    .map((p) => p.id);
+
+  return [...new Set([id, ...fromBooks, ...(product.includesProducts || [])])];
+}
+
 /** Every buyable book, in series order — the six individual editions. */
 export const BOOK_PRODUCTS = BOOKS
   .map((book) => PRODUCTS.find((p) => p.book === book.id))

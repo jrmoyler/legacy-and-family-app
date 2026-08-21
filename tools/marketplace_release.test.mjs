@@ -118,9 +118,55 @@ test('book detail does not expose paid editions before ownership', () => {
   assert.match(html, /available after purchase/i);
 });
 
-test('checkout requests secure payment and never simulates a card charge', () => {
+test('checkout hands off to Stripe and never simulates a card charge', () => {
   state.cart = ['compassion-legacy-journal'];
   const html = screens.checkout();
-  assert.match(html, /Request a secure payment link/);
+  assert.match(html, /Secure checkout with Stripe/);
+  assert.match(html, /data-stripe-checkout/);
   assert.doesNotMatch(html, /autocomplete="cc-number"|data-purchase/i);
+  // The pre-Stripe flow mailed a payment link by hand. Nothing should still ask for that.
+  assert.doesNotMatch(html, /Request a secure payment link|mailto:/i);
+});
+
+test('a set unlocks every title it contains', () => {
+  assert.deepEqual(
+    data.entitledProductIds('first-three'),
+    ['first-three', 'benefit', 'nurtured', 'legacy'],
+  );
+  assert.deepEqual(data.entitledProductIds('six-plus-workbook').slice(-1), ['workbook']);
+  assert.deepEqual(data.entitledProductIds('benefit'), ['benefit']);
+  assert.deepEqual(data.entitledProductIds('no-such-product'), []);
+
+  // Someone who bought the six-book set is not asked to buy book one again.
+  state.library = ['six-set'];
+  state.cart = [];
+  state.activeProduct = 'benefit';
+  const product = screens.product();
+  assert.doesNotMatch(product, /data-buy=/);
+  assert.match(product, /href="[^"]+\.(pdf|epub)"/i);
+
+  state.activeBook = 'benefit';
+  assert.doesNotMatch(screens.book(), /available after purchase/i);
+});
+
+test('an unowned title stays locked', () => {
+  state.library = [];
+  state.cart = [];
+  state.activeProduct = 'benefit';
+  const product = screens.product();
+  assert.match(product, /data-buy=/);
+  assert.doesNotMatch(product, /href="[^"]+\.(pdf|epub)"/i);
+
+  state.activeBook = 'benefit';
+  assert.match(screens.book(), /available after purchase/i);
+});
+
+test('only a priced, released title can enter the cart', async () => {
+  const { addToCart, state: cartState } = await import('../src/state.js');
+  cartState.cart = [];
+  assert.equal(addToCart('benefit'), true);
+  assert.equal(addToCart('benefit'), false, 'no duplicate lines');
+  assert.equal(addToCart('compassion-card'), false, 'free downloads are not sold');
+  assert.equal(addToCart('devotional'), false, 'unreleased titles are not sold');
+  assert.deepEqual(cartState.cart, ['benefit']);
 });

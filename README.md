@@ -59,7 +59,9 @@ source.
 | `tools/verify_library_assets.py` | Release check: editions, covers, checksums, app wiring |
 | `api/create-checkout-session.js` | Server-priced Stripe Checkout Session creation |
 | `api/checkout-session.js` | Paid-session verification before download unlock |
-| `api/stripe-catalog.js` | Server-authoritative product names and prices |
+| `api/stripe-status.js` | Read-only Stripe configuration check (`/api/stripe-status`) |
+| `api/_stripe.js` | Shared key handling, site-URL resolution, and failure logging |
+| `api/_catalog.js` | Server-authoritative product names and prices |
 | `package.json` | Stripe server SDK and verification command |
 
 ## Screens
@@ -311,11 +313,75 @@ STRIPE_SECRET_KEY=sk_test_...   # Preview/testing
 STRIPE_SECRET_KEY=sk_live_...   # Production
 ```
 
+Environment variables are read at invocation, but a Vercel environment only
+picks up a new value on its next deployment — after editing them, redeploy the
+environment you are testing, and check that the variable is enabled for that
+environment rather than Production alone.
+
 Hosted Checkout does not expose or require a Stripe publishable key in the
-browser. `PUBLIC_SITE_URL=https://your-production-domain.example` is optional;
-when absent, the API safely derives the current deployment origin for success
-and cancellation redirects. Stripe payment methods stay dynamic and are
-managed in the Stripe Dashboard.
+browser: `STRIPE_SECRET_KEY` wants the *secret* key (`sk_…`, or a restricted
+`rk_…` with Checkout Session read and write). A publishable `pk_…` key here is
+rejected by name rather than failing as a generic checkout error.
+
+`PUBLIC_SITE_URL` is optional; when absent, the API derives the current
+deployment origin for success and cancellation redirects, which is what keeps
+preview deployments working. A bare hostname is accepted and read as `https://`.
+Set it in Production anyway: it pins where Stripe returns a paying customer to,
+rather than trusting the proxy headers of the request that started checkout.
+
+`STRIPE_API_VERSION` is optional and should normally stay unset — the API
+version travels with the pinned SDK. Set it only to pin a version deliberately,
+and only to one that `stripe@22` can speak.
+
+`STRIPE_STATUS_TOKEN` is optional and gates the live probe described below.
+
+Stripe payment methods stay dynamic and are managed in the Stripe Dashboard.
+
+### Checking that Stripe is connected
+
+`GET /api/stripe-status` reports the deployment's payment configuration without
+taking a payment or revealing the key:
+
+```bash
+curl -s https://your-domain.example/api/stripe-status
+```
+
+```json
+{
+  "configured": true,
+  "keyMode": "live",
+  "keyShape": "standard",
+  "keyHadSurroundingWhitespace": false,
+  "apiVersion": "2026-07-29.dahlia",
+  "catalogSize": 12,
+  "siteUrl": "https://www.acupofcompassion.com",
+  "siteUrlSource": "PUBLIC_SITE_URL"
+}
+```
+
+Read it like this:
+
+| Field | What it means when it is wrong |
+| --- | --- |
+| `configured: false`, `keyProblem: "missing"` | No `STRIPE_SECRET_KEY` in this environment, or the deployment predates it |
+| `keyProblem: "publishable"` | A `pk_…` key is in the secret slot |
+| `keyMode` | `test` on the live site takes no real money; `live` on a preview does |
+| `keyShape: "unrecognised"` | Not an `sk_`/`rk_` key — probably truncated or the wrong value |
+| `keyHadSurroundingWhitespace: true` | The stored value has a stray space or newline. It is trimmed before use, so checkout still works, but the value is worth retyping |
+| `siteUrlProblem` | `PUBLIC_SITE_URL` is unusable, so Stripe has nowhere to return the customer to |
+| 404 on this endpoint | The API functions are not deployed at all |
+
+A live round-trip to Stripe is available at `?probe=1`. It is gated on a token
+so that nobody else can make the deployment call Stripe on demand:
+
+```bash
+curl -s -H "x-stripe-status-token: $STRIPE_STATUS_TOKEN" \
+  "https://your-domain.example/api/stripe-status?probe=1"
+```
+
+When a checkout does fail, the function logs the Stripe error type, code, HTTP
+status, request ID, and message — enough to tell a rejected key from a Stripe
+outage. None of those fields carry the key itself.
 
 ## Known limitations
 
@@ -324,6 +390,11 @@ managed in the Stripe Dashboard.
   unlock only after the server retrieves the Checkout Session and confirms a
   paid status. Because the app has no account system, that unlock is stored in
   the purchasing browser.
+- A set is one line on the receipt, so the library records the set rather than
+  its contents. Ownership of an individual title is derived from that — buying
+  the six-book set unlocks all six books and buying Six-Book Set + Companion
+  Workbook also unlocks the workbook, while My Library still lists the single
+  item that was actually bought.
 - Scripture is quoted KJV throughout, per series canon. It should still get a
   word-for-word proof against a printed KJV before launch.
 - Instagram links to `https://www.instagram.com/acupofcompassion`.
