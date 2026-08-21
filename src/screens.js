@@ -18,7 +18,7 @@ import {
 } from './data.js';
 import {
   state, inventoryProgress, sectionDone, hasReadLesson,
-  inCart, inLibrary, isSaved, formatFor,
+  inCart, isSaved, owns, formatFor,
 } from './state.js';
 import {
   backButton, brandFooter, brandLogo, coverArt, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
@@ -407,7 +407,7 @@ screens.book = () => {
   const book = bookById(state.activeBook);
   const status = BOOK_STATUS[book.status];
   const product = book.status === 'ready' ? PRODUCTS.find((p) => p.book === book.id) : null;
-  const owned = product ? inLibrary(product.id) : false;
+  const owned = product ? owns(product.id) : false;
 
   return `
   <header class="dark-head">
@@ -790,7 +790,7 @@ function singleBooksStrip() {
 
 screens.product = () => {
   const product = productById(state.activeProduct);
-  const owned = inLibrary(product.id);
+  const owned = owns(product.id);
   const carted = inCart(product.id);
   const included = (product.includes || []).map(bookById).filter(Boolean);
   const covers = coversForProduct(product);

@@ -191,11 +191,24 @@ def verify_sources() -> None:
     require("unlockPurchasedProducts(payload.productIds)" in app, "Paid products do not unlock after server verification")
     stripe_create = (ROOT / "api" / "create-checkout-session.js").read_text(encoding="utf-8")
     stripe_verify = (ROOT / "api" / "checkout-session.js").read_text(encoding="utf-8")
-    stripe_catalog = (ROOT / "api" / "stripe-catalog.js").read_text(encoding="utf-8")
+    stripe_catalog = (ROOT / "api" / "_catalog.js").read_text(encoding="utf-8")
+    stripe_shared = (ROOT / "api" / "_stripe.js").read_text(encoding="utf-8")
+    stripe_status = (ROOT / "api" / "stripe-status.js").read_text(encoding="utf-8")
     require("checkout.sessions.create" in stripe_create, "Hosted Stripe Checkout Sessions are not used")
     require("price_data" in stripe_create and "unit_amount: product.unitAmount" in stripe_create, "Server-authoritative Stripe pricing is missing")
     require("payment_method_types" not in stripe_create, "Stripe payment methods should be managed dynamically in Dashboard")
-    require("process.env.STRIPE_SECRET_KEY" in stripe_create and "process.env.STRIPE_SECRET_KEY" in stripe_verify, "Stripe secret key env wiring is missing")
+    require("process.env.STRIPE_SECRET_KEY" in stripe_shared, "Stripe secret key env wiring is missing")
+    require("readSecretKey" in stripe_create and "readSecretKey" in stripe_verify, "Checkout handlers must read the key through the shared guard")
+    # A key stored with a trailing newline makes Node reject the Authorization
+    # header, so no request reaches Stripe and checkout reports itself offline.
+    require(".trim()" in stripe_shared, "The Stripe secret key must be trimmed before use")
+    require('key.startsWith(\'pk_\')' in stripe_shared, "A publishable key in the secret slot must be named as the fault")
+    # A hand-pinned version drifts from the SDK that has to speak it.
+    require("Stripe.API_VERSION" in stripe_shared, "The Stripe API version must track the installed SDK")
+    for handler in (stripe_create, stripe_verify):
+        require("apiVersion: '" not in handler, "A hardcoded Stripe API version remains in a handler")
+    require("error?.message" in stripe_shared or "message: error?.message" in stripe_shared, "Stripe failures must log their cause")
+    require("STRIPE_STATUS_TOKEN" in stripe_status, "The live Stripe probe must stay behind a token")
     require("payment_status !== 'paid'" in stripe_verify, "Checkout success is not verified as paid")
     require(stripe_catalog.count("unitAmount: 799") == 6, "Stripe catalogue is missing the six $7.99 eBooks")
     require("unitAmount: 2500" in stripe_catalog and "unitAmount: 14900" in stripe_catalog, "Stripe catalogue prices are incomplete")

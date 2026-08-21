@@ -10,7 +10,9 @@
  * would turn the app into a data-privacy obligation.
  */
 
-import { PRODUCTS, CATEGORIES, INVENTORY, LESSONS, FORMAT_IDS, DEFAULT_FORMAT } from './data.js';
+import {
+  PRODUCTS, CATEGORIES, INVENTORY, LESSONS, FORMAT_IDS, DEFAULT_FORMAT, entitledProductIds,
+} from './data.js';
 
 const STORAGE_KEY = 'cup-of-compassion:v1';
 
@@ -132,8 +134,18 @@ export function toggleLesson(id) {
 }
 
 export const inCart = (id) => state.cart.includes(id);
-export const inLibrary = (id) => state.library.includes(id);
 export const isSaved = (id) => state.saved.includes(id);
+
+/**
+ * Whether the reader is entitled to a product, by having bought it outright or
+ * by having bought a set that contains it.
+ *
+ * `state.library` is the receipt: it records what was actually paid for, which
+ * for a set is the set. Every "can they open this?" question goes through here
+ * instead, so My Library keeps listing the one item that was bought while the
+ * six books inside it stop asking to be bought again.
+ */
+export const owns = (id) => state.library.some((bought) => entitledProductIds(bought).includes(id));
 
 /** Which file format a title is bought and downloaded in. */
 export const formatFor = (id) => state.formats[id] || DEFAULT_FORMAT;
@@ -152,9 +164,17 @@ export function toggleSaved(id) {
   return !wasSaved;
 }
 
+/**
+ * Only a product the server will price can go in the cart. A free or
+ * unreleased ID reaching Checkout does not fail on its own line — the server
+ * rejects the whole cart, so one stray ID reads to the customer as a broken
+ * checkout for everything they were buying.
+ */
 export function addToCart(id) {
-  if (!inCart(id)) state.cart.push(id);
+  if (!isValidProduct(id) || inCart(id)) return false;
+  state.cart.push(id);
   saveState();
+  return true;
 }
 
 export function removeFromCart(id) {

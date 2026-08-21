@@ -3,6 +3,10 @@
 /**
  * Server-authoritative Stripe catalogue. The browser submits product IDs only;
  * names and prices are resolved here so a customer cannot alter the charge.
+ *
+ * Underscore-prefixed so Vercel treats it as a shared module rather than
+ * deploying it as an `/api/stripe-catalog` endpoint that answers every request
+ * with a crash — its export is a catalogue, not a handler.
  */
 const STRIPE_CATALOG = Object.freeze({
   benefit: { name: 'The Benefit of Having Compassion', kind: 'eBook', unitAmount: 799 },

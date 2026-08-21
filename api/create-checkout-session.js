@@ -1,35 +1,36 @@
 'use strict';
 
-const Stripe = require('stripe');
-const { STRIPE_CATALOG } = require('./stripe-catalog');
+const { STRIPE_CATALOG } = require('./_catalog');
+const {
+  ConfigurationError, KEY_PROBLEMS, client, logFailure, readSecretKey, reply, resolveSiteUrl,
+} = require('./_stripe');
 
-const API_VERSION = '2026-02-25.clover';
-
-function reply(res, status, payload) {
-  res.setHeader('Cache-Control', 'no-store');
-  res.status(status).json(payload);
-}
-
-function requestSiteUrl(req) {
-  const configured = process.env.PUBLIC_SITE_URL?.trim().replace(/\/+$/, '');
-  if (configured) {
-    const url = new URL(configured);
-    if (!['http:', 'https:'].includes(url.protocol)) throw new Error('PUBLIC_SITE_URL must use HTTP or HTTPS');
-    return url.origin;
-  }
-
-  const protocol = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0].trim();
-  const host = String(req.headers['x-forwarded-host'] || req.headers.host || '').split(',')[0].trim();
-  if (!host || !['http', 'https'].includes(protocol)) throw new Error('Could not determine the site URL');
-  return new URL(`${protocol}://${host}`).origin;
-}
-
+/**
+ * The cart the browser sent, reduced to product IDs this server will price.
+ *
+ * Duplicates are collapsed rather than rejected. Every line is quantity 1 and
+ * priced from the catalogue, so a repeated ID can only ever cost the customer
+ * less than they asked for — refusing the whole cart over one turned a stale
+ * tab into "checkout is broken".
+ */
 function requestedProducts(body) {
-  const raw = Array.isArray(body?.items) ? body.items : [];
+  // A runtime that did not recognise the content type hands the body over raw.
+  const rawBody = Buffer.isBuffer(body) ? body.toString('utf8') : body;
+  const source = typeof rawBody === 'string' ? safeParse(rawBody) : rawBody;
+  const raw = Array.isArray(source?.items) ? source.items : [];
   const ids = [...new Set(raw.filter((id) => typeof id === 'string'))];
-  if (!ids.length || ids.length > 12 || ids.length !== raw.length) return null;
+  if (!ids.length || ids.length > 12) return null;
   if (ids.some((id) => !Object.hasOwn(STRIPE_CATALOG, id))) return null;
   return ids;
+}
+
+/** A body that arrives unparsed (no JSON content type) is still a cart. */
+function safeParse(body) {
+  try {
+    return JSON.parse(body);
+  } catch {
+    return null;
+  }
 }
 
 module.exports = async function createCheckoutSession(req, res) {
@@ -40,16 +41,24 @@ module.exports = async function createCheckoutSession(req, res) {
 
   const productIds = requestedProducts(req.body);
   if (!productIds) return reply(res, 400, { error: 'Choose at least one valid marketplace item.' });
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return reply(res, 503, { error: 'Stripe checkout is not configured yet.' });
+
+  const secret = readSecretKey();
+  if (!secret.ok) return reply(res, 503, { error: KEY_PROBLEMS[secret.reason] });
+
+  let siteUrl;
+  try {
+    siteUrl = resolveSiteUrl(req);
+  } catch (error) {
+    logFailure('site URL resolution', error);
+    return reply(res, 500, {
+      error: error instanceof ConfigurationError
+        ? error.message
+        : 'The site URL is misconfigured, so Stripe has nowhere to send you back to.',
+    });
   }
 
   try {
-    const siteUrl = requestSiteUrl(req);
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: API_VERSION,
-      maxNetworkRetries: 2,
-    });
+    const stripe = client(secret.key);
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       customer_creation: 'always',
@@ -77,7 +86,7 @@ module.exports = async function createCheckoutSession(req, res) {
 
     return reply(res, 200, { url: session.url });
   } catch (error) {
-    console.error('Stripe Checkout Session creation failed', error?.type || error?.name || 'unknown');
+    logFailure('Checkout Session creation', error);
     return reply(res, 502, { error: 'Stripe could not start checkout. Please try again.' });
   }
 };
