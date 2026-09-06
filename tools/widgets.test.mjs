@@ -215,6 +215,91 @@ test('the endpoint guards its method, its input, and its own configuration', asy
   }
 });
 
+test('the public model proxy is throttled before it spends anything', async () => {
+  const req = { headers: { 'x-forwarded-for': '203.0.113.7, 10.0.0.1' } };
+  const now = Date.now();
+
+  /* The caller's own budget runs out, and the refusal names a wait. */
+  for (let i = 0; i < askMargaret.RATE_PER_CALLER; i += 1) {
+    assert.equal(askMargaret.throttle(req, now), 0, `request ${i + 1} should be allowed`);
+  }
+  const retryAfter = askMargaret.throttle(req, now);
+  assert.ok(retryAfter > 0, 'the caller is never throttled');
+  assert.ok(retryAfter <= 60, `Retry-After of ${retryAfter}s is not a sane wait`);
+
+  /* A fresh window lets the same caller back in. */
+  assert.equal(askMargaret.throttle(req, now + 60001), 0, 'the window never reopens');
+
+  /* A rotating address gets its own caller budget, so the instance ceiling is
+     what actually bounds the spend. */
+  const later = now + 120000;
+  let allowed = 0;
+  for (let i = 0; i < askMargaret.RATE_PER_INSTANCE + 50; i += 1) {
+    const rotating = { headers: { 'x-forwarded-for': `198.51.100.${i % 255}` } };
+    if (askMargaret.throttle(rotating, later) === 0) allowed += 1;
+  }
+  assert.ok(
+    allowed <= askMargaret.RATE_PER_INSTANCE,
+    `${allowed} requests got through an instance ceiling of ${askMargaret.RATE_PER_INSTANCE}`,
+  );
+});
+
+test('a throttled request never reaches the provider', async () => {
+  const response = () => ({
+    headers: {},
+    statusCode: 0,
+    payload: null,
+    setHeader(name, value) { this.headers[name] = value; },
+    status(code) { this.statusCode = code; return this; },
+    json(payload) { this.payload = payload; return this; },
+  });
+
+  const previous = { url: process.env.MARGARET_API_URL, key: process.env.MARGARET_API_KEY };
+  const realFetch = globalThis.fetch;
+  let upstreamCalls = 0;
+  globalThis.fetch = async () => { upstreamCalls += 1; throw new Error('upstream must not be reached'); };
+  process.env.MARGARET_API_URL = 'https://provider.invalid/v1/chat/completions';
+  process.env.MARGARET_API_KEY = 'test-key';
+
+  try {
+    const headers = { 'x-forwarded-for': '203.0.113.99' };
+    let throttled = null;
+    for (let i = 0; i < askMargaret.RATE_PER_CALLER + 4; i += 1) {
+      const res = response();
+      // eslint-disable-next-line no-await-in-loop
+      await askMargaret({ method: 'POST', headers, body: { question: 'where do I read?' } }, res);
+      if (res.statusCode === 429) { throttled = res; break; }
+    }
+    assert.ok(throttled, 'a hot loop is never refused');
+    assert.ok(Number(throttled.headers['Retry-After']) > 0, 'the 429 carries no Retry-After');
+    assert.ok(
+      upstreamCalls <= askMargaret.RATE_PER_CALLER,
+      `${upstreamCalls} upstream calls for a budget of ${askMargaret.RATE_PER_CALLER}`,
+    );
+  } finally {
+    globalThis.fetch = realFetch;
+    if (previous.url === undefined) delete process.env.MARGARET_API_URL;
+    else process.env.MARGARET_API_URL = previous.url;
+    if (previous.key === undefined) delete process.env.MARGARET_API_KEY;
+    else process.env.MARGARET_API_KEY = previous.key;
+  }
+});
+
+test('Margaret says that what you type leaves the device', () => {
+  /* Her question and transcript are posted onward, so neither the disclosure
+     nor the privacy answer may imply the message wall is the only thing sent. */
+  assert.match(MARGARET.disclosure, /sent to be answered/i, 'the disclosure hides where the words go');
+  assert.match(MARGARET.disclosure, /account numbers|personal details/i, 'the disclosure gives no caution');
+
+  const privacy = MARGARET_TOPICS.find((topic) => topic.id === 'privacy');
+  assert.ok(privacy, 'the privacy topic is gone');
+  assert.doesNotMatch(
+    privacy.answer, /the one thing that leaves your device/i,
+    'the privacy answer still claims the wall is the only thing sent',
+  );
+  assert.match(privacy.answer, /sent to be answered/i, 'the privacy answer omits Margaret herself');
+});
+
 /* ==========================================================================
    Wiring
    ========================================================================== */

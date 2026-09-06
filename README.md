@@ -288,6 +288,19 @@ so every message is written with `textContent`. The only rich element in an
 answer is a navigation chip, and those are built from the app's own screen ids,
 never from response text.
 
+**What you type does leave the device**, and the widget says so before you
+type it: the question and the recent transcript are posted to this site, and on
+to the provider when one is configured. It is the one place in the app where
+anything you type is sent anywhere, so both the disclosure under her greeting
+and her own privacy answer state it plainly.
+
+`/api/margaret` is public — the app has no accounts to authenticate against —
+and every request that reaches the provider costs money, so the function
+throttles per caller and per instance before spending anything. It is a warm
+instance's memory, so it is a floor and not a quota: a hard limit belongs at
+the provider as a spend cap, or in front of the function. A throttled caller
+falls back to the offline guide like any other refusal.
+
 Her transcript persists in `localStorage` under `cup-of-compassion:margaret:v1`
 and is capped at twelve turns.
 

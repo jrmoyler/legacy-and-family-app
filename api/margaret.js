@@ -28,6 +28,59 @@ const MAX_TURNS = 12;
 const MAX_REPLY = 4000;
 
 /**
+ * Throttling.
+ *
+ * Every request that gets past this point spends money on the configured
+ * provider, and the endpoint is public by design — the app has no accounts to
+ * authenticate against. So the browser's own `pending` guard is not a control:
+ * anything can POST here directly.
+ *
+ * This is a fixed window held in the warm instance's memory. Being per
+ * instance it is a floor rather than a guarantee — a burst spread across cold
+ * starts gets more through, and a rotating source address gets its own budget,
+ * which is why there is a whole-instance ceiling as well as a per-caller one.
+ * It costs nothing and no datastore, and it turns "drain the account with a
+ * loop" into something that has to be deliberate and distributed. A hard quota
+ * belongs at the provider (a spend cap) or in front of the function (Vercel
+ * Firewall, or the Supabase counter the message wall already uses).
+ */
+const RATE_WINDOW_MS = 60000;
+const RATE_PER_CALLER = 12;
+const RATE_PER_INSTANCE = 240;
+const INSTANCE_KEY = '@instance';
+
+const windows = new Map();
+
+/** Trusted only as a bucket label — a spoofed value just shares a bucket. */
+function callerKey(req) {
+  const forwarded = String(req.headers?.['x-forwarded-for'] || '').split(',')[0].trim();
+  return forwarded || String(req.headers?.['x-real-ip'] || '').trim() || 'unknown';
+}
+
+function takeSlot(key, limit, now) {
+  const open = windows.get(key);
+  if (!open || now >= open.resetAt) {
+    windows.set(key, { count: 1, resetAt: now + RATE_WINDOW_MS });
+    return 0;
+  }
+  if (open.count >= limit) return Math.max(1, Math.ceil((open.resetAt - now) / 1000));
+  open.count += 1;
+  return 0;
+}
+
+/** Returns 0 when the request may proceed, else the Retry-After in seconds. */
+function throttle(req, now = Date.now()) {
+  /* Expired buckets are only swept when the map has actually grown, so the
+     common case stays a couple of map lookups. */
+  if (windows.size > 5000) {
+    for (const [key, open] of windows) if (now >= open.resetAt) windows.delete(key);
+  }
+  const caller = takeSlot(callerKey(req), RATE_PER_CALLER, now);
+  if (caller) return caller;
+  return takeSlot(INSTANCE_KEY, RATE_PER_INSTANCE, now);
+}
+
+/**
  * The persona. It is deliberately narrow: Margaret explains this app, and the
  * unauthorized-practice-of-law boundary the rest of the product enforces
  * applies to her too.
@@ -100,6 +153,15 @@ module.exports = async function askMargaret(req, res) {
     return reply(res, 503, { configured: false, error: 'Margaret is not connected to her helper yet.' });
   }
 
+  /* Only now is there anything worth protecting: an unconfigured deployment
+     has already answered 503 without spending anything. A throttled caller
+     falls back to the offline guide, the same as any other refusal. */
+  const retryAfter = throttle(req);
+  if (retryAfter) {
+    res.setHeader('Retry-After', String(retryAfter));
+    return reply(res, 429, { error: 'Margaret is answering a lot of questions right now.' });
+  }
+
   try {
     const upstream = await fetch(endpoint, {
       method: 'POST',
@@ -135,5 +197,8 @@ module.exports = async function askMargaret(req, res) {
 };
 
 module.exports.SYSTEM_PROMPT = SYSTEM_PROMPT;
+module.exports.throttle = throttle;
+module.exports.RATE_PER_CALLER = RATE_PER_CALLER;
+module.exports.RATE_PER_INSTANCE = RATE_PER_INSTANCE;
 module.exports.conversation = conversation;
 module.exports.replyText = replyText;

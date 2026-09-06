@@ -1077,9 +1077,18 @@ export const MARGARET = {
   apiUrl: '/api/margaret',
   greeting:
     'Hello, I am Margaret. I can help you find your way around The Compassion Hub — the books, the free reading, the Legacy Inventory, your library, or the shop. What are you looking for?',
-  /* Shown once per conversation under the greeting. */
+  /*
+   * Shown once per conversation, under the greeting.
+   *
+   * What you type here leaves the device: the question and the recent
+   * transcript are posted to this site, and on to a helper service when one is
+   * configured. That is the one place in the app where anything you type is
+   * sent anywhere, so it is stated up front rather than buried — and it is why
+   * the privacy answer below no longer says the message wall is the only thing
+   * that leaves your device.
+   */
   disclosure:
-    'Margaret helps you navigate this app. She does not give legal, financial, or medical advice.',
+    'Margaret helps you navigate this app. What you type is sent to be answered, so please leave out account numbers and personal details. She does not give legal, financial, or medical advice.',
 };
 
 /** Tapped straight into the composer — the fastest path to a useful answer. */
@@ -1176,7 +1185,7 @@ export const MARGARET_TOPICS = [
     id: 'privacy',
     keywords: ['privacy', 'account', 'sign in', 'login', 'data', 'stored', 'track', 'cookie', 'analytics'],
     answer:
-      'There is no account and no sign-in. Your reading progress, your inventory progress, your library, and your cart are kept in this browser only. The one thing that leaves your device is a message you choose to submit to the public wall.',
+      'There is no account and no sign-in. Your reading progress, your inventory progress, your library, and your cart are kept in this browser only. Two things do leave your device, and both because you asked for them: a message you submit to the public wall, and whatever you type to me — your question and our recent conversation are sent to be answered. Please keep account numbers and personal details out of both.',
     links: ['legacy', 'disclaimer'],
   },
   {
