@@ -45,6 +45,9 @@ source.
 | `src/covers.js` | Accessible typographic fallback for any future item without commissioned art |
 | `src/icons.js` | Inline SVG icons, incl. the cup-and-heart fallback cover mark |
 | `src/dom.js` | `esc()` and small DOM helpers |
+| `src/player.js` | The Compassion Player widget |
+| `src/margaret.js` | Margaret, the in-app guide, and her offline answers |
+| `assets/audio/` | The seven original songs the player carries |
 | `supabase/functions/compassion-messages/` | Public read + moderated submit API |
 | `supabase/migrations/` | Message table, constraints, RLS, and seed content |
 | `assets/` | PWA icons and the link-preview image |
@@ -62,6 +65,7 @@ source.
 | `api/stripe-status.js` | Read-only Stripe configuration check (`/api/stripe-status`) |
 | `api/_stripe.js` | Shared key handling, site-URL resolution, and failure logging |
 | `api/_catalog.js` | Server-authoritative product names and prices |
+| `api/margaret.js` | Same-origin proxy to Margaret's language-model provider |
 | `package.json` | Stripe server SDK and verification command |
 
 ## Screens
@@ -75,6 +79,7 @@ source.
 **Standing pages** — About Pamella, Disclaimers, Production status
 **Tools** — Tools index, My Library, Network
 **Standing pages** — About Pamella, Disclaimers, Production status
+**Always present** — The Compassion Player and Margaret, as dock widgets rather than screens
 
 ## Routing
 
@@ -228,6 +233,77 @@ contact details, and stored as pending. They appear publicly only after an
 editor sets `approved = true` in Supabase. The browser never receives a secret
 or service-role key.
 
+## The Compassion Player
+
+Seven original songs from the series, in a widget that keeps playing while you
+move around the app.
+
+The player mounts once into the overlay root and is never re-rendered. That is
+not an optimisation — `paint()` in `app.js` replaces `#view`, the sidebar, the
+app bar, and the tab bar on every route change, so an `<audio>` element
+rendered inside a screen would be destroyed and the music would stop at every
+tap. Everything the player updates, it updates by writing to its own DOM.
+
+**Autoplay is asked for, not assumed.** Browsers refuse to start audible media
+before the visitor has interacted with the page. The player calls `play()` on
+load; if it is refused it says so in the panel and arms a one-shot listener so
+the next tap or key press anywhere starts the music — in practice, dismissing
+the welcome note. Gestures landing on the player's own controls are excluded,
+or a tap on play would start the track and the button's own handler would
+immediately pause it again.
+
+A visitor who pauses stays paused. Chosen track, volume, mute, and whether
+playback was wanted persist in `localStorage` under
+`cup-of-compassion:player:v1`; playback *position* deliberately does not.
+
+The playlist repeats forever, and a file that fails to load advances rather
+than stranding the playlist — though a full lap of failures stops with a
+message rather than looping over the network. The songs are served from this
+origin, so the deployed `Content-Security-Policy` needs no `media-src`
+exception: same-origin media inherits `default-src 'self'`.
+
+Two pairs of tracks share an ID3 title because they are alternate takes of the
+same song; they are labelled **Take I** and **Take II** rather than merged.
+
+## Margaret
+
+Margaret is the in-app guide. She explains where things are; she does not
+advise. Rule 1 above binds her exactly as it binds every screen, and
+`tools/widgets.test.mjs` fails the build if either her system prompt or her
+offline answers drop it.
+
+Three things about how she is wired:
+
+**She only ever talks to this origin.** The browser posts to `/api/margaret`,
+which forwards to whichever provider the deployment configures. No provider key
+reaches the browser, and `connect-src 'self'` stays as it is.
+
+**She works before that endpoint exists.** Unconfigured, `/api/margaret`
+answers `503 {"configured": false}` and the widget falls back to keyword
+matching over `MARGARET_TOPICS` in `src/data.js` — the app's own navigation,
+written down. Wiring the API later needs no code change.
+
+**Nothing she says is parsed as markup.** Replies come from a remote service,
+so every message is written with `textContent`. The only rich element in an
+answer is a navigation chip, and those are built from the app's own screen ids,
+never from response text.
+
+**What you type does leave the device**, and the widget says so before you
+type it: the question and the recent transcript are posted to this site, and on
+to the provider when one is configured. It is the one place in the app where
+anything you type is sent anywhere, so both the disclosure under her greeting
+and her own privacy answer state it plainly.
+
+`/api/margaret` is public — the app has no accounts to authenticate against —
+and every request that reaches the provider costs money, so the function
+throttles per caller and per instance before spending anything. It is a warm
+instance's memory, so it is a floor and not a quota: a hard limit belongs at
+the provider as a spend cap, or in front of the function. A throttled caller
+falls back to the offline guide like any other refusal.
+
+Her transcript persists in `localStorage` under `cup-of-compassion:margaret:v1`
+and is capped at twelve turns.
+
 ## Responsive behaviour
 
 | Width | Navigation | Layout |
@@ -289,6 +365,10 @@ Specifically:
   that fades or rises in is left invisible when it is.
 - **Hover lifts are gated behind `@media (hover: hover)`** so a tap on a phone
   does not leave a card latched in its hover state.
+- **The dock widgets** collapse to one labelled button each, close on Escape
+  with focus returned to the button that opened them, keep `aria-expanded` and
+  the play/pause label in step with what they are doing, and are hidden from
+  print. The equaliser stills under `prefers-reduced-motion`.
 
 ## Local preview
 
@@ -311,6 +391,16 @@ Set this secret in every Vercel environment that should accept payment:
 ```text
 STRIPE_SECRET_KEY=sk_test_...   # Preview/testing
 STRIPE_SECRET_KEY=sk_live_...   # Production
+```
+
+Margaret answers from the app's own navigation until her provider is set. To
+connect her:
+
+```text
+MARGARET_API_URL=https://…            # an OpenAI-compatible chat-completions endpoint
+MARGARET_API_KEY=…                    # its bearer token
+MARGARET_MODEL=…                      # optional
+MARGARET_SYSTEM_PROMPT=…              # optional; overrides the persona in api/margaret.js
 ```
 
 Environment variables are read at invocation, but a Vercel environment only
@@ -410,3 +500,9 @@ outage. None of those fields carry the key itself.
   cross-device sync.
 - Everyone on the Network page is listed with the contact detail they supplied,
   and every entry now carries the headshot that person provided.
+- The Compassion Player cannot guarantee music on arrival. Autoplay is a
+  browser decision, not an app one; where it is refused, the first interaction
+  anywhere on the page starts playback.
+- Margaret answers from the app's own navigation until `MARGARET_API_URL` and
+  `MARGARET_API_KEY` are set. Her offline answers are keyword matching, not a
+  language model, and describe only this app.

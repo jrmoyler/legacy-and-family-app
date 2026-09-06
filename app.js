@@ -8,6 +8,8 @@
 import { $, $$ } from './src/dom.js';
 import { screens, compassionMessageList } from './src/screens.js';
 import { sidebar, appbar, tabbar, overlays, hrefFor } from './src/components.js';
+import { mountPlayer } from './src/player.js';
+import { mountMargaret } from './src/margaret.js';
 import {
   BRAND, CATEGORIES, COMPASSION_API_URL, PRODUCTS, FORMAT_SHORT,
   bookById, lessonById, productById, networkById,
@@ -495,6 +497,25 @@ document.addEventListener('keydown', (event) => {
 });
 
 /* ==========================================================================
+   Persistent widgets
+
+   The Compassion Player and Margaret are chrome, not screens. They mount once
+   into the overlay root — which paint() never touches — so music keeps playing
+   and a conversation stays open while the visitor moves around the app. Only
+   one panel is open at a time, so neither can bury the other on a phone.
+   ========================================================================== */
+function mountWidgets() {
+  const dock = $('#widget-dock');
+  if (!dock) return;
+
+  /* Margaret is declared ahead of the player only because the two close
+     each other and one of the references has to be resolved at call time. */
+  let margaret;
+  const player = mountPlayer(dock, () => margaret?.close());
+  margaret = mountMargaret(dock, () => player?.close());
+}
+
+/* ==========================================================================
    Event delegation
    ========================================================================== */
 document.addEventListener('click', (event) => {
@@ -674,6 +695,7 @@ document.addEventListener('submit', async (event) => {
    ========================================================================== */
 loadState();
 overlayRoot.innerHTML = overlays();
+mountWidgets();
 window.addEventListener('hashchange', renderRoute);
 renderRoute();
 

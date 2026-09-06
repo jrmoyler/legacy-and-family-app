@@ -181,6 +181,11 @@ export const overlays = () => join([
     <button class="btn btn-gold" data-close-sheet data-then="home">Enter the Hub</button>
   </div>`,
   '<div class="toast" id="toast" role="status" aria-live="polite"></div>',
+  /* Mounting point for The Compassion Player and Margaret. It belongs in this
+     list rather than in a screen for the same reason the toast does: paint()
+     replaces everything under #view on every route change, and a player
+     rebuilt on navigation would stop playing at each tap. */
+  '<div class="widget-dock" id="widget-dock"></div>',
   /* For changes that are obvious on screen and silent otherwise — filtering
      the shop redraws a grid nobody is told about. */
   '<p class="sr-only" id="live" role="status" aria-live="polite"></p>',
