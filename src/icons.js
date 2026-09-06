@@ -154,3 +154,47 @@ export const messageIcon = (size, stroke, w) => `
   <path class="stroke" d="M20 11.2a8 8 0 0 1-8.2 7.8c-1.3 0-2.5-.3-3.6-.8L4 20l1.2-4A7.6 7.6 0 0 1 4 11.8 8 8 0 0 1 12.2 4 7.9 7.9 0 0 1 20 11.2Z" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>
   <path class="stroke" d="M12 14.3c-2-1.4-3.1-2.4-3.1-3.6a1.6 1.6 0 0 1 3.1-.7 1.6 1.6 0 0 1 3.1.7c0 1.2-1.1 2.2-3.1 3.6Z" stroke="${stroke}" stroke-width="${w}" stroke-linejoin="round"/>
 </svg>`;
+
+/* --- The Compassion Player and Margaret --- */
+
+export const musicIcon = (size, stroke, w = 1.9) => `
+<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <path d="M9 17.5V5.9l10-2.1v11.4" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"/>
+  <ellipse cx="6.6" cy="17.6" rx="2.6" ry="2.4" stroke="${stroke}" stroke-width="${w}"/>
+  <ellipse cx="16.6" cy="15.2" rx="2.6" ry="2.4" stroke="${stroke}" stroke-width="${w}"/>
+</svg>`;
+
+export const playIcon = (size, fill) => `
+<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" aria-hidden="true">
+  <path d="M8 5.4a1 1 0 0 1 1.52-.85l9 6.6a1 1 0 0 1 0 1.7l-9 6.6A1 1 0 0 1 8 18.6z"/>
+</svg>`;
+
+export const pauseIcon = (size, fill) => `
+<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" aria-hidden="true">
+  <rect x="6.6" y="5" width="4.2" height="14" rx="1.4"/>
+  <rect x="13.2" y="5" width="4.2" height="14" rx="1.4"/>
+</svg>`;
+
+export const skipIcon = (size, fill, back = false) => `
+<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" aria-hidden="true"${back ? ' style="transform:scaleX(-1)"' : ''}>
+  <path d="M6 6.4a1 1 0 0 1 1.53-.85l7.2 5.6a1 1 0 0 1 0 1.7l-7.2 5.6A1 1 0 0 1 6 17.6z"/>
+  <rect x="16.3" y="5.4" width="2.5" height="13.2" rx="1.25"/>
+</svg>`;
+
+export const volumeIcon = (size, stroke, muted = false) => `
+<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <path d="M4.5 9.4h3.1L12 5.6v12.8L7.6 14.6H4.5z" stroke="${stroke}" stroke-width="1.9" stroke-linejoin="round"/>
+  ${muted
+    ? `<path d="M16 9.6l4.4 4.8M20.4 9.6 16 14.4" stroke="${stroke}" stroke-width="1.9" stroke-linecap="round"/>`
+    : `<path d="M15.6 9.2a4 4 0 0 1 0 5.6M18.3 6.9a7.6 7.6 0 0 1 0 10.2" stroke="${stroke}" stroke-width="1.9" stroke-linecap="round"/>`}
+</svg>`;
+
+export const listIcon = (size, stroke) => `
+<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <path d="M4.6 7h14.8M4.6 12h14.8M4.6 17h9.4" stroke="${stroke}" stroke-width="1.9" stroke-linecap="round"/>
+</svg>`;
+
+export const sendIcon = (size, fill) => `
+<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="${fill}" aria-hidden="true">
+  <path d="M4.3 4.1 20 11.1a1 1 0 0 1 0 1.82L4.3 19.9a.8.8 0 0 1-1.1-.95l1.7-5.6a.8.8 0 0 1 .66-.56L13 11.7a.2.2 0 0 0 0-.4l-7.44-1.09a.8.8 0 0 1-.66-.56l-1.7-5.6a.8.8 0 0 1 1.1-.95z"/>
+</svg>`;

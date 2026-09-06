@@ -977,3 +977,231 @@ export const STATUS_GROUPS = [
     ],
   },
 ];
+
+/* ==========================================================================
+   The Compassion Player
+   --------------------------------------------------------------------------
+   Original music written and recorded for the series. The files are served
+   from the app's own origin, so the deployed Content-Security-Policy needs no
+   media exception (`media-src` inherits `default-src 'self'`).
+
+   `seconds` is read from each file's MPEG frame headers and is a starting
+   estimate only — the player replaces it with the browser's own duration as
+   soon as the track loads, so a re-encoded file can never show a stale time.
+
+   Two pairs share an ID3 title because they are alternate takes of the same
+   song. They are labelled Take I and Take II rather than silently merged.
+   ========================================================================== */
+
+export const TRACKS = [
+  {
+    id: 'building-generational-wealth',
+    title: 'Building Generational Wealth',
+    src: '/assets/audio/building-generational-wealth.mp3',
+    seconds: 266,
+  },
+  {
+    id: 'generational-magic',
+    title: 'Generational Magic',
+    src: '/assets/audio/generational-magic.mp3',
+    seconds: 77,
+  },
+  {
+    id: 'generational-magic-too',
+    title: 'Generational Magic Too',
+    take: 'Take I',
+    src: '/assets/audio/generational-magic-too.mp3',
+    seconds: 272,
+  },
+  {
+    id: 'generational-magic-too-ii',
+    title: 'Generational Magic Too',
+    take: 'Take II',
+    src: '/assets/audio/generational-magic-too-ii.mp3',
+    seconds: 269,
+  },
+  {
+    id: 'my-real-god',
+    title: 'My Real God',
+    take: 'Take I',
+    src: '/assets/audio/my-real-god.mp3',
+    seconds: 358,
+  },
+  {
+    id: 'my-real-god-ii',
+    title: 'My Real God',
+    take: 'Take II',
+    src: '/assets/audio/my-real-god-ii.mp3',
+    seconds: 363,
+  },
+  {
+    id: 'compassion-kids',
+    title: 'Compassion Kids With a Future Champ Mind',
+    src: '/assets/audio/compassion-kids.mp3',
+    seconds: 55,
+  },
+];
+
+export const PLAYER = {
+  title: 'The Compassion Player',
+  subtitle: 'Original music from the series',
+  artist: BRAND.series,
+  /* Shown when the browser refuses to start audio without a gesture. */
+  blockedHint: 'Tap play to start the music.',
+};
+
+export const trackById = (id) => TRACKS.find((t) => t.id === id);
+
+/* ==========================================================================
+   Margaret — the in-app guide
+   --------------------------------------------------------------------------
+   Margaret answers questions about how to move around the app. Two things
+   matter about how she is wired:
+
+   1. She talks to `/api/margaret` on this origin, never to a model provider
+      directly. The provider key stays on the server, and `connect-src 'self'`
+      in vercel.json needs no widening.
+
+   2. Until that endpoint is configured she answers from MARGARET_TOPICS
+      below. This is not a language model — it is keyword matching over the
+      app's own navigation — so it must only ever describe the app.
+
+   LEGAL_POSITIONING binds Margaret exactly as it binds every screen: she
+   explains the app, she never advises.
+   ========================================================================== */
+
+export const MARGARET = {
+  name: 'Margaret',
+  role: 'Your guide to the Hub',
+  avatar: '/assets/library/brand/margaret.jpg',
+  apiUrl: '/api/margaret',
+  greeting:
+    'Hello, I am Margaret. I can help you find your way around The Compassion Hub — the books, the free reading, the Legacy Inventory, your library, or the shop. What are you looking for?',
+  /* Shown once per conversation under the greeting. */
+  disclosure:
+    'Margaret helps you navigate this app. She does not give legal, financial, or medical advice.',
+};
+
+/** Tapped straight into the composer — the fastest path to a useful answer. */
+export const MARGARET_SUGGESTIONS = [
+  'What can I read for free?',
+  'How do I use the Legacy Inventory?',
+  'Where are my downloads?',
+  'What is this app?',
+];
+
+/**
+ * Margaret's offline knowledge. Each topic carries the words that should
+ * summon it, the answer, and the screens worth opening afterwards.
+ * `weight` breaks ties when a question matches more than one topic.
+ */
+export const MARGARET_TOPICS = [
+  {
+    id: 'overview',
+    keywords: ['what is this', 'about the app', 'compassion hub', 'help', 'hello', 'hi', 'start', 'what can you do', 'who are you'],
+    answer:
+      'The Compassion Hub is the home for Pamella Grear’s A Cup of Compassion series. You can read six free lessons, browse and buy the books, work through the Legacy Inventory, keep everything in My Library, and leave a public message of compassion. Everything is reachable from the navigation — the sidebar on a computer, the bar along the bottom on a phone.',
+    links: ['home', 'series', 'read'],
+  },
+  {
+    id: 'read',
+    keywords: ['read', 'reading', 'free', 'lesson', 'lessons', 'sample', 'preview', 'chapter'],
+    answer:
+      'Open Read to find six complete lessons, free and in full text — nothing is locked and no account is needed. Tap a lesson to read it, then mark it as read to keep track. Your progress is stored on this device only.',
+    links: ['read', 'home'],
+    weight: 2,
+  },
+  {
+    id: 'series',
+    keywords: ['book', 'books', 'series', 'title', 'titles', 'author', 'pamella', 'volume'],
+    answer:
+      'The Series page lists all six books in A Cup of Compassion in publication order. Open any one for its description, what it covers, and its download editions. About Pamella tells you more about the author.',
+    links: ['series', 'about'],
+  },
+  {
+    id: 'legacy',
+    keywords: ['legacy', 'inventory', 'worksheet', 'gather', 'estate', 'documents', 'print', 'family'],
+    answer:
+      'The Legacy Inventory is a printable worksheet. It lists what to gather and who to talk to, section by section, and you can mark each section as gathered. It deliberately has nothing to type into — the app never stores your account, policy, or property details. Use the print button and fill in the paper copy.',
+    links: ['legacy', 'disclaimer'],
+    weight: 2,
+  },
+  {
+    id: 'shop',
+    keywords: ['buy', 'shop', 'purchase', 'price', 'cost', 'cart', 'checkout', 'order', 'pay', 'store'],
+    answer:
+      'The Shop holds the individual books, the collections, and the companions. Add what you want to the cart, then Checkout opens a secure Stripe page. Payment is handled entirely by Stripe — this app never sees your card.',
+    links: ['shop', 'cart'],
+    /* "How much do the books cost?" is a shop question, not a series one. */
+    weight: 2,
+  },
+  {
+    id: 'library',
+    keywords: ['download', 'downloads', 'library', 'my library', 'epub', 'pdf', 'format', 'my books', 'access', 'unlock', 'bought', 'save', 'saved', 'later', 'save for later'],
+    answer:
+      'My Library, under Tools, holds everything you have bought or saved, with both file formats a click away. Purchases unlock there as soon as Stripe confirms your payment, and anything you tap “Save for later” on waits there too. The free downloads are listed for everyone.',
+    links: ['library', 'tools', 'shop'],
+    weight: 2,
+  },
+  {
+    id: 'network',
+    keywords: ['network', 'professional', 'professionals', 'planner', 'advisor', 'referral', 'who does pamella work with', 'partners'],
+    answer:
+      'The Network page, under Tools, lists the independent professionals Pamella works alongside and how to reach each of them directly. They are introductions, not endorsements — A Cup of Compassion does not employ them or take a commission on their work.',
+    links: ['network', 'tools'],
+    weight: 2,
+  },
+  {
+    id: 'messages',
+    keywords: ['message', 'messages', 'wall', 'share', 'post', 'note', 'community', 'submit'],
+    answer:
+      'Messages of Compassion is a public wall. You can read the approved notes, and the form at the bottom lets you add your own. Every message is reviewed before it appears, so yours will not show up immediately.',
+    links: ['messages'],
+  },
+  {
+    id: 'music',
+    keywords: ['music', 'song', 'songs', 'player', 'audio', 'sound', 'playing', 'mute', 'volume', 'track'],
+    answer:
+      'That is The Compassion Player — original music from the series. The music note button at the bottom of the screen opens it, where you can play, pause, skip, change the volume, or pick a track from the list. It remembers your choice the next time you visit.',
+  },
+  {
+    id: 'legal',
+    keywords: ['legal', 'will', 'trust', 'lawyer', 'attorney', 'advice', 'disclaimer', 'tax', 'medical'],
+    answer:
+      `${LEGAL_POSITIONING} Nothing here is legal, financial, or medical advice, and I cannot give any either — please take your questions to a licensed professional in your state. The Disclaimers page sets this out in full, and the Network page lists professionals you can contact directly.`,
+    links: ['disclaimer', 'network'],
+    weight: 3,
+  },
+  {
+    id: 'privacy',
+    keywords: ['privacy', 'account', 'sign in', 'login', 'data', 'stored', 'track', 'cookie', 'analytics'],
+    answer:
+      'There is no account and no sign-in. Your reading progress, your inventory progress, your library, and your cart are kept in this browser only. The one thing that leaves your device is a message you choose to submit to the public wall.',
+    links: ['legacy', 'disclaimer'],
+  },
+  {
+    id: 'contact',
+    keywords: ['contact', 'email', 'instagram', 'reach', 'support', 'question for pamella', 'speak'],
+    answer:
+      'You can find Pamella’s email and social links on the Network page and in the footer of every page. About Pamella has more on her work and how to get in touch.',
+    links: ['network', 'about'],
+    /* "How do I contact Pamella?" is about reaching her, not about her books. */
+    weight: 2,
+  },
+];
+
+/** Where Margaret can offer to take you. */
+export const MARGARET_LINK_LABELS = {
+  home: 'Home',
+  series: 'The Series',
+  read: 'Read free lessons',
+  legacy: 'The Legacy Inventory',
+  shop: 'Shop',
+  cart: 'Your cart',
+  library: 'My Library',
+  tools: 'Tools',
+  network: 'Network',
+  messages: 'Messages of Compassion',
+  about: 'About Pamella',
+  disclaimer: 'Disclaimers',
+};

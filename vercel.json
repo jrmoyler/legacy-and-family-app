@@ -22,6 +22,14 @@
       ]
     },
     {
+      "source": "/assets/audio/(.*).mp3",
+      "headers": [
+        { "key": "Content-Type", "value": "audio/mpeg" },
+        { "key": "Accept-Ranges", "value": "bytes" },
+        { "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }
+      ]
+    },
+    {
       "source": "/assets/library/(.*).epub",
       "headers": [
         { "key": "Content-Type", "value": "application/epub+zip" },
