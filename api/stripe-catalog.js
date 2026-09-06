@@ -3,6 +3,12 @@
 /**
  * Server-authoritative Stripe catalogue. The browser submits product IDs only;
  * names and prices are resolved here so a customer cannot alter the charge.
+ *
+ * A product belongs here only once it can actually be delivered. The Church &
+ * Small-Group Licence ('church-license') is deliberately absent: it has no
+ * downloadable editions and no fulfilment process, so a $149 charge would buy
+ * nothing. It stays out of this file until fulfilment exists — being unlisted
+ * here is what makes it unchargeable, whatever the browser sends.
  */
 const STRIPE_CATALOG = Object.freeze({
   benefit: { name: 'The Benefit of Having Compassion', kind: 'eBook', unitAmount: 799 },
@@ -14,7 +20,6 @@ const STRIPE_CATALOG = Object.freeze({
   'first-three': { name: 'The First Three Books', kind: 'Collection', unitAmount: 1900 },
   workbook: { name: 'The Companion Workbook', kind: 'Workbook', unitAmount: 1900 },
   'compassion-legacy-journal': { name: 'The Compassion Legacy Journal', kind: 'Journal', unitAmount: 2500 },
-  'church-license': { name: 'Church & Small-Group Licence', kind: 'Group licence', unitAmount: 14900 },
   'six-set': { name: 'The Complete Six-Book Set', kind: 'Collection', unitAmount: 3900 },
   'six-plus-workbook': { name: 'Six-Book Set + Companion Workbook', kind: 'Collection', unitAmount: 6700 },
 });

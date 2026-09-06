@@ -104,7 +104,16 @@ def verify_sources() -> None:
     require("process.env.STRIPE_SECRET_KEY" in stripe_create and "process.env.STRIPE_SECRET_KEY" in stripe_verify, "Stripe secret key env wiring is missing")
     require("payment_status !== 'paid'" in stripe_verify, "Checkout success is not verified as paid")
     require(stripe_catalog.count("unitAmount: 799") == 6, "Stripe catalogue is missing the six $7.99 eBooks")
-    require("unitAmount: 2500" in stripe_catalog and "unitAmount: 14900" in stripe_catalog, "Stripe catalogue prices are incomplete")
+    require("unitAmount: 2500" in stripe_catalog, "Stripe catalogue prices are incomplete")
+    # Nothing may be charged before it can be delivered. The $149 group licence
+    # has no downloadable editions and no fulfilment process, so it must stay
+    # out of both the marketplace and the server-authoritative catalogue.
+    require("'church-license':" not in stripe_catalog, "The unfulfillable group licence is chargeable again")
+    require("unitAmount: 14900" not in stripe_catalog, "The unfulfillable group licence is priced for checkout again")
+    require(
+        re.search(r"id: 'church-license',[^}]*buyable: false", data) is not None,
+        "The unfulfillable group licence is marked buyable again",
+    )
     require('class="cart-btn"' not in screens, "A duplicate screen-level cart button remains")
     require("screens.messages" in screens, "Messages page is missing")
     require("data-compassion-form" in screens, "Compassion form is missing")

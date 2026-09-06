@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 
+import { PRODUCTS } from '../src/data.js';
 import { screens } from '../src/screens.js';
-import { state } from '../src/state.js';
+import { state, addToCart } from '../src/state.js';
 
 const LOGO = '/assets/library/brand/a-cup-of-compassion-logo.jpg?v=official-brand-20260818';
 const PORTRAIT = '/assets/library/brand/pamella-grear.jpg';
@@ -41,5 +42,19 @@ const confirmed = screens['checkout-success']();
 assert.ok(confirmed.includes('Payment confirmed'), 'Paid confirmation state is missing');
 assert.ok(confirmed.includes('The Benefit of Having Compassion'), 'Purchased product is missing from confirmation');
 assert.ok(confirmed.includes('#/product/benefit'), 'Purchased download link is missing');
+
+// No product may offer a Buy button unless it resolves to files a buyer can
+// download. The $149 group licence used to charge and deliver nothing.
+for (const product of PRODUCTS.filter((p) => p.buyable && !p.free)) {
+  const deliverable = product.assets || product.book
+    || product.includes?.length || product.includesProducts?.length;
+  assert.ok(deliverable, `${product.id} is buyable but has no downloadable editions`);
+}
+
+state.activeProduct = 'church-license';
+const licence = screens.product();
+assert.ok(!licence.includes('data-buy='), 'The unfulfillable group licence still offers a Buy button');
+assert.ok(licence.includes('In production'), 'The group licence does not read as unreleased');
+assert.equal(addToCart('church-license'), false, 'The group licence can still be added to the cart');
 
 console.log(`Rendered screen verification passed: ${Object.keys(screens).length} routes`);

@@ -296,9 +296,18 @@ export const PRODUCTS = [
     price: 149,
     badge: '',
     cats: ['Collections'],
-    buyable: true,
+    // Not for sale: a group licence needs a fulfilment route — the licence
+    // document, the per-congregation copy counting, and the invoice — and none
+    // of that exists yet. Every other paid product resolves to downloadable
+    // editions through `assets`, `includes`, or `includesProducts`; this one
+    // resolves to nothing, so selling it would take $149 and deliver no files.
+    // It is also absent from api/stripe-catalog.js, which is what actually
+    // stops the charge. Restore `buyable: true` and the catalogue entry
+    // together, once fulfilment is real.
+    buyable: false,
+    status: 'In production',
     note: '25 copies · one invoice',
-    about: 'Twenty-five copies of the collection for a congregation, a ministry, or a small group, on a single invoice. One study, one language, everybody on the same page.',
+    about: `Twenty-five copies of the collection for a congregation, a ministry, or a small group, on a single invoice. One study, one language, everybody on the same page. The licence is not on sale yet — write to ${BRAND.email} to hear when it opens.`,
   },
   {
     id: 'six-set',
@@ -678,6 +687,7 @@ export const STATUS_GROUPS = [
       'Keep the education-only legal framing and disclaimer wherever legacy-planning material is promoted.',
       'Retain the traditional-use wellness framing in Book 1 and avoid presenting it as medical advice.',
       'Keep the confirmed Instagram profile link current anywhere the author byline appears.',
+      'The Church & Small-Group Licence stays off sale until the licence document, copy counting, and invoicing exist. Nothing is charged for it in the meantime.',
     ],
   },
 ];
