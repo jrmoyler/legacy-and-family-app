@@ -1091,6 +1091,26 @@ export const MARGARET = {
     'Margaret helps you navigate this app. What you type is sent to be answered, so please leave out account numbers and personal details. She does not give legal, financial, or medical advice.',
 };
 
+/**
+ * Margaret's own story — shown when her picture is tapped inside the chat
+ * panel. Plain paragraphs, escaped like every other string in this file; the
+ * one sentence named in `MARGARET_BIO_HIGHLIGHT` is rendered in bold by
+ * splitting the paragraph around it at render time, so no markup lives here.
+ */
+export const MARGARET_BIO = {
+  heading: 'About Margaret',
+  paragraphs: [
+    'She was a teacher: She started her education and a 26-year career with the Catholic Diocese of Ohio, Martin Deporres in the area of childhood development. Even though the hourly wages were not comfortable for taking care of her family, she settled in to take advantage of special offers, such as meals, holiday gifts and clothing for her children. She was able to teach her own children along with the other students. She felt the benefits outweighed any wage she could have received. She would tell stories of parents not picking the children up because they knew she would take them home and love on them . This gave her the tremendous joy. She taught God’s word and lived in God’s word. “She believed with God all things are possible” and she walked the talk. We were one of the single parent families in our community without food stamps and a landlord glory to God!',
+    'She was an entrepreneur and a Phenomenal Woman: She explored the world of Real Estate and property development. She began to accumulate properties to fix up, rent, sell. She blessed many of her children with starter properties which included first family homes and multi units. Over 15 unites in 1970 est. 200K-250K value where today’s value est in a trust to be worth $2.2–$3 million. She believed in the “Parable of the Talents”. She had the soul abilities to operate single-handedly with her sword, the word of God. It’s the fire in her eyes and the flash of her teeth, the swing in her waist and the joy in her feet, a Phenomenal Woman. Now you understand Just why her head’s not bowed. She didn’t shout or jump about Or have to talk real loud. When you see her passing, It ought to make you proud. She would say, It’s in the click of my heels, The bend of my hair, the palm of my hands, The need for my care. ’Cause, I’m a woman Phenomenally yes that’s me, Margaret!',
+    'She was a believer: “All things are possible when you believe”. She trusted the Lord that her family would be blessed, and all that she has given and been there to give that many will reap as they sow. Due to her sowing, her grandchildren are blessed and as far as she knows no one is on food stamps and many are blessed with their own property and land. To God be the glory! Blessings!',
+    'She was love and Loved: In a serious kind of way, she loved but did not play when it came to God’s business or hers. Over the 95 plus years she lovely gave of herself, making many stronger and did not apologize and never compromised. Hard work, giving and loving the lord was her life long longevity. She also liked to walk for miles, singing and praying. She exercised with conscience eating up into her nineties. Her last days were with family and friends full of love. She gave kisses, and hugs around the neck to all who set at her bedside. She sang and smiled and loved out loud. Her last works of art are a collection of her children. “The Bushel and a Peck” collection. In closing out the way Margaret would have it...“I love you, with a bushel and a peck and a hug around your neck”',
+  ],
+};
+
+/** The one sentence in `MARGARET_BIO` that renders in bold. */
+export const MARGARET_BIO_HIGHLIGHT =
+  'Over 15 unites in 1970 est. 200K-250K value where today’s value est in a trust to be worth $2.2–$3 million.';
+
 /** Tapped straight into the composer — the fastest path to a useful answer. */
 export const MARGARET_SUGGESTIONS = [
   'What can I read for free?',
