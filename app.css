@@ -4003,6 +4003,17 @@ p a, .about-copy a { text-decoration: underline; }
   background: rgba(255, 255, 255, .10);
   color: var(--gold-soft);
 }
+.margaret-avatar-btn {
+  display: flex;
+  flex: none;
+  padding: 0;
+  border-radius: 50%;
+}
+.margaret-avatar-btn:hover .margaret-avatar { filter: brightness(1.08); }
+.margaret-avatar-btn:focus-visible {
+  outline: 2px solid var(--gold-soft);
+  outline-offset: 2px;
+}
 .margaret-avatar {
   width: 38px; height: 38px;
   flex: none;
@@ -4240,6 +4251,41 @@ p a, .about-copy a { text-decoration: underline; }
 /* --------------------------------------------------------------------------
    32. Margaret
    -------------------------------------------------------------------------- */
+/* Her picture, tapped inside the open chat, swaps this in for the log,
+   suggestions, and composer — restored by "Back to chat" or Escape. */
+.margaret-bio {
+  flex: 1;
+  min-height: 132px;
+  overflow-y: auto;
+  background: var(--cream);
+  -webkit-overflow-scrolling: touch;
+}
+.margaret-bio-scroll { padding: 15px; }
+.margaret-bio-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--teal-deep);
+}
+.margaret-bio-back svg { flex: none; }
+.margaret-bio-heading {
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--plum-900);
+}
+.margaret-bio p {
+  margin-top: 11px;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink);
+}
+.margaret-bio p strong { color: var(--plum-900); }
+
 .margaret-log {
   flex: 1;
   min-height: 132px;

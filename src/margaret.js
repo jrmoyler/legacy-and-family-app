@@ -26,8 +26,9 @@
 import { esc } from './dom.js';
 import {
   MARGARET, MARGARET_SUGGESTIONS, MARGARET_TOPICS, MARGARET_LINK_LABELS,
+  MARGARET_BIO, MARGARET_BIO_HIGHLIGHT,
 } from './data.js';
-import { closeIcon, sendIcon } from './icons.js';
+import { arrowLeft, closeIcon, sendIcon } from './icons.js';
 
 const STORAGE_KEY = 'cup-of-compassion:margaret:v1';
 
@@ -110,6 +111,15 @@ function saveHistory(history) {
    Markup
    -------------------------------------------------------------------------- */
 
+/** Escape a bio paragraph, rendering the one highlighted sentence in bold. */
+function bioParagraphHtml(text) {
+  const at = text.indexOf(MARGARET_BIO_HIGHLIGHT);
+  if (at === -1) return esc(text);
+  const before = text.slice(0, at);
+  const after = text.slice(at + MARGARET_BIO_HIGHLIGHT.length);
+  return `${esc(before)}<strong>${esc(MARGARET_BIO_HIGHLIGHT)}</strong>${esc(after)}`;
+}
+
 function margaretMarkup() {
   return `
   <button class="dock-btn margaret-fab" type="button" data-margaret-toggle
@@ -122,8 +132,12 @@ function margaretMarkup() {
   <section class="widget-panel margaret-panel" id="margaret-panel"
            aria-label="Ask ${esc(MARGARET.name)}" hidden>
     <header class="widget-head">
-      <img class="margaret-avatar" src="${esc(MARGARET.avatar)}" alt=""
-           width="120" height="120" decoding="async">
+      <button class="margaret-avatar-btn" type="button" data-margaret-bio-toggle
+              aria-expanded="false" aria-controls="margaret-bio"
+              aria-label="About ${esc(MARGARET.name)}">
+        <img class="margaret-avatar" src="${esc(MARGARET.avatar)}" alt=""
+             width="120" height="120" decoding="async">
+      </button>
       <span class="widget-titles">
         <strong>${esc(MARGARET.name)}</strong>
         <span>${esc(MARGARET.role)}</span>
@@ -133,6 +147,16 @@ function margaretMarkup() {
         ${closeIcon('currentColor')}
       </button>
     </header>
+
+    <div class="margaret-bio" id="margaret-bio" data-margaret-bio hidden>
+      <div class="margaret-bio-scroll">
+        <button class="margaret-bio-back" type="button" data-margaret-bio-close>
+          ${arrowLeft}<span>Back to chat</span>
+        </button>
+        <h3 class="margaret-bio-heading">${esc(MARGARET_BIO.heading)}</h3>
+        ${MARGARET_BIO.paragraphs.map((paragraph) => `<p>${bioParagraphHtml(paragraph)}</p>`).join('')}
+      </div>
+    </div>
 
     <div class="margaret-log" data-margaret-log role="log" aria-live="polite" aria-atomic="false"></div>
 
@@ -166,6 +190,9 @@ export function mountMargaret(dock, onOpen) {
   const $ = (selector) => root.querySelector(selector);
   const fab = $('[data-margaret-toggle]');
   const panel = $('#margaret-panel');
+  const bio = $('[data-margaret-bio]');
+  const bioToggle = $('[data-margaret-bio-toggle]');
+  const suggestions = $('[data-margaret-suggestions]');
   const log = $('[data-margaret-log]');
   const form = $('[data-margaret-form]');
   const input = $('[data-margaret-input]');
@@ -314,11 +341,28 @@ export function mountMargaret(dock, onOpen) {
     input.style.height = `${Math.min(input.scrollHeight, 108)}px`;
   }
 
+  /** Her picture, tapped inside the open chat, swaps the log for her story. */
+  function setBioOpen(open) {
+    bio.hidden = !open;
+    log.hidden = open;
+    suggestions.hidden = open;
+    form.hidden = open;
+    bioToggle.setAttribute('aria-expanded', String(open));
+    if (open) {
+      $('.margaret-bio-back').focus({ preventScroll: true });
+    } else {
+      input.focus({ preventScroll: true });
+    }
+  }
+
   function setOpen(open) {
     panel.hidden = !open;
     fab.setAttribute('aria-expanded', String(open));
     root.classList.toggle('is-open', open);
-    if (!open) return;
+    if (!open) {
+      setBioOpen(false);
+      return;
+    }
     onOpen?.();
     if (!greeted) paintLog();
     scrollToLatest();
@@ -332,6 +376,9 @@ export function mountMargaret(dock, onOpen) {
     setOpen(false);
     fab.focus({ preventScroll: true });
   });
+
+  bioToggle.addEventListener('click', () => setBioOpen(bio.hidden));
+  $('[data-margaret-bio-close]').addEventListener('click', () => setBioOpen(false));
 
   form.addEventListener('submit', (event) => {
     event.preventDefault();
@@ -358,6 +405,10 @@ export function mountMargaret(dock, onOpen) {
 
   panel.addEventListener('keydown', (event) => {
     if (event.key !== 'Escape') return;
+    if (!bio.hidden) {
+      setBioOpen(false);
+      return;
+    }
     setOpen(false);
     fab.focus({ preventScroll: true });
   });
