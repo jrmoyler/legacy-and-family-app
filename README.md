@@ -487,7 +487,12 @@ outage. None of those fields carry the key itself.
   item that was actually bought.
 - Scripture is quoted KJV throughout, per series canon. It should still get a
   word-for-word proof against a printed KJV before launch.
-- Instagram links to `https://www.instagram.com/acupofcompassion`.
+- The sidebar and footer link the series' own accounts: Instagram
+  `https://www.instagram.com/acupofcompassion` and the YouTube channel.
+  Pamella's Network card carries her personal profiles instead —
+  `https://www.instagram.com/pamfoster5899` and the Facebook share URL
+  `https://www.facebook.com/share/1EM22uPG3U/`, which Facebook resolves to
+  her profile. Swap in the canonical profile URL once it is known.
 - Reading progress, inventory ticks, cart, and library persist in
   `localStorage` on the device only; there is no account or cross-device sync.
 - Compassion messages are the exception: approved messages and moderated

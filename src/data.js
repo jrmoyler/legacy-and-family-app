@@ -55,8 +55,20 @@ export const BRAND = {
 };
 
 /**
- * Pamella's platforms, supplied and confirmed by her directly — which is what
- * the app was waiting on before linking any of them (Bible §11).
+ * The series' own channel, supplied and confirmed by Pamella directly — which
+ * is what the app was waiting on before linking any of it (Bible §11).
+ */
+const SERIES_YOUTUBE = {
+  id: 'youtube',
+  label: 'YouTube',
+  handle: '@acupofcompassion7490',
+  url: 'https://youtube.com/@acupofcompassion7490?si=qkfTArSfOUSsmA-u',
+};
+
+/**
+ * The series' accounts, printed in the sidebar and the footer on every screen.
+ * @acupofcompassion is the series' own handle, not Pamella's personal one —
+ * hers are PAMELLA_SOCIAL_LINKS, and her Network card carries those instead.
  */
 export const SOCIAL_LINKS = [
   {
@@ -65,11 +77,30 @@ export const SOCIAL_LINKS = [
     handle: '@acupofcompassion',
     url: 'https://www.instagram.com/acupofcompassion',
   },
+  SERIES_YOUTUBE,
+];
+
+/**
+ * Pamella's own profiles, supplied and confirmed by her directly (Bible §11).
+ *
+ * The Instagram address she gave carried a share token and a QR campaign tag.
+ * Both identify the share she sent rather than the profile, and the token
+ * expires, so only the canonical profile path is kept. The Facebook address is
+ * the share URL exactly as she supplied it: Facebook resolves it to her
+ * profile, and the profile's own address is not known here to put in its place.
+ */
+export const PAMELLA_SOCIAL_LINKS = [
   {
-    id: 'youtube',
-    label: 'YouTube',
-    handle: '@acupofcompassion7490',
-    url: 'https://youtube.com/@acupofcompassion7490?si=qkfTArSfOUSsmA-u',
+    id: 'instagram',
+    label: 'Instagram',
+    handle: '@pamfoster5899',
+    url: 'https://www.instagram.com/pamfoster5899',
+  },
+  {
+    id: 'facebook',
+    label: 'Facebook',
+    handle: 'Pamella Grear',
+    url: 'https://www.facebook.com/share/1EM22uPG3U/',
   },
 ];
 
@@ -850,9 +881,8 @@ export const INVENTORY = [
  * Pamella's LegalShield associate link, carried exactly as she supplied it.
  * The tracking parameters on the end are what credit the referral to her, so
  * the address is never tidied up or shortened — it is copied verbatim or not
- * used at all. It hangs off her Network entry rather than SOCIAL_LINKS, which
- * is the series' own Instagram and YouTube and is printed in the sidebar and
- * the footer on every screen.
+ * used at all. It hangs off her Network entry rather than PAMELLA_SOCIAL_LINKS,
+ * which is the Instagram and Facebook she uses personally.
  */
 export const LEGALSHIELD_LINK = {
   id: 'legalshield',
@@ -879,7 +909,7 @@ export const NETWORK = [
     email: 'acupofcompassion@gmail.com',
     website: null,
     headshot: '/assets/network/pamella-grear.jpg',
-    socials: [...SOCIAL_LINKS, LEGALSHIELD_LINK],
+    socials: [...PAMELLA_SOCIAL_LINKS, SERIES_YOUTUBE, LEGALSHIELD_LINK],
     note: 'Author of the series and the person behind the Legacy Inventory.',
   },
   {
@@ -972,7 +1002,7 @@ export const STATUS_GROUPS = [
     items: [
       'Keep the education-only legal framing and disclaimer wherever legacy-planning material is promoted.',
       'Retain the traditional-use wellness framing in Book 1 and avoid presenting it as medical advice.',
-      'Pamella’s A Cup of Compassion Instagram and YouTube links are published in the app. Confirm any further platform before adding it.',
+      'The A Cup of Compassion Instagram and YouTube links are published in the app, and Pamella’s own Instagram and Facebook are on her Network card. Confirm any further platform before adding it.',
       'Everyone on the Network page is listed with the contact detail and the headshot they supplied. Re-confirm before changing or adding an entry.',
     ],
   },

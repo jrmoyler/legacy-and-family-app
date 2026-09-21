@@ -176,6 +176,13 @@ def verify_sources() -> None:
     require("icon-192.png" in manifest and "icon.svg" not in manifest, "Manifest does not use the official logo icon set")
     require("series: 'A Cup of Compassion'" in data, "Canonical series name is missing")
     require("https://www.instagram.com/acupofcompassion" in data, "Correct Instagram profile is missing")
+    require("https://www.instagram.com/pamfoster5899" in data, "Pamella's own Instagram profile is missing")
+    require("https://www.facebook.com/share/1EM22uPG3U/" in data, "Pamella's Facebook profile is missing")
+    require("stkn=" not in data, "A share token is carried on a profile link")
+    require(
+        "socials: [...PAMELLA_SOCIAL_LINKS, SERIES_YOUTUBE, LEGALSHIELD_LINK]" in data,
+        "Pamella's Network card does not carry her own profiles",
+    )
     require("INDIVIDUAL_EBOOK_PRICE = 7.99" in data, "Individual ebook price is not $7.99")
     require("price: 4.99" not in data, "A stale $4.99 price remains")
     require(data.count("price: INDIVIDUAL_EBOOK_PRICE") == 12, "Expected 12 canonical individual-price uses")
