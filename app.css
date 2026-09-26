@@ -2795,3 +2795,175 @@ p a, .about-copy a { text-decoration: underline; }
   .print-only h1 { font-family: var(--serif); font-size: 26px; font-weight: 700; }
   .print-only p { font-size: 12px; margin-top: 6px; }
 }
+
+/* --------------------------------------------------------------------------
+   27. Library shelf, restore codes, the compassion card, family sitting
+   -------------------------------------------------------------------------- */
+.library-cta .library-cta-go {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: none;
+  font-size: 13px;
+  font-weight: 750;
+}
+@media (max-width: 520px) {
+  .library-cta .library-cta-go { display: none; }
+}
+
+.library-page .home-grid { margin-bottom: 8px; }
+.library-owned, .library-free { display: grid; gap: 16px; }
+.library-item {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: var(--lift-sm);
+}
+.library-item-head { display: flex; align-items: center; gap: 14px; }
+.library-item-head .thumb {
+  width: 54px;
+  height: 72px;
+  flex: none;
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--chip);
+}
+.library-item-head .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.library-item-head .t { display: block; font-family: var(--serif); font-weight: 700; font-size: 17px; color: var(--plum-800); }
+.library-item-head .k { display: block; font-size: 12px; font-weight: 600; color: var(--muted); margin-top: 3px; }
+.library-item .download-panel { margin-top: 14px; box-shadow: none; }
+.library-empty {
+  display: grid;
+  justify-items: start;
+  gap: 12px;
+  padding: 24px;
+  border: 1px dashed var(--rule);
+  border-radius: var(--radius);
+  color: var(--ink-soft);
+  font-family: var(--serif);
+  font-size: 17px;
+  line-height: 1.5;
+}
+.restore-card { margin-top: 24px; }
+.restore-form { margin-top: 14px; }
+.restore-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 8px; }
+.restore-row .field { flex: 1 1 240px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+.restore-form .fine { margin-top: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.restore-status { margin-top: 10px; font-size: 13.5px; font-weight: 650; line-height: 1.5; }
+.restore-status:empty { display: none; }
+.restore-status.success { color: var(--teal-deep); }
+.restore-status.error { color: var(--danger); }
+
+.restore-code {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 20px;
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--gold);
+  border-radius: var(--radius-sm);
+  background: var(--cream);
+}
+.restore-code .cap,
+.compassion-card .cap {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+.restore-code-value {
+  max-width: 100%;
+  padding: 10px 12px;
+  border-radius: 9px;
+  background: var(--card);
+  color: var(--plum-900);
+  font-size: 12.5px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.restore-code p, .restore-missing { max-width: 56ch; margin: 0 auto; color: var(--ink-soft); font-size: 14px; line-height: 1.6; }
+.restore-missing { margin-top: 20px; }
+.checkout-restore { margin-top: 28px; padding-top: 22px; border-top: 1px solid var(--line); text-align: left; }
+.checkout-restore h2 { font-family: var(--serif); font-size: 19px; color: var(--plum-800); }
+
+.compassion-card {
+  margin-top: 24px;
+  padding: 26px;
+  border: 1px solid var(--rule);
+  border-top: 4px solid var(--gold);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+.compassion-card h2 { margin-top: 8px; font-family: var(--serif); font-size: 24px; color: var(--plum-800); }
+.compassion-card > p { margin-top: 12px; line-height: 1.65; color: var(--ink-soft); }
+.compassion-card h3 { margin-top: 18px; font-family: var(--serif); font-size: 17px; color: var(--teal-deep); }
+.compassion-card ol { margin-top: 10px; padding-left: 22px; display: grid; gap: 8px; line-height: 1.55; }
+.compassion-card .compassion-card-foot { margin-top: 18px; font-size: 12px; color: var(--muted); }
+
+.family-kit { margin-top: 34px; }
+.family-lede { color: var(--ink-soft); line-height: 1.6; max-width: 62ch; }
+.family-prompts { display: grid; gap: 12px; margin-top: 16px; padding: 0; list-style: none; counter-reset: family; }
+.family-prompts li {
+  counter-increment: family;
+  position: relative;
+  padding: 18px 18px 18px 58px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--card);
+}
+.family-prompts li::before {
+  content: counter(family, decimal-leading-zero);
+  position: absolute;
+  left: 18px;
+  top: 17px;
+  font-family: var(--serif);
+  font-weight: 700;
+  color: var(--gold-deep);
+}
+.family-prompts .q { display: block; font-family: var(--serif); font-size: 17px; line-height: 1.45; color: var(--plum-900); }
+.family-prompts .from { display: block; margin-top: 6px; font-size: 12px; font-weight: 650; color: var(--muted); }
+.family-prompts .write-lines { display: none; }
+.family-rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--teal-chip);
+  color: var(--teal-deep);
+  font-size: 14px;
+}
+.family-lessons { margin-top: 22px; }
+.family-lessons h3 { font-family: var(--serif); font-size: 18px; color: var(--plum-800); }
+.family-lesson-list { display: grid; gap: 10px; margin-top: 12px; padding: 0; list-style: none; }
+.family-lesson-list a { font-weight: 700; color: var(--plum-800); text-decoration: underline; text-underline-offset: 3px; }
+.family-lesson-list .m { display: block; margin-top: 3px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+
+.notes-group { display: grid; gap: 13px; }
+.notes-group + .notes-group { margin-top: 22px; }
+.notes-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.notes-label {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--gold-ink);
+}
+.message-sort { font-size: 12px; font-weight: 650; color: var(--muted); }
+.compassion-note.pinned { border-color: rgba(176, 141, 46, .55); background: var(--card); }
+.message-wall-state .btn { margin: 14px auto 0; }
+
+@media print {
+  .family-prompts li { break-inside: avoid; border: 1px solid #999; }
+  /* Ruled lines under each prompt — real borders, because backgrounds do not print. */
+  .family-prompts .write-lines { display: grid; gap: 0; margin-top: 8px; }
+  .family-prompts .write-lines span { display: block; height: 28px; border-bottom: 1px solid #BBB; }
+  .family-rule { background: none; border: 1px solid #999; color: #000; }
+  .family-lesson-list a { text-decoration: none; color: #000; }
+  .compassion-card { border: 1px solid #999; break-inside: avoid; }
+}

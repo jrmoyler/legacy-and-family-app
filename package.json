@@ -6,7 +6,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "check": "python3 tools/verify_compassion_hub.py && python3 tools/verify_library_assets.py && node tools/verify_stripe_checkout.js && node tools/verify_rendered_screens.mjs && node --check app.js && node --check api/create-checkout-session.js && node --check api/checkout-session.js && node --check api/stripe-catalog.js"
+    "check": "python3 tools/verify_compassion_hub.py && python3 tools/verify_library_assets.py && node tools/verify_stripe_checkout.js && node tools/verify_rendered_screens.mjs && node --check app.js && node --check sw.js && node --check api/create-checkout-session.js && node --check api/checkout-session.js && node --check api/stripe-catalog.js && node --check api/restore.js && node --check api/download.js && node --check api/_library.js && node --check api/_restore-token.js && node --check api/_stripe-session.js && node --check tools/upload_private_library.mjs && node --check tools/mint_restore_code.js"
   },
   "dependencies": {
     "stripe": "22.5.0"
