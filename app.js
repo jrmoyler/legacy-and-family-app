@@ -13,7 +13,8 @@ import {
 } from './src/data.js';
 import {
   state, loadState, saveState, toggleSection, toggleLesson,
-  addToCart, removeFromCart, unlockPurchasedProducts,
+  addToCart, removeFromCart, unlockPurchasedProducts, addRestoreToken, decodeRestoreToken,
+  hasReadLesson, lessonPosition, setLessonPosition,
 } from './src/state.js';
 
 const view = $('#view');
@@ -69,21 +70,58 @@ function paint() {
 
 /** Full navigation: render, reset scroll, move focus to the new page. */
 function renderRoute() {
+  // The DOM still shows the page being left, so its reading position is exact.
+  saveLessonPosition();
+
   const route = parseHash();
   state.screen = route.screen;
   if (route.book) state.activeBook = route.book;
   if (route.lesson) state.activeLesson = route.lesson;
   if (route.product) state.activeProduct = route.product;
+  if (state.restoreStatus !== 'loading') {
+    state.restoreStatus = 'idle';
+    state.restoreMessage = '';
+  }
 
   paint();
-  window.scrollTo(0, 0);
+  window.scrollTo(0, resumeScrollY());
   view.focus({ preventScroll: true });
   document.title = titleFor(state.screen);
+  trackLessonScroll();
 
   if (state.screen === 'messages' && state.compassionMessagesStatus === 'idle') {
     loadCompassionMessages();
   }
   if (state.screen === 'checkout-success') verifyCheckoutSession();
+}
+
+/* ==========================================================================
+   Continue reading — a scroll fraction per lesson, never any text
+   ========================================================================== */
+let lessonScrollTimer = 0;
+
+function lessonScrollFraction() {
+  const max = document.documentElement.scrollHeight - window.innerHeight;
+  return max > 0 ? window.scrollY / max : 0;
+}
+
+function saveLessonPosition() {
+  if (state.screen !== 'lesson') return;
+  setLessonPosition(state.activeLesson, lessonScrollFraction());
+}
+
+/** While a lesson is open, note the reading position every two seconds. */
+function trackLessonScroll() {
+  window.clearInterval(lessonScrollTimer);
+  if (state.screen === 'lesson') lessonScrollTimer = window.setInterval(saveLessonPosition, 2000);
+}
+
+/** Where a freshly opened page should sit: part-read lessons resume. */
+function resumeScrollY() {
+  if (state.screen !== 'lesson' || hasReadLesson(state.activeLesson)) return 0;
+  const pos = lessonPosition(state.activeLesson);
+  if (pos <= 0.05) return 0;
+  return Math.round(pos * (document.documentElement.scrollHeight - window.innerHeight));
 }
 
 /** In-place update after a state change: keep scroll position and focus. */
@@ -114,10 +152,12 @@ const TITLES = {
   disclaimer: 'Disclaimers',
   status: 'Production status',
   messages: 'Messages of Compassion',
+  library: 'Your library',
 };
 
 let compassionLoadRequest = 0;
 let checkoutVerifyRequest = 0;
+let restoreRequest = 0;
 
 function timeoutSignal(milliseconds) {
   const controller = new AbortController();
@@ -207,6 +247,8 @@ async function verifyCheckoutSession() {
     if (!response.ok || !payload.paid) throw new Error(payload.error || 'Payment could not be confirmed.');
     if (requestId !== checkoutVerifyRequest) return;
     state.checkoutProducts = unlockPurchasedProducts(payload.productIds);
+    addRestoreToken(payload.restoreToken);
+    state.checkoutRestoreToken = decodeRestoreToken(payload.restoreToken) ? payload.restoreToken : '';
     state.checkoutEmail = payload.customerEmail || '';
     state.checkoutStatus = 'ready';
   } catch (error) {
@@ -217,6 +259,61 @@ async function verifyCheckoutSession() {
       : error.message || 'Payment could not be confirmed.';
   }
   refresh();
+}
+
+/**
+ * Reopen purchases from a restore code or a Stripe session id. The server
+ * verifies either one and answers with product ids and a signed code; only
+ * those are kept. Nothing about the buyer is sent or stored.
+ */
+async function restorePurchases(form) {
+  const code = String(new FormData(form).get('code') || '').trim();
+  if (!code) {
+    state.restoreStatus = 'error';
+    state.restoreMessage = 'Paste the restore code from your checkout page, or the Stripe session id.';
+    refresh();
+    return;
+  }
+
+  const requestId = ++restoreRequest;
+  state.restoreStatus = 'loading';
+  state.restoreMessage = '';
+  refresh();
+
+  try {
+    const response = await fetch('/api/restore', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+      cache: 'no-store',
+      signal: timeoutSignal(15000),
+      body: JSON.stringify({ code }),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || 'That code could not be restored.');
+    if (requestId !== restoreRequest) return;
+    addRestoreToken(payload.restoreToken);
+    const restored = unlockPurchasedProducts(payload.productIds);
+    state.restoreStatus = 'success';
+    state.restoreMessage = restored.length
+      ? `Restored ${restored.map((id) => productById(id)?.title).filter(Boolean).join(', ')} on this browser.`
+      : 'That code is valid, but it holds nothing this shop sells now.';
+  } catch (error) {
+    if (requestId !== restoreRequest) return;
+    state.restoreStatus = 'error';
+    state.restoreMessage = error.name === 'AbortError'
+      ? 'The restore service took too long to respond. Please try again.'
+      : error.message || 'That code could not be restored.';
+  }
+  refresh();
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    toast('Restore code copied. Keep it somewhere safe.');
+  } catch {
+    toast('Select the code and copy it by hand.');
+  }
 }
 
 function updateCompassionForm(form) {
@@ -274,9 +371,8 @@ document.addEventListener('click', (event) => {
   const hit = (selector) => event.target.closest(selector);
   let el;
 
-  /* --- fire-and-forget feedback --- */
-  if ((el = hit('[data-toast]'))) {
-    toast(el.dataset.toast);
+  if ((el = hit('[data-copy]'))) {
+    copyText(el.dataset.copy);
     return;
   }
 
@@ -353,6 +449,13 @@ document.addEventListener('change', (event) => {
 });
 
 document.addEventListener('submit', async (event) => {
+  const restore = event.target.closest('[data-restore-form]');
+  if (restore) {
+    event.preventDefault();
+    restorePurchases(restore);
+    return;
+  }
+
   const form = event.target.closest('[data-compassion-form]');
   if (!form) return;
   event.preventDefault();
@@ -406,4 +509,11 @@ document.addEventListener('submit', async (event) => {
 loadState();
 overlayRoot.innerHTML = overlays();
 window.addEventListener('hashchange', renderRoute);
+window.addEventListener('pagehide', saveLessonPosition);
 renderRoute();
+
+// Offline shell for the installed app. HTTPS only (localhost previews skip it),
+// and the worker never caches /api/ or any PDF or EPUB.
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}

@@ -22,6 +22,8 @@ APP_PATHS = [
     ROOT / "manifest.webmanifest",
     ROOT / "README.md",
     ROOT / "app.js",
+    ROOT / "sw.js",
+    ROOT / "LICENSE",
     ROOT / "app.css",
     ROOT / "vercel.json",
     ROOT / "package.json",
@@ -75,9 +77,8 @@ def verify_sources() -> None:
     )
     require("logo: '/assets/library/brand/a-cup-of-compassion-logo.jpg?v=official-brand-20260818'" in data, "Official logo is not wired")
     require("cupMark" not in screens and "cupMark" not in (ROOT / "src" / "components.js").read_text(encoding="utf-8"), "A substitute logo remains in the app UI")
-    require(index.count("a-cup-of-compassion-logo.jpg") == 2, "Official logo is not used for browser install branding")
     manifest = (ROOT / "manifest.webmanifest").read_text(encoding="utf-8")
-    require("a-cup-of-compassion-logo.jpg" in manifest and "icon.svg" not in manifest, "Manifest does not use the official logo")
+    verify_install_branding(index, json.loads(manifest))
     require("COVER_ASSET_REVISION = 'pamella-grear-20260818'" in data, "Corrected cover revision is missing")
     require(index.count("?v=pamella-grear-20260818") == 2, "Social cover previews are not revisioned")
     require("socialUrl: 'https://www.instagram.com/acupofcompassion'" in data, "Instagram URL is incorrect")
@@ -87,8 +88,14 @@ def verify_sources() -> None:
     require(data.count("price: INDIVIDUAL_EBOOK_PRICE") == 12, "Expected 12 canonical individual-price uses")
     require("id: 'compassion-legacy-journal'" in data, "Compassion Legacy Journal is missing")
     require("originalPrice: 37" in data and "price: 25" in data, "Journal sale pricing is incorrect")
-    require("The-Compassion-Legacy-Journal.pdf" in data, "Journal PDF is not wired to the marketplace")
+    require("paidEditions('The-Compassion-Legacy-Journal', ['pdf'])" in data, "Journal PDF is not wired to the marketplace")
     require("product.free || owned" in screens, "Paid downloads are not gated behind ownership")
+    require("/api/download?" in screens, "Paid downloads do not go through the signed download API")
+    require("data-toast" not in screens and "Check your email" not in screens, "A free product still promises an email that never comes")
+    require(
+        "LEGAL_POSITIONING = 'We do not prepare legal documents. We help families arrive prepared.'" in data,
+        "The legal positioning is no longer verbatim",
+    )
     require("autocomplete=\"cc-number\"" not in screens, "A fake card-entry form remains")
     require("data-purchase" not in screens and "data-purchase" not in app, "A simulated purchase action remains")
     require("data-stripe-checkout" in screens, "Stripe checkout action is missing")
@@ -102,7 +109,9 @@ def verify_sources() -> None:
     require("price_data" in stripe_create and "unit_amount: product.unitAmount" in stripe_create, "Server-authoritative Stripe pricing is missing")
     require("payment_method_types" not in stripe_create, "Stripe payment methods should be managed dynamically in Dashboard")
     require("process.env.STRIPE_SECRET_KEY" in stripe_create and "process.env.STRIPE_SECRET_KEY" in stripe_verify, "Stripe secret key env wiring is missing")
-    require("payment_status !== 'paid'" in stripe_verify, "Checkout success is not verified as paid")
+    stripe_session = (ROOT / "api" / "_stripe-session.js").read_text(encoding="utf-8")
+    require("paidSession(sessionId)" in stripe_verify and "payment_status !== 'paid'" in stripe_session,
+            "Checkout success is not verified as paid")
     require(stripe_catalog.count("unitAmount: 799") == 6, "Stripe catalogue is missing the six $7.99 eBooks")
     require("unitAmount: 2500" in stripe_catalog, "Stripe catalogue prices are incomplete")
     # Nothing may be charged before it can be delivered. The $149 group licence
@@ -122,7 +131,22 @@ def verify_sources() -> None:
     require("No account or analytics" in screens, "Qualified welcome privacy text is missing")
     require("loadCompassionMessages" in app, "Message loading behavior is missing")
     require("COMPASSION_API_URL" in app, "Message API wiring is missing")
-    require(app.count("signal: timeoutSignal(") == 4, "Browser network requests need timeouts")
+    require(app.count("signal: timeoutSignal(") == 5, "Browser network requests need timeouts")
+    require("fetch('/api/restore'" in app, "Restore codes are not wired")
+    require("location.protocol === 'https:'" in app and "serviceWorker.register('./sw.js')" in app,
+            "The service worker must register over HTTPS only")
+    worker = (ROOT / "sw.js").read_text(encoding="utf-8")
+    require("url.pathname.startsWith('/api/')" in worker and "(pdf|epub)" in worker,
+            "The service worker must never cache the API or any PDF or EPUB")
+    state_source = (ROOT / "src" / "state.js").read_text(encoding="utf-8")
+    require("lessonProgress" in state_source and "{ read: previous?.read === true, pos: next }" in state_source,
+            "Lesson progress must persist only a read flag and a position")
+    license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+    require("Pam Grear Publishing LLC" in license_text and "MIT" not in license_text,
+            "LICENSE must be the publisher's proprietary licence")
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+    require(readme.startswith("# The Compassion Hub") and "restore code" in readme.lower(),
+            "README must lead with the product name and explain restore codes")
     require("rpc/submit_compassion_message" in edge, "Atomic submission RPC is not wired")
     require("countQuery" not in edge, "Non-atomic count-then-insert flow remains")
     require("serviceFetch" in edge and "AbortSignal.timeout" in edge, "Edge requests need timeouts")
@@ -133,6 +157,25 @@ def verify_sources() -> None:
     json.loads((ROOT / "vercel.json").read_text(encoding="utf-8"))
     package = json.loads((ROOT / "package.json").read_text(encoding="utf-8"))
     require(package.get("dependencies", {}).get("stripe") == "22.5.0", "Stripe SDK is not pinned to the verified release")
+
+
+def verify_install_branding(index: str, manifest: dict) -> None:
+    """Square PNG icons for home screens; the wide logo stays in the app chrome."""
+    from PIL import Image
+
+    require(manifest.get("start_url") == "./#/home", "Installed app should open on Home, past the welcome splash")
+    require("orientation" not in manifest, "Manifest must not lock orientation")
+    sizes = {}
+    for icon in manifest.get("icons", []):
+        path = ROOT / icon["src"].removeprefix("./")
+        require(path.is_file() and icon["type"] == "image/png", f"Manifest icon {icon['src']} is missing or not PNG")
+        with Image.open(path) as image:
+            require(image.width == image.height, f"Manifest icon {icon['src']} is not square")
+            require(icon["sizes"] == f"{image.width}x{image.height}", f"Manifest icon {icon['src']} has the wrong sizes")
+            sizes[image.width] = True
+    require({192, 512} <= set(sizes), "Manifest needs 192 and 512 pixel icons")
+    require('rel="apple-touch-icon" href="./assets/icons/apple-touch-icon.png"' in index, "Apple touch icon must be square")
+    require("a-cup-of-compassion-logo.jpg" not in index, "The wide logo is not an install icon")
 
 
 def verify_live_api() -> None:

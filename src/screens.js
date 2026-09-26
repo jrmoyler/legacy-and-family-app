@@ -11,18 +11,19 @@ import {
   BRAND, BOOKS, BOOK_STATUS, bookById,
   PRODUCTS, CATEGORIES, productById,
   LESSONS, FEATURED_LESSON, LESSON_TOTAL, lessonById,
-  INVENTORY, INVENTORY_PRIVACY, STATUS_GROUPS,
+  INVENTORY, INVENTORY_PRIVACY, STATUS_GROUPS, FAMILY_PROMPTS, FAMILY_PAPER_RULE,
   ABOUT_AUTHOR, PERSONAL_INVITATION, LEGAL_POSITIONING,
 } from './data.js';
 import {
   state, inventoryProgress, sectionDone, hasReadLesson, inCart, inLibrary,
+  lessonsReadCount, lessonPosition, continueLessonId, restoreTokenFor,
 } from './state.js';
 import {
   backButton, brandFooter, brandLogo, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
 } from './components.js';
 import {
   chevron, goldCheck, bigCheck,
-  starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon, messageIcon,
+  starOutline, printIcon, shieldIcon, cartIcon, bookIcon, booksIcon, peopleIcon, messageIcon,
 } from './icons.js';
 
 export const screens = {};
@@ -56,40 +57,76 @@ const productArtwork = (product, size = 'card') => {
   return `<img class="product-art ${size}" src="${esc(covers[0])}" alt="${esc(product.title)} cover" loading="lazy">`;
 };
 
-const editionDownloadPanel = (editions, heading = 'Download editions') => {
+/**
+ * Every edition a product delivers. Free editions carry static `assets`
+ * paths; paid editions carry only their formats, because the files live in
+ * private storage and are reached through /api/download.
+ */
+const editionsForProduct = (product) => {
+  const editions = [];
+  const add = (item, title, source) => {
+    if (source?.assets) {
+      editions.push({ item, title, assets: source.assets, formats: ['pdf', 'epub'].filter((f) => source.assets[f]) });
+    } else if (source?.editions) {
+      editions.push({ item, title, formats: source.editions.formats });
+    }
+  };
+  if (product.book) {
+    const book = bookById(product.book);
+    add(book?.id, book?.title, book);
+  }
+  add(product.id, product.title, product);
+  (product.includes || []).map(bookById).filter(Boolean)
+    .forEach((book) => add(book.id, book.title, book));
+  (product.includesProducts || []).map(productById).filter(Boolean)
+    .forEach((included) => add(included.id, included.title, included));
+  return editions;
+};
+
+/** An owned product that delivers this book, if any. */
+const ownedProductForBook = (bookId) => PRODUCTS.find((p) => inLibrary(p.id)
+  && editionsForProduct(p).some((edition) => edition.item === bookId));
+
+/**
+ * Where one edition downloads from: the public file for a free edition, or the
+ * signed-download endpoint (carrying this browser's restore code) for a paid
+ * one. Never a static path for a paid edition — those files are not public.
+ */
+export function editionHref(product, edition, format) {
+  if (edition.assets) return edition.assets[format] || '';
+  const token = restoreTokenFor(product.id);
+  if (!token) return '';
+  const query = new URLSearchParams({ product: product.id, item: edition.item, format, token });
+  return `/api/download?${query}`;
+}
+
+const FORMAT_LABELS = {
+  pdf: 'PDF <small>print edition</small>',
+  epub: 'EPUB <small>e-reader edition</small>',
+};
+
+const editionDownloadPanel = (product, heading = 'Download editions', { editions = editionsForProduct(product), anchor = '' } = {}) => {
   if (!editions.length) return '';
+  const needsRestore = editions.some((edition) => !edition.assets) && !restoreTokenFor(product.id);
   return `
-  <section class="download-panel" id="downloads" aria-label="${esc(heading)}">
+  <section class="download-panel"${anchor ? ` id="${esc(anchor)}"` : ''} aria-label="${esc(heading)}">
     <span class="cap">Your files</span>
     <h2>${esc(heading)}</h2>
-    <p class="download-intro">Choose PDF for print and fixed layout, or EPUB for comfortable reading on an e-reader or phone.</p>
+    <p class="download-intro">${needsRestore
+      ? 'This browser remembers the purchase but not its restore code, so the files cannot be fetched yet. Enter the code from your checkout page in <a href="#/library">your library</a> to reopen them.'
+      : 'Choose PDF for print and fixed layout, or EPUB for comfortable reading on an e-reader or phone.'}</p>
     <div class="download-list">
-      ${editions.map(({ title, assets }) => `
+      ${editions.map((edition) => `
       <div class="download-row">
-        <span class="download-title">${esc(title)}</span>
+        <span class="download-title">${esc(edition.title)}</span>
         <span class="download-actions">
-          ${assets.pdf ? `<a class="download-link" href="${esc(assets.pdf)}" download>PDF <small>print edition</small></a>` : ''}
-          ${assets.epub ? `<a class="download-link" href="${esc(assets.epub)}" download>EPUB <small>e-reader edition</small></a>` : ''}
+          ${needsRestore && !edition.assets
+            ? `<a class="download-link" href="${hrefFor('library')}">Restore <small>to download</small></a>`
+            : edition.formats.map((format) => `<a class="download-link" href="${esc(editionHref(product, edition, format))}" download>${FORMAT_LABELS[format]}</a>`).join('')}
         </span>
       </div>`).join('')}
     </div>
   </section>`;
-};
-
-const editionsForProduct = (product) => {
-  const editions = [];
-  if (product.book) {
-    const book = bookById(product.book);
-    if (book?.assets) editions.push({ title: book.title, assets: book.assets });
-  }
-  if (product.assets) editions.push({ title: product.title, assets: product.assets });
-  (product.includes || []).map(bookById).filter(Boolean).forEach((book) => {
-    if (book.assets) editions.push({ title: book.title, assets: book.assets });
-  });
-  (product.includesProducts || []).map(productById).filter(Boolean).forEach((includedProduct) => {
-    if (includedProduct.assets) editions.push({ title: includedProduct.title, assets: includedProduct.assets });
-  });
-  return editions;
 };
 
 /* ==========================================================================
@@ -123,24 +160,13 @@ screens.welcome = () => `
 /* ==========================================================================
    Home
    ========================================================================== */
-screens.home = () => {
+/** The Legacy Inventory progress ring, shared by Home and the library. */
+function inventoryCard() {
   const done = inventoryProgress();
   const total = INVENTORY.length;
   const pct = Math.round((done / total) * 100);
   const circumference = 2 * Math.PI * 40;
-  const read = state.lessonsRead.length;
-
   return `
-  <div class="shell">
-    <header class="page-head">
-      <div>
-        <p class="bless">${esc(BRAND.blessing)}</p>
-        <h1>${esc(BRAND.name)}</h1>
-      </div>
-      <span class="home-brand" aria-hidden="true">${brandLogo('home-logo')}</span>
-    </header>
-
-    <div class="home-grid">
       <a class="progress-card span-all" href="${hrefFor('legacy')}">
         <span class="ring" aria-hidden="true">
           <svg width="96" height="96" viewBox="0 0 96 96">
@@ -157,6 +183,33 @@ screens.home = () => {
           <span class="sub">What you own, what you hold, and what you want said. Work through it one section at a time — nothing you write goes anywhere but your own paper.</span>
           <span class="go">Open the worksheet ${chevron('#D0AC4C')}</span>
         </span>
+      </a>`;
+}
+
+screens.home = () => {
+  const read = lessonsReadCount();
+  const owned = PRODUCTS.filter((p) => inLibrary(p.id)).length;
+
+  return `
+  <div class="shell">
+    <header class="page-head">
+      <div>
+        <p class="bless">${esc(BRAND.blessing)}</p>
+        <h1>${esc(BRAND.name)}</h1>
+      </div>
+      <span class="home-brand" aria-hidden="true">${brandLogo('home-logo')}</span>
+    </header>
+
+    <div class="home-grid">
+      ${inventoryCard()}
+
+      <a class="market-cta library-cta span-all" href="${hrefFor('library')}">
+        <span class="icon-tile">${booksIcon(24, '#2A2113', 2)}</span>
+        <span class="body">
+          <span class="t">Your library</span>
+          <span class="s">${owned ? `${owned} purchase${owned === 1 ? '' : 's'} on this device` : 'Free reading and downloads'} · restore books bought in another browser</span>
+        </span>
+        <span class="library-cta-go">Open library ${chevron('#2A2113')}</span>
       </a>
 
       <h2 class="star-row span-all">${starOutline(18, '#B08D2E')} Where to begin</h2>
@@ -189,19 +242,22 @@ screens.home = () => {
   </div>`;
 };
 
+/** "Start here" — or "Continue" once a lesson is part-read and not finished. */
 function featuredLessonCard() {
-  const lesson = FEATURED_LESSON;
+  const continuing = lessonById(continueLessonId());
+  const lesson = continuing || FEATURED_LESSON;
+  const pct = Math.round(lessonPosition(lesson.id) * 100);
   return `
-  <a class="feature-card" href="${hrefForLesson(lesson.id)}">
+  <a class="feature-card${continuing ? ' continuing' : ''}" href="${hrefForLesson(lesson.id)}">
     <span class="feature-cover">
       <span class="pill pill-gold">Free to read</span>
       <span class="cover-logo" aria-hidden="true">${brandLogo('feature-logo')}</span>
-      <span class="kicker">Start here</span>
+      <span class="kicker">${continuing ? 'Continue reading' : 'Start here'}</span>
       <span class="t">${esc(lesson.title)}</span>
     </span>
     <span class="feature-meta">
       <span>${esc(lesson.mins)} · ${esc(lesson.from)}</span>
-      <span class="upd">${hasReadLesson(lesson.id) ? 'Read ✓' : 'New'}</span>
+      <span class="upd">${continuing ? `${pct}% read` : hasReadLesson(lesson.id) ? 'Read ✓' : 'New'}</span>
     </span>
   </a>`;
 }
@@ -218,6 +274,20 @@ const readableMessageDate = (value) => {
   return Number.isNaN(date.getTime()) ? '' : messageDate.format(date);
 };
 
+/** The welcome notes seeded by the migration, signed by the Hub itself. */
+const isPinnedNote = (item) => item.display_name === 'The Compassion Hub' && item.community === 'A note from us';
+const noteTime = (item) => new Date(item.created_at).getTime() || 0;
+
+const compassionNote = (item, pinned = false) => `
+    <article class="compassion-note${pinned ? ' pinned' : ''}">
+      <span class="quote-mark" aria-hidden="true">“</span>
+      <blockquote>${esc(item.message)}</blockquote>
+      <footer>
+        <span><strong>${esc(item.display_name)}</strong>${item.community ? ` <span class="community">${esc(item.community)}</span>` : ''}</span>
+        <time datetime="${esc(item.created_at)}">${esc(readableMessageDate(item.created_at))}</time>
+      </footer>
+    </article>`;
+
 export function compassionMessageList() {
   if (state.compassionMessagesStatus === 'loading') {
     return '<p class="message-wall-state">Gathering messages…</p>';
@@ -225,22 +295,37 @@ export function compassionMessageList() {
   if (state.compassionMessagesStatus === 'error') {
     return `
     <div class="message-wall-state message-wall-error">
-      <p>The public messages could not be loaded.</p>
+      <p><strong>The wall is quiet for a moment.</strong> We could not reach the messages just now — nothing is wrong on your side, and every kind word already shared is still here.</p>
       <button class="btn btn-ghost btn-auto" data-load-messages>Try again</button>
     </div>`;
   }
-  if (!state.compassionMessages.length) {
-    return '<p class="message-wall-state">No approved messages yet. Be the first to leave a little kindness.</p>';
+  const messages = state.compassionMessages;
+  if (!messages.length) {
+    return `
+    <div class="message-wall-state">
+      <p>No notes are on the wall yet. The first kind word is often the one someone needed most.</p>
+      <button class="btn btn-ghost btn-auto" data-load-messages>Check again</button>
+    </div>`;
   }
-  return state.compassionMessages.map((item) => `
-    <article class="compassion-note">
-      <span class="quote-mark" aria-hidden="true">“</span>
-      <blockquote>${esc(item.message)}</blockquote>
-      <footer>
-        <span><strong>${esc(item.display_name)}</strong>${item.community ? ` <span class="community">${esc(item.community)}</span>` : ''}</span>
-        <time datetime="${esc(item.created_at)}">${esc(readableMessageDate(item.created_at))}</time>
-      </footer>
-    </article>`).join('');
+
+  const pinned = messages.filter(isPinnedNote);
+  const community = messages.filter((item) => !isPinnedNote(item))
+    .sort((a, b) => noteTime(b) - noteTime(a));
+  return `
+    ${pinned.length ? `
+    <div class="notes-group pinned-notes">
+      <h3 class="notes-label">Pinned · from us</h3>
+      ${pinned.map((item) => compassionNote(item, true)).join('')}
+    </div>` : ''}
+    <div class="notes-group">
+      <div class="notes-label-row">
+        <h3 class="notes-label">From the community</h3>
+        <span class="message-sort">Sorted: Newest first</span>
+      </div>
+      ${community.length
+        ? community.map((item) => compassionNote(item)).join('')
+        : '<p class="message-wall-state">No community notes are up yet. Yours could be the first — every note is read by a person before it appears.</p>'}
+    </div>`;
 }
 
 screens.messages = () => `
@@ -357,7 +442,8 @@ screens.book = () => {
   const book = bookById(state.activeBook);
   const status = BOOK_STATUS[book.status];
   const product = book.status === 'ready' ? PRODUCTS.find((p) => p.book === book.id) : null;
-  const owned = product ? inLibrary(product.id) : false;
+  const owner = ownedProductForBook(book.id);
+  const owned = Boolean(owner);
 
   return `
   <header class="dark-head">
@@ -412,7 +498,9 @@ screens.book = () => {
 
     <div>
       <img class="book-detail-cover" src="${esc(book.cover)}" alt="${esc(book.title)} cover">
-      ${owned && book.assets ? editionDownloadPanel([{ title: book.title, assets: book.assets }], 'Download this book') : ''}
+      ${owner ? editionDownloadPanel(owner, 'Download this book', {
+        editions: editionsForProduct(owner).filter((edition) => edition.item === book.id),
+      }) : ''}
       ${product ? `
       <div class="aside-card" style="margin-top:16px">
         <span class="cap">${owned ? 'In your library' : 'Available now'}</span>
@@ -481,7 +569,7 @@ screens.read = () => {
         <p class="bless">Free, and free to share</p>
         <h1>Read</h1>
       </div>
-      <span class="count">${state.lessonsRead.length} of ${LESSON_TOTAL} read</span>
+      <span class="count">${lessonsReadCount()} of ${LESSON_TOTAL} read</span>
     </header>
 
     <a class="featured-card" href="${hrefForLesson(featured.id)}">
@@ -492,19 +580,29 @@ screens.read = () => {
 
     <div class="section-row"><h2>More from the series</h2></div>
     <div class="lesson-list">
-      ${rest.map((lesson) => `
-      <a class="lesson ${hasReadLesson(lesson.id) ? 'read' : ''}" href="${hrefForLesson(lesson.id)}">
-        <span class="glyph" aria-hidden="true">${hasReadLesson(lesson.id) ? bigCheck(16) : esc(lesson.glyph)}</span>
-        <span class="body">
-          <span class="t">${esc(lesson.title)}</span>
-          <span class="m">${esc(lesson.mins)} · ${esc(lesson.from)}${hasReadLesson(lesson.id) ? ' · Read' : ''}</span>
-        </span>
-        ${chevron('#7A6114')}
-      </a>`).join('')}
+      ${rest.map(lessonRow).join('')}
     </div>
     <div class="screen-foot"></div>
   </div>`;
 };
+
+function lessonProgressLabel(lesson) {
+  if (hasReadLesson(lesson.id)) return ' · Read';
+  const pos = lessonPosition(lesson.id);
+  return pos > 0.05 ? ` · ${Math.round(pos * 100)}% read` : '';
+}
+
+function lessonRow(lesson) {
+  return `
+      <a class="lesson ${hasReadLesson(lesson.id) ? 'read' : ''}" href="${hrefForLesson(lesson.id)}">
+        <span class="glyph" aria-hidden="true">${hasReadLesson(lesson.id) ? bigCheck(16) : esc(lesson.glyph)}</span>
+        <span class="body">
+          <span class="t">${esc(lesson.title)}</span>
+          <span class="m">${esc(lesson.mins)} · ${esc(lesson.from)}${lessonProgressLabel(lesson)}</span>
+        </span>
+        ${chevron('#7A6114')}
+      </a>`;
+}
 
 screens.lesson = () => {
   const lesson = lessonById(state.activeLesson);
@@ -632,11 +730,137 @@ screens.legacy = () => {
 
     <div class="print-row no-print">
       <button class="btn btn-gold btn-auto" data-print>${printIcon('#2A2113')}Print or save as PDF</button>
-      <p class="fine">Printing gives you the full worksheet with room to write. Fill it in on paper, or on a document that stays on your own device.</p>
+      <p class="fine">Printing gives you the full worksheet — and the family prompts below — with room to write. Fill it in on paper, or on a document that stays on your own device.</p>
     </div>
+
+    ${familySitting()}
 
     ${disclaimerNote('legal')}
     ${brandFooter()}
+    <div class="screen-foot"></div>
+  </div>`;
+};
+
+/** Absolute link to a lesson when running in a browser, for reading off paper. */
+const shareableLessonLink = (id) => (typeof location === 'undefined'
+  ? hrefForLesson(id)
+  : `${location.origin}${location.pathname}${hrefForLesson(id)}`);
+
+/** "Sit with your people" — conversation prompts to take through on paper. */
+function familySitting() {
+  return `
+    <section class="family-kit" aria-labelledby="family-kit-title">
+      <div class="section-row">
+        <h2 id="family-kit-title">Sit with your people</h2>
+        <span class="count">${FAMILY_PROMPTS.length} prompts</span>
+      </div>
+      <p class="family-lede">Gather the people who will carry this out, put the printed worksheet on the table, and take one question at a time. There is no need to finish in one sitting.</p>
+      <ol class="family-prompts">
+        ${FAMILY_PROMPTS.map((prompt) => `
+        <li>
+          <span class="q">${esc(prompt.text)}</span>
+          <span class="from">From ${esc(prompt.from)}</span>
+          <span class="write-lines" aria-hidden="true"><span></span><span></span><span></span><span></span></span>
+        </li>`).join('')}
+      </ol>
+      <p class="family-rule">${shieldIcon('#23636A')}<strong>${esc(FAMILY_PAPER_RULE)}</strong></p>
+
+      <div class="family-lessons">
+        <h3>Open a lesson together</h3>
+        <p class="fine">Each free lesson has its own link. Send it ahead, or read it aloud when you sit down.</p>
+        <ul class="family-lesson-list">
+          ${LESSONS.map((lesson) => `
+          <li>
+            <a href="${hrefForLesson(lesson.id)}">${esc(lesson.title)}</a>
+            <span class="m">${esc(lesson.mins)} · <span class="link-text">${esc(shareableLessonLink(lesson.id))}</span></span>
+          </li>`).join('')}
+        </ul>
+      </div>
+    </section>`;
+}
+
+/* ==========================================================================
+   Your library — everything this browser can open, and a way to restore more
+   ========================================================================== */
+
+/** Restore form, shared by the library and checkout confirmation. */
+function restoreForm(idSuffix) {
+  const status = state.restoreStatus;
+  return `
+  <form class="restore-form" data-restore-form novalidate>
+    <label class="message-field" for="restore-code-${idSuffix}">
+      <span>Restore code or Stripe session id</span>
+    </label>
+    <div class="restore-row">
+      <input class="field" id="restore-code-${idSuffix}" name="code" type="text" required maxlength="800"
+             autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="ch1.…  or  cs_live_…"
+             data-focus-key="restore-code-${idSuffix}">
+      <button class="btn btn-dark btn-auto" type="submit"${status === 'loading' ? ' disabled' : ''}>${status === 'loading' ? 'Restoring…' : 'Restore'}</button>
+    </div>
+    <p class="fine">A restore code reopens books you bought. It cannot open your Legacy Inventory, because that never leaves the paper.</p>
+    <p class="restore-status ${esc(status)}" data-restore-status role="status" aria-live="polite">${esc(state.restoreMessage)}</p>
+  </form>`;
+}
+
+screens.library = () => {
+  const owned = PRODUCTS.filter((p) => inLibrary(p.id));
+  const freeDownloads = PRODUCTS.filter((p) => p.free && p.buyable);
+
+  return `
+  <div class="shell library-page">
+    <header class="page-head">
+      <div>
+        <p class="bless">Kept on this device</p>
+        <h1>Your library</h1>
+      </div>
+      <span class="count">${owned.length} purchase${owned.length === 1 ? '' : 's'}</span>
+    </header>
+
+    <div class="home-grid">
+      ${inventoryCard()}
+    </div>
+
+    <div class="section-row"><h2>Your books</h2></div>
+    ${owned.length ? `
+    <div class="library-owned">
+      ${owned.map((product) => `
+      <article class="library-item">
+        <a class="library-item-head" href="${hrefForProduct(product.id)}">
+          <span class="thumb">${productArtwork(product)}</span>
+          <span><span class="t">${esc(product.title)}</span><span class="k">${esc(product.kind)}</span></span>
+        </a>
+        ${editionDownloadPanel(product, product.title)}
+      </article>`).join('')}
+    </div>` : `
+    <div class="library-empty">
+      <span class="icon-tile it-gold" aria-hidden="true">${booksIcon(22, '#96771F', 1.9)}</span>
+      <p>Books you buy will live here, on this device. Use a restore code after checkout to bring them to another browser.</p>
+      <a class="btn btn-ghost btn-auto" href="${hrefFor('shop')}">Browse the shop</a>
+    </div>`}
+
+    <section class="aside-card restore-card" aria-labelledby="restore-title">
+      <span class="cap">Bought in another browser?</span>
+      <h2 id="restore-title">Restore your purchases</h2>
+      <p>Paste the restore code from your checkout page. No account, and nothing about you is stored.</p>
+      ${restoreForm('library')}
+    </section>
+
+    <div class="section-row"><h2>Free reading</h2><span class="count">${lessonsReadCount()} of ${LESSON_TOTAL} read</span></div>
+    <div class="lesson-list">
+      ${LESSONS.map(lessonRow).join('')}
+    </div>
+
+    <div class="section-row"><h2>Free downloads</h2></div>
+    <div class="library-free">
+      ${freeDownloads.map((product) => (product.assets
+        ? editionDownloadPanel(product, product.title)
+        : `
+      <a class="market-cta" href="${hrefForProduct(product.id)}">
+        <span class="icon-tile">${printIcon('#2A2113')}</span>
+        <span class="body"><span class="t">${esc(product.title)}</span><span class="s">${esc(product.note)}</span></span>
+        ${chevron('#2A2113')}
+      </a>`)).join('')}
+    </div>
     <div class="screen-foot"></div>
   </div>`;
 };
@@ -705,9 +929,11 @@ screens.product = () => {
   const owned = inLibrary(product.id);
   const carted = inCart(product.id);
   const included = (product.includes || []).map(bookById).filter(Boolean);
+  // A printable product prints only itself: everything else steps aside.
+  const np = product.card ? ' no-print' : '';
 
   return `
-  <header class="dark-head">
+  <header class="dark-head${np}">
     <span class="glow" aria-hidden="true"></span>
     <div class="shell">
       ${backButton('shop', 'Shop')}
@@ -718,7 +944,7 @@ screens.product = () => {
   </header>
 
   <div class="shell product-layout">
-    <div class="media">
+    <div class="media${np}">
       <div class="pd-cover${coverForProduct(product) ? ' has-art' : ''}">
         ${productArtwork(product, 'detail')}
         <span class="cap">${esc(product.kind.toLowerCase())}</span>
@@ -726,22 +952,24 @@ screens.product = () => {
     </div>
 
     <div>
-      <div class="pd-price-row">
+      <div class="pd-price-row${np}">
         <span class="p">${product.buyable ? (product.free ? 'Free' : priceMarkup(product, 'price-stack detail')) : money(product.price)}</span>
         <span class="note">${product.buyable ? esc(product.note) : esc(product.status)}</span>
       </div>
 
       ${productActions(product, { owned, carted })}
 
+      ${product.card ? compassionCard(lessonById(product.card)) : ''}
+
       ${product.free || owned
-        ? editionDownloadPanel(editionsForProduct(product), product.includes?.length || product.includesProducts?.length ? 'Files included in this set' : 'Download editions')
+        ? editionDownloadPanel(product, product.includes?.length || product.includesProducts?.length ? 'Files included in this set' : 'Download editions', { anchor: 'downloads' })
         : `<section class="download-lock" aria-label="Downloads available after purchase">
             ${shieldIcon('#4A2A63')}
-            <div><strong>Downloads unlock after purchase</strong><span>Paid PDFs and EPUBs are no longer exposed before checkout.</span></div>
+            <div><strong>Downloads unlock after purchase</strong><span>Paid PDFs and EPUBs are kept in private storage, not on the public site. After checkout each file comes through a link that works for about a minute.</span></div>
           </section>`}
 
-      <h2 class="about-cap">About this</h2>
-      <p class="about-copy">${esc(product.about)}</p>
+      <h2 class="about-cap${np}">About this</h2>
+      <p class="about-copy${np}">${esc(product.about)}</p>
 
       ${included.length ? `
       <div class="prose">
@@ -756,6 +984,21 @@ screens.product = () => {
   </div>`;
 };
 
+/** The 40-Second Compassion Card: a lesson's practice, laid out to print. */
+function compassionCard(lesson) {
+  if (!lesson) return '';
+  return `
+  <section class="compassion-card" aria-labelledby="compassion-card-title">
+    <span class="cap">${esc(BRAND.series)} · free to copy and share</span>
+    <h2 id="compassion-card-title">The 40-Second Compassion Card</h2>
+    ${verse(lesson.verse)}
+    <p>${esc(lesson.body[0])}</p>
+    <h3>Four things to do with forty seconds</h3>
+    <ol>${lesson.practice.map((line) => `<li>${esc(line)}</li>`).join('')}</ol>
+    <p class="compassion-card-foot">${esc(BRAND.author)} · ${esc(BRAND.site)}</p>
+  </section>`;
+}
+
 function productActions(product, { owned, carted }) {
   if (!product.buyable) {
     return `
@@ -764,11 +1007,17 @@ function productActions(product, { owned, carted }) {
     </div>`;
   }
   if (product.free) {
+    // Free means delivered right here: a file that downloads, or a page that
+    // prints. Nothing is promised by email.
+    const primary = product.assets?.pdf
+      ? `<a class="btn btn-gold" href="${esc(product.assets.pdf)}" download>Download the free PDF</a>`
+      : product.card
+        ? `<button class="btn btn-gold" data-print>${printIcon('#2A2113')}Print the card</button>`
+        : '';
     return `
-    <div class="pd-actions">
-      ${product.goTo
-        ? `<a class="btn btn-gold" href="${hrefFor(product.goTo)}">Open the worksheet</a>`
-        : '<button class="btn btn-gold" data-toast="Check your email — the download is on its way.">Get it free</button>'}
+    <div class="pd-actions no-print">
+      ${primary}
+      ${product.goTo ? `<a class="btn btn-dark" href="${hrefFor(product.goTo)}">Open the worksheet</a>` : ''}
       <div class="row2">
         <a class="btn btn-ghost" href="${hrefFor('read')}">Read the series free</a>
         <a class="btn btn-ghost" href="${hrefFor('shop')}">Back to the shop</a>
@@ -778,7 +1027,7 @@ function productActions(product, { owned, carted }) {
   return `
   <div class="pd-actions">
     ${owned
-      ? '<a class="btn btn-dark" href="#downloads">Open your downloads</a>'
+      ? `<a class="btn btn-dark" href="${hrefFor('library')}">Open your library</a>`
       : `<button class="btn btn-gold" data-buy="${esc(product.id)}" data-focus-key="buy">${carted ? 'Continue to checkout' : `Buy now · ${money(product.price)}`}</button>`}
   </div>`;
 }
@@ -926,9 +1175,15 @@ screens['checkout-success'] = () => {
           <button class="btn btn-gold btn-auto" data-go="checkout-success">Try confirmation again</button>
           <a class="btn btn-ghost btn-auto" href="${hrefFor('shop')}">Return to the shop</a>
         </div>
+        <div class="checkout-restore">
+          <h2>Already have a restore code?</h2>
+          ${restoreForm('checkout')}
+        </div>
       </section>
     </div>`;
   }
+
+  const token = state.checkoutRestoreToken;
 
   return `
   <div class="shell checkout-result-wrap">
@@ -940,9 +1195,17 @@ screens['checkout-success'] = () => {
       <ul class="checkout-purchased">
         ${purchased.map((product) => `<li><span>${esc(product.title)}</span><a href="${hrefForProduct(product.id)}">Open downloads</a></li>`).join('')}
       </ul>
+      ${token ? `
+      <div class="restore-code">
+        <span class="cap">Your restore code</span>
+        <code class="restore-code-value">${esc(token)}</code>
+        <button class="btn btn-ghost btn-auto" data-copy="${esc(token)}">Copy the code</button>
+        <p>Save this restore code. It reopens these books on another browser. It cannot open your Legacy Inventory because that never leaves the paper.</p>
+      </div>` : `
+      <p class="restore-missing">A restore code could not be issued for this order just now. Write to <a href="mailto:${esc(BRAND.email)}">${esc(BRAND.email)}</a> with your Stripe receipt and we will send one.</p>`}
       <div class="checkout-result-actions">
-        <a class="btn btn-gold btn-auto" href="${hrefFor('shop')}">Continue shopping</a>
-        <a class="btn btn-ghost btn-auto" href="${hrefFor('home')}">Return home</a>
+        <a class="btn btn-gold btn-auto" href="${hrefFor('library')}">Open your library</a>
+        <a class="btn btn-ghost btn-auto" href="${hrefFor('shop')}">Continue shopping</a>
       </div>
     </section>
   </div>`;
@@ -1033,7 +1296,8 @@ const DISCLAIMERS = [
     title: 'Your information stays yours',
     body: [
       'The Legacy Inventory deliberately has nothing to type into. It tells you what to gather and what to ask; you write the answers on paper or on a document that never leaves your own device.',
-      'This app has no account and no analytics. It remembers only which sections you have ticked and what is in your cart, kept in this browser’s local storage and readable by nobody but you. Clearing your browser data erases it.',
+      'This app has no account and no analytics. It remembers only which sections you have ticked, how far you have read, what is in your cart, and the restore codes for books you have bought — kept in this browser’s local storage and readable by nobody but you. Clearing your browser data erases it.',
+      'A restore code holds the ids of the books you bought and the date it expires, nothing else. It is how a purchase reopens in another browser without an account.',
       'We will never ask you to type an account number, a policy number, or the contents of a safe deposit box into a web form — not on this site, and not anywhere else.',
     ],
   },

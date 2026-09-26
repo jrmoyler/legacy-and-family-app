@@ -1,0 +1,31 @@
+name: check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install verifier dependencies
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q poppler-utils
+          python -m pip install --quiet pillow
+      - run: npm ci
+      # Fails if any paid PDF or EPUB is present under assets/library or
+      # linked as a static file, among the other release checks.
+      - run: npm run check

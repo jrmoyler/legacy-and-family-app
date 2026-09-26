@@ -1,0 +1,7 @@
+# Paid PDF and EPUB editions are served only by api/download.js, from private
+# storage. Even if one is committed here again by mistake, it must never deploy
+# as a public static file. Only the free Legacy Inventory Workbook ships.
+/assets/library/pdf/*
+!/assets/library/pdf/A-Cup-of-Compassion-Legacy-Inventory-Workbook.pdf
+/assets/library/epub/*
+!/assets/library/epub/A-Cup-of-Compassion-Legacy-Inventory-Workbook.epub

@@ -85,6 +85,7 @@ export const TAB_OF = {
   checkout: 'shop',
   'checkout-success': 'shop',
   messages: 'messages',
+  library: 'home',
 };
 
 export const COMPASSION_API_URL =
@@ -103,10 +104,19 @@ export const BOOK_STATUS = {
   drafting: { label: 'Being written', tone: 'neutral' },
 };
 
-const bookAssets = (slug) => ({
+/**
+ * Free editions are ordinary static files anyone can download.
+ *
+ * Paid editions are not on the public site at all. They sit in private storage
+ * and are served one signed link at a time by /api/download once a purchase is
+ * proven, so the browser only knows which formats exist (api/_library.js maps
+ * each one to its stored file).
+ */
+const freeAssets = (slug) => ({
   epub: `/assets/library/epub/${slug}.epub`,
   pdf: `/assets/library/pdf/${slug}.pdf`,
 });
+const paidEditions = (slug, formats = ['pdf', 'epub']) => ({ slug, formats });
 
 // Bump this whenever corrected cover artwork is published. These assets are
 // intentionally stable on disk for EPUB verification, while the revisioned
@@ -118,7 +128,7 @@ export const BOOKS = [
   {
     id: 'benefit', seriesLabel: 'Book 1', title: 'The Benefit of Having Compassion', designId: 'DAHPs1e2Od0',
     pages: 25, words: '≈4,200 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
-    assets: bookAssets('A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion'),
+    editions: paidEditions('A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion'),
     cover: coverImage('A-Cup-of-Compassion-01-The-Benefit-of-Having-Compassion'),
     blurb: 'The doorway into the series: compassion as a practice you can learn, model, and make visible.',
     anchor: { text: 'If ye have faith as a grain of mustard seed, ye shall say unto this mountain, Remove hence to yonder place; and it shall remove; and nothing shall be impossible unto you.', ref: 'Matthew 17:20 · KJV' },
@@ -128,7 +138,7 @@ export const BOOKS = [
   {
     id: 'nurtured', seriesLabel: 'Book 2', title: 'Are You Born in Compassion or Nurtured in It?', designId: 'DAHPtMCqeWs',
     pages: 22, words: '≈1,600 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
-    assets: bookAssets('A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion'),
+    editions: paidEditions('A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion'),
     cover: coverImage('A-Cup-of-Compassion-02-Born-or-Nurtured-in-Compassion'),
     blurb: 'The question the whole series turns on, put to real people and answered in their own words.',
     anchor: { text: 'But the fruit of the Spirit is love, joy, peace, longsuffering, gentleness, goodness, faith, Meekness, temperance: against such there is no law.', ref: 'Galatians 5:22-23 · KJV' },
@@ -138,7 +148,7 @@ export const BOOKS = [
   {
     id: 'legacy', seriesLabel: 'Book 3', title: 'Compassion and Legacy', designId: 'DAHPxYb83RQ',
     pages: 26, words: '≈1,800 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
-    assets: bookAssets('A-Cup-of-Compassion-03-Compassion-and-Legacy'),
+    editions: paidEditions('A-Cup-of-Compassion-03-Compassion-and-Legacy'),
     cover: coverImage('A-Cup-of-Compassion-03-Compassion-and-Legacy'), flagship: true,
     blurb: 'Compassion that outlives you has to be written down. A practical invitation to prepare with purpose.',
     anchor: { text: 'A good man leaveth an inheritance to his children’s children: and the wealth of the sinner is laid up for the just.', ref: 'Proverbs 13:22 · KJV' },
@@ -148,7 +158,7 @@ export const BOOKS = [
   {
     id: 'confusion', seriesLabel: 'Book 4', title: 'Compassion or Confusion?', designId: 'DAHPpCDXy-s',
     pages: 15, words: '≈3,100 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
-    assets: bookAssets('A-Cup-of-Compassion-04-Compassion-or-Confusion'),
+    editions: paidEditions('A-Cup-of-Compassion-04-Compassion-or-Confusion'),
     cover: coverImage('A-Cup-of-Compassion-04-Compassion-or-Confusion'),
     blurb: 'A reflective guide to recognizing the difference between compassionate love, self-abandonment, and patterns that diminish your voice.',
     anchor: null,
@@ -157,7 +167,7 @@ export const BOOKS = [
   {
     id: 'commitment', seriesLabel: 'Book 5', title: 'Compassion and Commitment', designId: 'DAHPpbNcwyE',
     pages: 16, words: '≈3,200 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
-    assets: bookAssets('A-Cup-of-Compassion-05-Compassion-and-Commitment'),
+    editions: paidEditions('A-Cup-of-Compassion-05-Compassion-and-Commitment'),
     cover: coverImage('A-Cup-of-Compassion-05-Compassion-and-Commitment'),
     blurb: 'A faith-centered relationship guide to practicing compassion, commitment, honest communication, and daily repair.',
     anchor: { text: 'Two are better than one; because they have a good reward for their labour… and a threefold cord is not quickly broken.', ref: 'Ecclesiastes 4:9-12 · KJV' },
@@ -167,7 +177,7 @@ export const BOOKS = [
   {
     id: 'companionship', seriesLabel: 'Book 6', title: 'Compassion and Companionship', designId: 'DAHQDC0Itq0',
     pages: 16, words: '≈3,000 words', status: 'ready', price: INDIVIDUAL_EBOOK_PRICE,
-    assets: bookAssets('A-Cup-of-Compassion-06-Compassion-and-Companionship'),
+    editions: paidEditions('A-Cup-of-Compassion-06-Compassion-and-Companionship'),
     cover: coverImage('A-Cup-of-Compassion-06-Compassion-and-Companionship'),
     blurb: 'Companionship is compassion that stays: friendship that has carried weight across decades, distance, and ordinary days.',
     anchor: { text: 'It is of the LORD’s mercies that we are not consumed, because his compassions fail not. They are new every morning: great is thy faithfulness.', ref: 'Lamentations 3:22-23 · KJV' },
@@ -196,7 +206,7 @@ export const PRODUCTS = [
     buyable: true,
     free: true,
     goTo: 'legacy',
-    assets: bookAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
+    assets: freeAssets('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
     cover: coverImage('A-Cup-of-Compassion-Legacy-Inventory-Workbook'),
     note: '10 pages · PDF & EPUB',
     about: 'Pulled straight out of Compassion and Legacy: every asset, policy, document, heirloom, and story your family will need you to have written down. Open it, print it, and fill it in on paper or on your own device. Nothing you write is sent anywhere.',
@@ -210,7 +220,9 @@ export const PRODUCTS = [
     cats: ['Free'],
     buyable: true,
     free: true,
-    note: 'One page · bulletin insert',
+    // The card is the practice from this lesson, printed straight from the page.
+    card: 'forty-seconds',
+    note: 'One page · print it here',
     about: 'A single page for a church bulletin or a break room wall: what forty seconds of real attention does for a person, and the four things to do with them.',
   },
   {
@@ -270,7 +282,7 @@ export const PRODUCTS = [
     badge: '',
     cats: ['Companions'],
     buyable: true,
-    assets: bookAssets('A-Cup-of-Compassion-Companion-Workbook'),
+    editions: paidEditions('A-Cup-of-Compassion-Companion-Workbook'),
     cover: coverImage('A-Cup-of-Compassion-Companion-Workbook'),
     note: '28 pages · PDF & EPUB',
     about: 'Seven parts for every book in the series: overview, key concepts, reflection, a guided exercise, journaling pages, a discussion guide, and action steps. Built for kitchen tables and small groups alike.',
@@ -284,7 +296,7 @@ export const PRODUCTS = [
     badge: 'SALE',
     cats: ['Companions'],
     buyable: true,
-    assets: { pdf: '/assets/library/pdf/The-Compassion-Legacy-Journal.pdf' },
+    editions: paidEditions('The-Compassion-Legacy-Journal', ['pdf']),
     cover: coverImage('The-Compassion-Legacy-Journal'),
     note: '13 pages · illustrated PDF · twelve guided letters',
     about: 'Twelve guided letters for the people you love, the generations you may never meet, and the people trusted to carry your legacy forward. Each prompt helps you preserve the meaning behind the plans, property, stories, and acts of compassion you leave behind.',
@@ -659,6 +671,47 @@ export const INVENTORY = [
     note: 'A plan nobody can find is not a plan.',
   },
 ];
+
+/* ==========================================================================
+   Sit with your people (Bible §8 content spines — series language only)
+   ========================================================================== */
+
+/**
+ * Conversation starters for a family sitting with the printed worksheet. Each
+ * one restates a theme already in a book's spine or a free lesson; none adds
+ * new teaching. They are asked out loud and answered on paper — the app has
+ * nowhere to type an answer, and stores none.
+ */
+export const FAMILY_PROMPTS = [
+  {
+    // §8 Book 3 spine: "What happens to a family with no plan"; Proverbs 13:22 anchor.
+    from: 'Compassion and Legacy',
+    text: 'Legacy is more than money. Besides property, what do we want our children’s children to inherit from this family?',
+  },
+  {
+    // §8 Book 2 spine: "Compassion as a choice you keep making".
+    from: 'Are You Born in Compassion or Nurtured in It?',
+    text: 'Who taught each of us compassion — were we born in it, or nurtured into it? Tell one story about the person who showed you.',
+  },
+  {
+    // §8 Book 1 spine: "The forty seconds that measurably change a patient’s outcome".
+    from: 'The Benefit of Having Compassion',
+    text: 'When did forty seconds of someone’s undivided attention change a hard day for you? Who in this family needs those forty seconds now?',
+  },
+  {
+    // §8 Book 5 spine: "A relationship is a daily practice"; honest communication and repair.
+    from: 'Compassion and Commitment',
+    text: 'What is one conversation this family keeps putting off? Who needs to be in the room, and when will we have it?',
+  },
+  {
+    // §8 Book 6 spine: "Milestones, memory, and showing up"; lesson “Compassionship”.
+    from: 'Compassion and Companionship',
+    text: 'Who has carried weight for this family across the years? Name them, and say how we want them thanked or remembered.',
+  },
+];
+
+/** Printed under the prompts, verbatim. */
+export const FAMILY_PAPER_RULE = 'Write names, accounts, and wishes on paper. This app will not store them.';
 
 /* ==========================================================================
    Library status
