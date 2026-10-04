@@ -155,7 +155,7 @@ function renderOverview() {
   <h2>Consoles</h2>
   <div class="adm-row">
     <a class="adm-btn" href="https://mail.google.com/" target="_blank" rel="noopener">Gmail</a>
-    <a class="adm-btn" href="https://supabase.com/dashboard/project/zfpjgedcjdhxvdbthikt" target="_blank" rel="noopener">Supabase project</a>
+    <a class="adm-btn" href="https://supabase.com/dashboard/project/qxeadbfvsagupoykirer" target="_blank" rel="noopener">Supabase project</a>
     <a class="adm-btn" href="https://dashboard.stripe.com/" target="_blank" rel="noopener">Stripe</a>
     <a class="adm-btn" href="https://vercel.com/dashboard" target="_blank" rel="noopener">Vercel</a>
     <a class="adm-btn" href="/api/stripe-status" target="_blank" rel="noopener">Stripe status check</a>
