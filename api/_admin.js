@@ -28,7 +28,7 @@ const SESSION_COOKIE = 'ch_admin';
 const STATE_COOKIE = 'ch_admin_state';
 const SESSION_HOURS = 12;
 const STATE_MINUTES = 10;
-const DEFAULT_SUPABASE_URL = 'https://zfpjgedcjdhxvdbthikt.supabase.co';
+const DEFAULT_SUPABASE_URL = 'https://qxeadbfvsagupoykirer.supabase.co';
 
 const GOOGLE_SCOPES = [
   'openid',

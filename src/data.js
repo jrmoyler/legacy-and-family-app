@@ -197,7 +197,7 @@ export const TAB_OF = {
 };
 
 export const COMPASSION_API_URL =
-  'https://zfpjgedcjdhxvdbthikt.supabase.co/functions/v1/compassion-messages';
+  'https://qxeadbfvsagupoykirer.supabase.co/functions/v1/compassion-messages';
 
 export const INDIVIDUAL_EBOOK_PRICE = 7.99;
 

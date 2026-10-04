@@ -232,11 +232,31 @@ handle). It is linked from the sidebar and from the series page.
 
 `#/messages` reads approved notes and accepts new submissions through the
 `compassion-messages` Supabase Edge Function in project
-`zfpjgedcjdhxvdbthikt`. New messages are rate-limited, validated, stripped of
+`qxeadbfvsagupoykirer`. New messages are rate-limited, validated, stripped of
 contact details, and stored as pending. They appear publicly only after an
 editor approves them — in the [admin dashboard](#admin-dashboard) or by setting
 `approved = true` in Supabase. The browser never receives a secret
 or service-role key.
+
+A half-written message is saved on the visitor's device as they type, so
+leaving the page loses nothing. After sending, the note is listed under
+**Your messages** with *Waiting for review* until it appears on the public
+wall, then *Published*. That list is on the device only (the last ten notes);
+the app has no member accounts.
+
+**Setting up the Supabase project (once).** The project is
+`qxeadbfvsagupoykirer` (Pamella's own). It needs the two migrations in
+`supabase/migrations/` and the `compassion-messages` Edge Function, deployed
+with JWT verification off as `supabase/config.toml` says:
+
+```bash
+supabase link --project-ref qxeadbfvsagupoykirer
+supabase db push
+supabase functions deploy compassion-messages --no-verify-jwt
+supabase secrets set COMPASSION_ALLOWED_ORIGIN=https://www.acupofcompassion.com
+```
+
+Until then the wall shows "The public messages could not be loaded."
 
 ## Admin dashboard
 

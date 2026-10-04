@@ -6,7 +6,7 @@
  */
 
 import { $, $$ } from './src/dom.js';
-import { screens, compassionMessageList } from './src/screens.js';
+import { screens, compassionMessageList, mySharedMessages } from './src/screens.js';
 import { sidebar, appbar, tabbar, overlays, hrefFor } from './src/components.js';
 import { mountPlayer } from './src/player.js';
 import { mountMargaret } from './src/margaret.js';
@@ -18,6 +18,7 @@ import {
   state, loadState, saveState, toggleSection, toggleLesson,
   addToCart, removeFromCart, markOnboardingSeen,
   toggleSaved, setFormat, unlockPurchasedProducts,
+  saveMessageDraft, recordSharedMessage, forgetSharedMessage,
 } from './src/state.js';
 
 const view = $('#view');
@@ -112,8 +113,11 @@ function renderRoute() {
   view.focus({ preventScroll: true });
   document.title = titleFor(state.screen);
 
-  if (state.screen === 'messages' && state.compassionMessagesStatus === 'idle') {
-    loadCompassionMessages();
+  if (state.screen === 'messages') {
+    /* A restored draft may already be complete enough to send. */
+    const form = view.querySelector('[data-compassion-form]');
+    if (form) updateCompassionForm(form);
+    if (state.compassionMessagesStatus === 'idle') loadCompassionMessages();
   }
   if (state.screen === 'checkout-success') verifyCheckoutSession();
   syncAppbar();
@@ -190,8 +194,20 @@ async function loadCompassionMessages() {
   if (state.screen === 'messages') {
     const list = view.querySelector('[data-compassion-list]');
     if (list) list.innerHTML = compassionMessageList();
+    renderMySharedMessages();
   }
 }
+
+function renderMySharedMessages() {
+  const mine = view.querySelector('[data-my-messages]');
+  if (mine) mine.innerHTML = mySharedMessages();
+}
+
+const compassionFormValues = (form) => ({
+  displayName: form.elements.displayName.value,
+  community: form.elements.community.value,
+  message: form.elements.message.value,
+});
 
 async function startStripeCheckout(button) {
   if (!state.cart.length || button.disabled) return;
@@ -625,6 +641,12 @@ document.addEventListener('click', (event) => {
     return;
   }
 
+  if ((el = hit('[data-forget-message]'))) {
+    forgetSharedMessage(Number(el.dataset.forgetMessage));
+    renderMySharedMessages();
+    return;
+  }
+
   /* --- plain navigation from a button --- */
   if ((el = hit('[data-go]'))) {
     event.preventDefault();
@@ -634,7 +656,9 @@ document.addEventListener('click', (event) => {
 
 document.addEventListener('input', (event) => {
   const form = event.target.closest('[data-compassion-form]');
-  if (form) updateCompassionForm(form);
+  if (!form) return;
+  updateCompassionForm(form);
+  saveMessageDraft(compassionFormValues(form));
 });
 
 document.addEventListener('change', (event) => {
@@ -673,7 +697,11 @@ document.addEventListener('submit', async (event) => {
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.error || 'Please try again in a moment.');
 
+    recordSharedMessage(compassionFormValues(form));
+    /* reset() would restore the draft the page was rendered with. */
     form.reset();
+    for (const name of ['displayName', 'community', 'message']) form.elements[name].value = '';
+    renderMySharedMessages();
     setCompassionFormStatus(
       form,
       'success',
