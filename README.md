@@ -66,6 +66,10 @@ source.
 | `api/_stripe.js` | Shared key handling, site-URL resolution, and failure logging |
 | `api/_catalog.js` | Server-authoritative product names and prices |
 | `api/margaret.js` | Same-origin proxy to Margaret's language-model provider |
+| `admin.html`, `admin.js`, `admin.css` | Private admin dashboard at `/admin` |
+| `api/admin.js` | Admin API: alerts, Gmail, message-wall moderation (session-gated) |
+| `api/admin-auth.js` | Google sign-in for the admin dashboard |
+| `api/_admin.js`, `api/_gmail.js` | Encrypted session cookie, Google tokens, Gmail helpers |
 | `package.json` | Stripe server SDK and verification command |
 
 ## Screens
@@ -230,8 +234,64 @@ handle). It is linked from the sidebar and from the series page.
 `compassion-messages` Supabase Edge Function in project
 `zfpjgedcjdhxvdbthikt`. New messages are rate-limited, validated, stripped of
 contact details, and stored as pending. They appear publicly only after an
-editor sets `approved = true` in Supabase. The browser never receives a secret
+editor approves them — in the [admin dashboard](#admin-dashboard) or by setting
+`approved = true` in Supabase. The browser never receives a secret
 or service-role key.
+
+## Admin dashboard
+
+`/admin` is a private dashboard for the site owner. It is not linked from the
+app and tells search engines not to index it.
+
+**What it does**
+
+- **Overview and alerts** — messages waiting for review, unread email, Stripe
+  missing or in test mode, Supabase unreachable, Margaret offline. It refreshes
+  every two minutes and puts the alert count in the browser tab.
+- **Gmail** — search, read, mark read or unread, star, archive, trash and
+  restore, reply, and send new mail from the owner's own address.
+- **Message wall** — approve, unpublish, or delete visitor notes in Supabase,
+  instead of editing rows in the Studio SQL editor.
+
+**How access works**
+
+The owner signs in with Google. The same sign-in grants the
+`gmail.modify` permission (read, label, send, trash; not permanent delete), so
+there is one login, not two. Only addresses in `ADMIN_EMAILS` get in, and that
+list is re-checked on every request. The Google refresh token is kept only in an
+AES-256-GCM-encrypted, HttpOnly cookie that expires after 12 hours; there is no
+database of sessions. Supabase is reached server-side with the service-role key,
+which never goes to the browser.
+
+**Setup (once)**
+
+1. *Google Cloud Console → APIs & Services.* Create a project, enable the
+   **Gmail API**, and set up the OAuth consent screen as **External**. Add your
+   Gmail address as a **test user** and add the scope
+   `https://www.googleapis.com/auth/gmail.modify`.
+2. *Credentials → Create OAuth client ID → Web application.* Add the
+   authorized redirect URI `https://www.acupofcompassion.com/api/admin-auth`
+   (and one per preview domain you want to sign in on).
+3. *Supabase → Project settings → API.* Copy the `service_role` key, and run the
+   migration `supabase/migrations/20261004120000_admin_dashboard_delete_messages.sql`
+   (`supabase db push`) so the dashboard can delete rejected notes.
+4. *Vercel → Project → Settings → Environment Variables* (Production):
+
+   | Variable | Value |
+   |---|---|
+   | `GOOGLE_CLIENT_ID` | from step 2 |
+   | `GOOGLE_CLIENT_SECRET` | from step 2 |
+   | `ADMIN_EMAILS` | your Gmail address (comma-separate to add more) |
+   | `ADMIN_SESSION_SECRET` | 32+ random characters, e.g. `openssl rand -base64 48` |
+   | `SUPABASE_SERVICE_ROLE_KEY` | from step 3 |
+   | `PUBLIC_SITE_URL` | `https://www.acupofcompassion.com` (recommended) |
+
+5. Redeploy, open `/admin`, and choose **Sign in with Google**.
+
+While the Google app is in *Testing* mode, Google expires its grant after seven
+days, so you will be asked to sign in again weekly. Publishing the consent
+screen removes that, but Gmail's scopes then need Google's verification.
+Rotating `ADMIN_SESSION_SECRET` signs everyone out immediately.
 
 ## The Compassion Player
 

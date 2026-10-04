@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Admin — The Compassion Hub</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#3A2150">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=Spectral:wght@500;600&display=swap" rel="stylesheet">
+<link rel="icon" href="./assets/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="stylesheet" href="./admin.css">
+</head>
+<body>
+<header class="adm-bar">
+  <a class="adm-brand" href="/admin">The Compassion Hub <span>Admin</span></a>
+  <div class="adm-who" id="who"></div>
+</header>
+<nav class="adm-tabs" id="tabs" aria-label="Dashboard sections" hidden></nav>
+<main class="adm-main" id="view" tabindex="-1"><p class="adm-muted">Loading…</p></main>
+<div class="adm-toast" id="toast" role="status" aria-live="polite"></div>
+<noscript><p class="adm-main">The dashboard needs JavaScript.</p></noscript>
+<script type="module" src="./admin.js"></script>
+</body>
+</html>
