@@ -14,7 +14,7 @@ from pathlib import Path
 
 
 ROOT = Path(__file__).resolve().parents[1]
-API_URL = "https://zfpjgedcjdhxvdbthikt.supabase.co/functions/v1/compassion-messages"
+API_URL = "https://qxeadbfvsagupoykirer.supabase.co/functions/v1/compassion-messages"
 COVER_ASSET_REVISION = "20260818-pamella-grear-2"
 PORTRAIT_PATH = ROOT / "assets" / "network" / "pamella-grear.jpg"
 EXPECTED_PORTRAIT_SHA256 = "d0a5bb32357cec6172897842b8208ec4f664b0c6b8916f06303c42d6d8813aa9"
