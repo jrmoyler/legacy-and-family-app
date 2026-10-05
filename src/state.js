@@ -25,6 +25,10 @@ const defaults = () => ({
   formats: {},
   category: 'Books',
   onboardingSeen: false,
+  /* Messages of Compassion: a half-written note, and the notes this device has
+     shared. Both are the visitor's own public words, kept on this device only. */
+  messageDraft: { displayName: '', community: '', message: '' },
+  sharedMessages: [],
 });
 
 export const state = {
@@ -49,6 +53,31 @@ const isValidProduct = (id) => PRODUCTS.some((p) => p.id === id && p.buyable && 
 const isSavableProduct = (id) => PRODUCTS.some((p) => p.id === id && p.buyable);
 const isValidSection = (id) => INVENTORY.some((s) => s.id === id);
 const isValidLesson = (id) => LESSONS.some((l) => l.id === id);
+const MAX_SHARED_MESSAGES = 10;
+const text = (value, max) => (typeof value === 'string' ? value.slice(0, max) : '');
+
+function messageDraft(value) {
+  const draft = value && typeof value === 'object' ? value : {};
+  return {
+    displayName: text(draft.displayName, 60),
+    community: text(draft.community, 80),
+    message: text(draft.message, 500),
+  };
+}
+
+function sharedMessages(value) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item) => item && typeof item === 'object' && typeof item.message === 'string' && item.message.trim())
+    .map((item) => ({
+      displayName: text(item.displayName, 60),
+      community: text(item.community, 80),
+      message: text(item.message, 500),
+      sentAt: Number.isNaN(Date.parse(item.sentAt)) ? new Date(0).toISOString() : item.sentAt,
+    }))
+    .slice(0, MAX_SHARED_MESSAGES);
+}
+
 const strings = (value, keep) =>
   (Array.isArray(value) ? value.filter((v) => typeof v === 'string' && keep(v)) : []);
 
@@ -89,6 +118,8 @@ export function loadState() {
   state.formats = formatMap(saved.formats);
   if (CATEGORIES.includes(saved.category)) state.category = saved.category;
   state.onboardingSeen = saved.onboardingSeen === true;
+  state.messageDraft = messageDraft(saved.messageDraft);
+  state.sharedMessages = sharedMessages(saved.sharedMessages);
 }
 
 /**
@@ -108,6 +139,8 @@ export function saveState() {
         formats: state.formats,
         category: state.category,
         onboardingSeen: state.onboardingSeen,
+        messageDraft: state.messageDraft,
+        sharedMessages: state.sharedMessages,
       }),
     );
   } catch {
@@ -204,3 +237,28 @@ export function toggleSection(id) {
 
 /** Inventory sections gathered — drives the home progress ring. */
 export const inventoryProgress = () => state.inventoryDone.length;
+
+/* --------------------------------------------------------------------------
+   Messages of Compassion
+   -------------------------------------------------------------------------- */
+
+/** Keep what the visitor has typed so far, so leaving the page loses nothing. */
+export function saveMessageDraft(values) {
+  state.messageDraft = messageDraft(values);
+  saveState();
+}
+
+/** Remember a note this device sent, newest first, and clear the draft. */
+export function recordSharedMessage(values) {
+  state.sharedMessages = sharedMessages([
+    { ...messageDraft(values), sentAt: new Date().toISOString() },
+    ...state.sharedMessages,
+  ]);
+  state.messageDraft = messageDraft({});
+  saveState();
+}
+
+export function forgetSharedMessage(index) {
+  state.sharedMessages = state.sharedMessages.filter((_, i) => i !== index);
+  saveState();
+}

@@ -291,6 +291,39 @@ export function compassionMessageList() {
     </article>`).join('');
 }
 
+/** Whitespace-insensitive, the way the server normalises a submission. */
+const sameText = (a, b) => String(a).replace(/\s+/g, ' ').trim() === String(b).replace(/\s+/g, ' ').trim();
+
+/**
+ * The notes this device has shared. One counts as published once the same
+ * name and words appear on the public wall; until then it is waiting for review.
+ */
+export function mySharedMessages() {
+  if (!state.sharedMessages.length) return '';
+  const published = (item) => state.compassionMessages.some(
+    (note) => sameText(note.message, item.message) && sameText(note.display_name, item.displayName),
+  );
+  return `
+    <section class="my-messages" aria-labelledby="my-messages-title">
+      <h3 id="my-messages-title">Your messages</h3>
+      <p class="my-messages-note">Saved on this device so you can see what you shared.</p>
+      <ul>
+        ${state.sharedMessages.map((item, index) => {
+    const live = published(item);
+    return `
+        <li class="my-message">
+          <div class="my-message-head">
+            <span class="my-message-status${live ? ' is-live' : ''}">${live ? 'Published' : 'Waiting for review'}</span>
+            <time datetime="${esc(item.sentAt)}">${esc(readableMessageDate(item.sentAt))}</time>
+          </div>
+          <p>${esc(item.message)}</p>
+          <button class="my-message-forget" type="button" data-forget-message="${index}">Remove from this list</button>
+        </li>`;
+  }).join('')}
+      </ul>
+    </section>`;
+}
+
 screens.messages = () => `
   <div class="shell messages-page">
     <header class="message-page-head">
@@ -307,17 +340,17 @@ screens.messages = () => `
         <form data-compassion-form novalidate>
           <label class="message-field">
             <span>Your name</span>
-            <input class="field" name="displayName" autocomplete="name" minlength="2" maxlength="60" required placeholder="Your name">
+            <input class="field" name="displayName" autocomplete="name" minlength="2" maxlength="60" required placeholder="Your name" value="${esc(state.messageDraft.displayName)}">
           </label>
           <label class="message-field">
             <span>City or community <small>(optional)</small></span>
-            <input class="field" name="community" autocomplete="address-level2" maxlength="80" placeholder="City or community">
+            <input class="field" name="community" autocomplete="address-level2" maxlength="80" placeholder="City or community" value="${esc(state.messageDraft.community)}">
           </label>
           <label class="message-field">
             <span>Your message</span>
-            <textarea class="field message-textarea" name="message" minlength="15" maxlength="500" required placeholder="Write a short message of encouragement or hope…"></textarea>
+            <textarea class="field message-textarea" name="message" minlength="15" maxlength="500" required placeholder="Write a short message of encouragement or hope…">${esc(state.messageDraft.message)}</textarea>
           </label>
-          <div class="message-counter"><span data-message-count>0</span> / 500</div>
+          <div class="message-counter"><span data-message-count>${state.messageDraft.message.length}</span> / 500</div>
           <p class="message-requirements" id="message-requirements-hint">Enter your name, write at least 15 characters, and confirm the review notice to enable sharing.</p>
 
           <label class="message-consent">
@@ -333,7 +366,9 @@ screens.messages = () => `
           <button class="btn btn-message" type="submit" disabled aria-describedby="message-requirements-hint">Share compassion</button>
           <p class="message-review-note">${shieldIcon('#96771F')}Messages are reviewed before appearing.</p>
           <div class="message-form-status" data-message-status role="status" aria-live="polite" hidden></div>
+          <p class="message-draft-note">Your draft is saved on this device as you type.</p>
         </form>
+        <div data-my-messages>${mySharedMessages()}</div>
       </section>
 
       <section class="message-wall" aria-labelledby="message-wall-title">
