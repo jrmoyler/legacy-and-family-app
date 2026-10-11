@@ -218,7 +218,9 @@ def verify_sources() -> None:
     require("STRIPE_STATUS_TOKEN" in stripe_status, "The live Stripe probe must stay behind a token")
     require("payment_status !== 'paid'" in stripe_verify, "Checkout success is not verified as paid")
     require(stripe_catalog.count("unitAmount: 799") == 6, "Stripe catalogue is missing the six $7.99 eBooks")
-    require("unitAmount: 2500" in stripe_catalog and "unitAmount: 14900" in stripe_catalog, "Stripe catalogue prices are incomplete")
+    require("unitAmount: 2500" in stripe_catalog, "Stripe catalogue prices are incomplete")
+    # The group licence has no editions to deliver, so it must not be chargeable.
+    require("'church-license': {" not in stripe_catalog, "The undeliverable group licence is priced in the Stripe catalogue")
     require('class="cart-btn"' not in screens, "A duplicate screen-level cart button remains")
     require("data-cart-toggle" not in screens and "data-cart-toggle" not in app, "Duplicate purchase controls remain")
     require("screens.messages" in screens, "Messages page is missing")

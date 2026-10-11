@@ -24,6 +24,7 @@ import {
   backButton, brandFooter, brandLogo, coverArt, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
 } from './components.js';
 import { cover, coverMini } from './covers.js';
+import { dailyCup } from './cards.js';
 import {
   cupMark, cupMarkOnDark, chevron, goldCheck, bigCheck,
   starOutline, printIcon, shieldIcon, cartIcon, bookIcon, peopleIcon, messageIcon,
@@ -149,6 +150,38 @@ screens.welcome = () => `
 /* ==========================================================================
    Home
    ========================================================================== */
+/**
+ * The Daily Cup: one verse and one small practice, the same for everyone on a
+ * given day, with a one-tap card to send to someone who needs it.
+ */
+function dailyCupCard() {
+  const cup = dailyCup();
+  return `
+      <section class="daily-cup span-all" aria-labelledby="daily-cup-title">
+        <div class="daily-cup-head">
+          <span class="daily-cup-mark" aria-hidden="true">${cupMarkOnDark(30)}</span>
+          <div>
+            <p class="daily-cup-kicker">The Daily Cup · ${esc(cup.dateLabel)}</p>
+            <h2 id="daily-cup-title">Today’s cup of compassion</h2>
+          </div>
+        </div>
+        <blockquote class="daily-cup-verse">
+          <p>“${esc(cup.verse.text)}”</p>
+          <cite>${esc(cup.verse.ref)}</cite>
+        </blockquote>
+        ${cup.practice ? `
+        <div class="daily-cup-practice">
+          <span class="daily-cup-label">Today, pour one cup</span>
+          <p>${esc(cup.practice)}</p>
+          ${cup.lesson ? `<a href="${hrefForLesson(cup.lesson.id)}">From “${esc(cup.lesson.title)}” ${chevron('#D0AC4C')}</a>` : ''}
+        </div>` : ''}
+        <div class="daily-cup-actions">
+          <button class="btn btn-gold btn-auto" type="button" data-pass-it-on="daily">Pass it on</button>
+          <span class="daily-cup-hint">Makes a card to text or post. A new cup every morning.</span>
+        </div>
+      </section>`;
+}
+
 screens.home = () => {
   const done = inventoryProgress();
   const total = INVENTORY.length;
@@ -180,6 +213,8 @@ screens.home = () => {
           <a class="home-cover-link" href="${hrefFor('series')}">Explore the complete series ${chevron('#D0AC4C')}</a>
         </div>
       </section>
+
+      ${dailyCupCard()}
 
       <a class="progress-card span-all" href="${hrefFor('legacy')}">
         <span class="ring" aria-hidden="true">
@@ -288,6 +323,7 @@ export function compassionMessageList() {
         <span><strong>${esc(item.display_name)}</strong>${item.community ? ` <span class="community">${esc(item.community)}</span>` : ''}</span>
         <time datetime="${esc(item.created_at)}">${esc(readableMessageDate(item.created_at))}</time>
       </footer>
+      <button class="note-pass" type="button" data-pass-it-on="note" data-note-id="${esc(item.id)}" aria-label="Pass on this message from ${esc(item.display_name)} as a card">Pass it on</button>
     </article>`).join('');
 }
 
@@ -947,7 +983,9 @@ function productActions(product, { owned, carted }) {
     <div class="pd-actions">
       ${product.goTo
         ? `<a class="btn btn-gold" href="${hrefFor(product.goTo)}">Open the worksheet</a>`
-        : '<button class="btn btn-gold" data-toast="Check your email — the download is on its way.">Get it free</button>'}
+        : product.card
+          ? `<button class="btn btn-gold" type="button" data-pass-it-on="${esc(product.card)}">Download the card</button>`
+          : ''}
       <div class="row2">
         ${saveButton(product)}
         <a class="btn btn-ghost" href="${hrefFor('shop')}">Back to the shop</a>

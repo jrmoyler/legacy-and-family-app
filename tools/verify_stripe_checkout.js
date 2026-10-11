@@ -47,10 +47,12 @@ async function withSiteUrl(value, body) {
 
 async function run() {
   /* --- catalogue ------------------------------------------------------- */
-  assert.equal(Object.keys(STRIPE_CATALOG).length, 12, 'Expected twelve paid Stripe products');
+  assert.equal(Object.keys(STRIPE_CATALOG).length, 11, 'Expected eleven paid Stripe products');
   assert.equal(STRIPE_CATALOG.benefit.unitAmount, 799);
   assert.equal(STRIPE_CATALOG['compassion-legacy-journal'].unitAmount, 2500);
-  assert.equal(STRIPE_CATALOG['church-license'].unitAmount, 14900);
+  // The group licence has nothing to deliver yet, so it must not be chargeable.
+  assert.equal(STRIPE_CATALOG['church-license'], undefined, 'The undeliverable group licence is priced');
+  assert.equal(createCheckoutSession.requestedProducts({ items: ['church-license'] }), null);
 
   /* --- cart validation -------------------------------------------------- */
   assert.deepEqual(
@@ -72,7 +74,7 @@ async function run() {
   );
   assert.equal(
     createCheckoutSession.requestedProducts({ items: Object.keys(STRIPE_CATALOG) }).length,
-    12,
+    Object.keys(STRIPE_CATALOG).length,
     'The whole catalogue must fit in one cart',
   );
 
@@ -172,7 +174,7 @@ async function run() {
       assert.equal(status.payload.keyHadSurroundingWhitespace, true);
       assert.equal(status.payload.siteUrl, 'https://acupofcompassion.com');
       assert.equal(status.payload.apiVersion, Stripe.API_VERSION);
-      assert.equal(status.payload.catalogSize, 12);
+      assert.equal(status.payload.catalogSize, Object.keys(STRIPE_CATALOG).length);
       // The status endpoint must never hand back key material.
       assert.doesNotMatch(JSON.stringify(status.payload), /sk_test_abc123/);
       // The live probe stays shut without a token, so nobody can make this

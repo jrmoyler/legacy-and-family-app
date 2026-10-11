@@ -1047,6 +1047,112 @@ p a, .about-copy a { text-decoration: underline; }
   transition: transform .12s, box-shadow .15s;
 }
 .progress-card:active { transform: scale(.99); }
+
+/* --------------------------------------------------------------------------
+   The Daily Cup — the reason to open the app every morning
+   -------------------------------------------------------------------------- */
+.daily-cup {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  padding: 28px 26px 24px;
+  background:
+    radial-gradient(120% 90% at 100% 0%, rgba(208, 172, 76, .22), transparent 55%),
+    linear-gradient(160deg, var(--plum-700) 0%, var(--plum-900) 70%, var(--plum-950) 100%);
+  color: var(--on-dark);
+  box-shadow: var(--lift-lg);
+  border: 1px solid rgba(208, 172, 76, .35);
+}
+.daily-cup-head { display: flex; align-items: center; gap: 14px; }
+.daily-cup-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(208, 172, 76, .45);
+}
+.daily-cup-kicker {
+  font-family: var(--sans);
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+}
+.daily-cup h2 {
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: clamp(22px, 2.6vw, 28px);
+  color: var(--on-dark);
+  margin-top: 2px;
+}
+.daily-cup-verse { margin: 22px 0 0; }
+.daily-cup-verse p {
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: clamp(20px, 2.4vw, 27px);
+  line-height: 1.42;
+  color: #FBF6EA;
+  max-width: 46ch;
+}
+.daily-cup-verse cite {
+  display: block;
+  margin-top: 12px;
+  font-family: var(--sans);
+  font-style: normal;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--gold-soft);
+}
+.daily-cup-practice {
+  margin-top: 22px;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, .07);
+  border-left: 3px solid var(--gold-soft);
+}
+.daily-cup-label {
+  font-family: var(--sans);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--teal-light);
+}
+.daily-cup-practice p {
+  margin-top: 6px;
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.45;
+  color: var(--on-dark);
+}
+.daily-cup-practice a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gold-soft);
+}
+.daily-cup-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  margin-top: 22px;
+}
+.daily-cup-hint { font-size: 13px; color: var(--on-dark-soft); }
+.daily-cup .btn:focus-visible,
+.daily-cup a:focus-visible { outline-color: var(--gold-soft); }
+@media (min-width: 900px) {
+  .daily-cup { padding: 34px 38px 30px; }
+}
 @media (hover: hover) {
   .progress-card:hover { transform: translateY(-2px); box-shadow: var(--lift-lg), 0 26px 46px -26px rgba(23, 48, 36, .5); }
 }
@@ -2650,6 +2756,19 @@ p a, .about-copy a { text-decoration: underline; }
   color: var(--muted);
 }
 .compassion-note strong { color: var(--teal-deep); font-size: 14px; }
+.note-pass {
+  margin-top: 12px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(176, 141, 46, .5);
+  background: transparent;
+  font: 600 12.5px/1 var(--sans);
+  color: var(--gold-ink);
+  cursor: pointer;
+  transition: background var(--fast) var(--ease), color var(--fast) var(--ease);
+}
+.note-pass:hover { background: var(--gold); color: #fff; }
+.note-pass[data-busy] { opacity: .7; cursor: progress; }
 .compassion-note .community { margin-left: 9px; }
 .compassion-note time { white-space: nowrap; }
 .message-wall-state {
