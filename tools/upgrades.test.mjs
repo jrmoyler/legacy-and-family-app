@@ -223,3 +223,14 @@ test('an unreachable wall shows the Hub’s own notes, never just an error', () 
   assert.ok(!wall.includes('undefined'));
   state.compassionMessagesStatus = 'idle';
 });
+
+test('the admin list and project URL are read under their common names', async () => {
+  const admin = require('../api/_admin.js');
+  await withEnv({ ADMIN_EMAILS: undefined, ADMIN_EMAIL: 'Pamella@Example.com' }, () => {
+    assert.ok(admin.isAdminEmail('pamella@example.com'));
+    assert.ok(!admin.missingConfiguration().includes('ADMIN_EMAILS'));
+  });
+  await withEnv({ SUPABASE_URL: undefined, PROJECT_URL: 'https://other.supabase.co/' }, () => {
+    assert.equal(admin.supabaseUrl(), 'https://other.supabase.co');
+  });
+});

@@ -1,7 +1,7 @@
 'use strict';
 
 const {
-  DEFAULT_SUPABASE_URL, SESSION_COOKIE, accessToken, clearCookie, configuration, env,
+  SESSION_COOKIE, supabaseUrl, accessToken, clearCookie, configuration, env,
   missingConfiguration, readSession, reply,
 } = require('./_admin');
 const { attachments, bodyText, buildRaw, gmail, header, isMessageId, summary } = require('./_gmail');
@@ -26,7 +26,6 @@ const fail = (status, message) => Object.assign(new Error(message), { status });
    Supabase (service role; server side only)
    -------------------------------------------------------------------------- */
 
-const supabaseUrl = () => (env('SUPABASE_URL') || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
 
 async function supabase(path, init = {}) {
   const key = env('SUPABASE_SERVICE_ROLE_KEY');
