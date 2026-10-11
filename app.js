@@ -10,8 +10,9 @@ import { screens, compassionMessageList, mySharedMessages } from './src/screens.
 import { sidebar, appbar, tabbar, overlays, hrefFor } from './src/components.js';
 import { mountPlayer } from './src/player.js';
 import { mountMargaret } from './src/margaret.js';
+import { passItOn } from './src/cards.js';
 import {
-  BRAND, CATEGORIES, COMPASSION_API_URL, PRODUCTS, FORMAT_SHORT,
+  BRAND, CATEGORIES, COMPASSION_API_URL, COMPASSION_FALLBACK_URL, PRODUCTS, FORMAT_SHORT,
   bookById, lessonById, productById, networkById,
 } from './src/data.js';
 import {
@@ -167,6 +168,47 @@ function timeoutSignal(milliseconds) {
   return controller.signal;
 }
 
+/**
+ * The wall is served from this origin (api/messages.js). A deployment that has
+ * not been given its Supabase key says so with `configured: false`, and only
+ * then does the browser go to the Supabase Edge Function directly — any other
+ * failure is a real answer and is shown as one.
+ */
+async function messageService(init, milliseconds) {
+  const primary = await fetch(COMPASSION_API_URL, { ...init, signal: timeoutSignal(milliseconds) })
+    .catch(() => null);
+  if (primary && primary.status !== 503 && primary.status !== 404) return primary;
+  const unconfigured = primary
+    ? primary.status === 404 || (await primary.clone().json().catch(() => ({}))).configured === false
+    : false;
+  if (primary && !unconfigured) return primary;
+  return fetch(COMPASSION_FALLBACK_URL, { ...init, signal: timeoutSignal(milliseconds) });
+}
+
+async function sharePassItOn(button) {
+  if (button.dataset.busy) return;
+  const kind = button.dataset.passItOn;
+  let payload = {};
+  if (kind === 'note') {
+    const note = state.compassionMessages.find((item) => String(item.id) === button.dataset.noteId);
+    if (!note) return;
+    payload = { message: note.message, name: note.display_name, community: note.community };
+  }
+  const label = button.textContent;
+  button.dataset.busy = '1';
+  button.textContent = 'Making your card…';
+  try {
+    const outcome = await passItOn(kind, payload);
+    if (outcome === 'saved') toast(kind === 'forty' ? 'Card downloaded — print it or pass it on' : 'Card saved — send it to someone who needs it');
+    if (outcome === 'shared') toast('Passed on. Thank you for your kindness.');
+  } catch {
+    toast('The card could not be made on this device.');
+  } finally {
+    delete button.dataset.busy;
+    button.textContent = label;
+  }
+}
+
 async function loadCompassionMessages() {
   const requestId = ++compassionLoadRequest;
   state.compassionMessagesStatus = 'loading';
@@ -176,11 +218,10 @@ async function loadCompassionMessages() {
   }
 
   try {
-    const response = await fetch(COMPASSION_API_URL, {
+    const response = await messageService({
       headers: { Accept: 'application/json' },
       cache: 'no-store',
-      signal: timeoutSignal(10000),
-    });
+    }, 10000);
     if (!response.ok) throw new Error('message service unavailable');
     const payload = await response.json();
     if (requestId !== compassionLoadRequest) return;
@@ -563,6 +604,10 @@ document.addEventListener('click', (event) => {
     loadCompassionMessages();
     return;
   }
+  if ((el = hit('[data-pass-it-on]'))) {
+    sharePassItOn(el);
+    return;
+  }
 
   /* --- the Legacy Inventory --- */
   if ((el = hit('[data-section]'))) {
@@ -682,10 +727,9 @@ document.addEventListener('submit', async (event) => {
 
   const values = new FormData(form);
   try {
-    const response = await fetch(COMPASSION_API_URL, {
+    const response = await messageService({
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-      signal: timeoutSignal(12000),
       body: JSON.stringify({
         displayName: values.get('displayName'),
         community: values.get('community'),
@@ -693,7 +737,7 @@ document.addEventListener('submit', async (event) => {
         consent: values.get('consent') === 'on',
         website: values.get('website'),
       }),
-    });
+    }, 12000);
     const payload = await response.json().catch(() => ({}));
     if (!response.ok) throw new Error(payload.error || 'Please try again in a moment.');
 

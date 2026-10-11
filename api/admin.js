@@ -183,7 +183,7 @@ async function overview(session) {
   ]);
 
   const stripe = readSecretKey();
-  const margaret = Boolean(env('MARGARET_API_URL') && env('MARGARET_API_KEY'));
+  const margaret = Boolean(require('./margaret').provider());
   const alerts = [];
   const alert = (level, title, detail, link) => alerts.push({ level, title, detail, link });
 

@@ -8,16 +8,19 @@
  * keeps the provider key out of the client bundle and lets the app keep its
  * strict `connect-src 'self'` Content-Security-Policy.
  *
- * Configure with two environment variables:
+ * Configure with any one of:
  *
- *   MARGARET_API_URL   an OpenAI-compatible chat-completions endpoint
- *   MARGARET_API_KEY   the bearer token for it
+ *   MARGARET_API_URL + MARGARET_API_KEY   any OpenAI-compatible chat endpoint
+ *                                         (an api.anthropic.com URL is spoken
+ *                                         to in Anthropic's own format)
+ *   ANTHROPIC_API_KEY                     Claude, via the Messages API
+ *   OPENAI_API_KEY                        OpenAI chat completions
  *
  * Optional:
- *   MARGARET_MODEL         model id (default: the provider's own default)
+ *   MARGARET_MODEL         model id (defaults below per provider)
  *   MARGARET_SYSTEM_PROMPT overrides the persona below
  *
- * Until MARGARET_API_URL and MARGARET_API_KEY are set this answers 503, and
+ * Until one of those is set this answers 503, and
  * the widget falls back to the offline guide in src/margaret.js. That is the
  * expected state, not a fault: the app ships useful either way.
  */
@@ -99,6 +102,64 @@ const SYSTEM_PROMPT = [
   'Answer in plain, warm, unhurried language. Two or three short sentences is usually right. Name the page someone should open.',
 ].join('\n');
 
+const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
+const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
+const DEFAULT_MODELS = { anthropic: 'claude-haiku-5-5', openai: 'gpt-4o-mini' };
+
+const envValue = (name) => (typeof process.env[name] === 'string' ? process.env[name].trim() : '');
+
+/** Which provider this deployment talks to, or null when none is configured. */
+function provider() {
+  const url = envValue('MARGARET_API_URL');
+  const key = envValue('MARGARET_API_KEY');
+  if (url && key) {
+    const anthropic = /(^|\.)anthropic\.com$/i.test((() => { try { return new URL(url).hostname; } catch { return ''; } })());
+    return { kind: anthropic ? 'anthropic' : 'openai', url, key, model: envValue('MARGARET_MODEL') || (anthropic ? DEFAULT_MODELS.anthropic : '') };
+  }
+  if (envValue('ANTHROPIC_API_KEY')) {
+    return { kind: 'anthropic', url: ANTHROPIC_URL, key: envValue('ANTHROPIC_API_KEY'), model: envValue('MARGARET_MODEL') || DEFAULT_MODELS.anthropic };
+  }
+  if (envValue('OPENAI_API_KEY')) {
+    return { kind: 'openai', url: OPENAI_URL, key: envValue('OPENAI_API_KEY'), model: envValue('MARGARET_MODEL') || DEFAULT_MODELS.openai };
+  }
+  return null;
+}
+
+/** The upstream request, in the shape the configured provider expects. */
+function upstreamRequest(config, messages) {
+  const system = envValue('MARGARET_SYSTEM_PROMPT') || SYSTEM_PROMPT;
+  if (config.kind === 'anthropic') {
+    return {
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+        'x-api-key': config.key,
+        'anthropic-version': '2023-06-01',
+      },
+      body: { model: config.model, max_tokens: 400, system, messages: anthropicTurns(messages) },
+    };
+  }
+  return {
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      Authorization: `Bearer ${config.key}`,
+    },
+    body: {
+      model: config.model || undefined,
+      max_tokens: 400,
+      temperature: 0.4,
+      messages: [{ role: 'system', content: system }, ...messages],
+    },
+  };
+}
+
+/** The Messages API wants the transcript to open on a user turn. */
+function anthropicTurns(messages) {
+  const first = messages.findIndex((turn) => turn.role === 'user');
+  return first < 0 ? [] : messages.slice(first);
+}
+
 function reply(res, status, payload) {
   res.setHeader('Cache-Control', 'no-store');
   res.status(status).json(payload);
@@ -146,9 +207,8 @@ module.exports = async function askMargaret(req, res) {
   const messages = conversation(req.body);
   if (!messages.length) return reply(res, 400, { error: 'Ask Margaret a question.' });
 
-  const endpoint = process.env.MARGARET_API_URL?.trim();
-  const key = process.env.MARGARET_API_KEY?.trim();
-  if (!endpoint || !key) {
+  const config = provider();
+  if (!config) {
     /* The widget reads this as "answer locally", so it must not read as a bug. */
     return reply(res, 503, { configured: false, error: 'Margaret is not connected to her helper yet.' });
   }
@@ -163,23 +223,12 @@ module.exports = async function askMargaret(req, res) {
   }
 
   try {
-    const upstream = await fetch(endpoint, {
+    const request = upstreamRequest(config, messages);
+    const upstream = await fetch(config.url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-        Authorization: `Bearer ${key}`,
-      },
+      headers: request.headers,
       signal: AbortSignal.timeout(REQUEST_TIMEOUT),
-      body: JSON.stringify({
-        model: process.env.MARGARET_MODEL || undefined,
-        max_tokens: 400,
-        temperature: 0.4,
-        messages: [
-          { role: 'system', content: process.env.MARGARET_SYSTEM_PROMPT || SYSTEM_PROMPT },
-          ...messages,
-        ],
-      }),
+      body: JSON.stringify(request.body),
     });
 
     if (!upstream.ok) {
@@ -198,6 +247,8 @@ module.exports = async function askMargaret(req, res) {
 
 module.exports.SYSTEM_PROMPT = SYSTEM_PROMPT;
 module.exports.throttle = throttle;
+module.exports.provider = provider;
+module.exports.upstreamRequest = upstreamRequest;
 module.exports.RATE_PER_CALLER = RATE_PER_CALLER;
 module.exports.RATE_PER_INSTANCE = RATE_PER_INSTANCE;
 module.exports.conversation = conversation;

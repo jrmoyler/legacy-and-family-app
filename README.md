@@ -40,6 +40,7 @@ source.
 | `app.js` | Router, rendering, event delegation |
 | `src/screens.js` | One template per screen |
 | `src/components.js` | Sidebar, app bar, tab bar, sheets, toast, brand footer |
+| `src/cards.js` | The Daily Cup and the canvas-drawn pass-it-on cards |
 | `src/state.js` | State + localStorage persistence |
 | `src/data.js` | Brand, books, catalogue, reading, inventory, production status |
 | `src/covers.js` | Accessible typographic fallback for any future item without commissioned art |
@@ -66,6 +67,7 @@ source.
 | `api/_stripe.js` | Shared key handling, site-URL resolution, and failure logging |
 | `api/_catalog.js` | Server-authoritative product names and prices |
 | `api/margaret.js` | Same-origin proxy to Margaret's language-model provider |
+| `api/messages.js` | Same-origin public message wall: approved reads, moderated submissions |
 | `admin.html`, `admin.js`, `admin.css` | Private admin dashboard at `/admin` |
 | `api/admin.js` | Admin API: alerts, Gmail, message-wall moderation (session-gated) |
 | `api/admin-auth.js` | Google sign-in for the admin dashboard |
@@ -230,9 +232,12 @@ handle). It is linked from the sidebar and from the series page.
 
 ## Public compassion messages
 
-`#/messages` reads approved notes and accepts new submissions through the
-`compassion-messages` Supabase Edge Function in project
-`qxeadbfvsagupoykirer`. New messages are rate-limited, validated, stripped of
+`#/messages` reads approved notes and accepts new submissions through
+`api/messages.js` on this origin, which talks to Supabase project
+`qxeadbfvsagupoykirer` with the deployment's `SUPABASE_SERVICE_ROLE_KEY`. When
+that key is not set it answers `configured: false`, and only then does the
+browser fall back to the `compassion-messages` Edge Function. Both apply the
+same rules and the same rate-limit RPC. New messages are rate-limited, validated, stripped of
 contact details, and stored as pending. They appear publicly only after an
 editor approves them — in the [admin dashboard](#admin-dashboard) or by setting
 `approved = true` in Supabase. The browser never receives a secret
@@ -244,19 +249,42 @@ leaving the page loses nothing. After sending, the note is listed under
 wall, then *Published*. That list is on the device only (the last ten notes);
 the app has no member accounts.
 
+Every approved note carries a **Pass it on** button that turns it into an
+image card for a text message or a post (see [Pass-it-on cards](#pass-it-on-cards)).
+
 **Setting up the Supabase project (once).** The project is
 `qxeadbfvsagupoykirer` (Pamella's own). It needs the two migrations in
-`supabase/migrations/` and the `compassion-messages` Edge Function, deployed
-with JWT verification off as `supabase/config.toml` says:
+`supabase/migrations/`. The Edge Function is only the fallback now, but if you
+want it, deploy it with JWT verification off as `supabase/config.toml` says:
 
 ```bash
 supabase link --project-ref qxeadbfvsagupoykirer
 supabase db push
 supabase functions deploy compassion-messages --no-verify-jwt
-supabase secrets set COMPASSION_ALLOWED_ORIGIN=https://www.acupofcompassion.com
+supabase secrets set COMPASSION_ALLOWED_ORIGIN=https://thecompassionhub.org
 ```
 
-Until then the wall shows "The public messages could not be loaded."
+Until the migrations are applied (or neither the service key nor the Edge
+Function is available) the wall shows "The public messages could not be loaded."
+
+## The Daily Cup
+
+Home opens on **The Daily Cup**: one KJV verse from the series and one small
+practice from the free lessons, the same for every visitor on a given day
+(`dailyCup()` in `src/cards.js`). It changes at local midnight, so there is a
+new reason to open the app every morning.
+
+## Pass-it-on cards
+
+`src/cards.js` draws finished image cards on a `<canvas>` in the browser —
+the Daily Cup, any approved note on the wall, and the free **40-Second
+Compassion Card** (US Letter, print-ready). On a phone the card goes straight
+to the share sheet; elsewhere it downloads as a PNG. Nothing is uploaded, no
+third party is involved, and the CSP is unchanged.
+
+The 40-Second Compassion Card is now a real download drawn from the
+forty-seconds lesson. It no longer tells visitors to check an email that was
+never sent.
 
 ## Admin dashboard
 
@@ -477,11 +505,18 @@ Margaret answers from the app's own navigation until her provider is set. To
 connect her:
 
 ```text
-MARGARET_API_URL=https://…            # an OpenAI-compatible chat-completions endpoint
+ANTHROPIC_API_KEY=sk-ant-…            # simplest: Claude, via the Messages API
+# — or —
+OPENAI_API_KEY=sk-…                   # OpenAI chat completions
+# — or —
+MARGARET_API_URL=https://…            # any OpenAI-compatible chat-completions endpoint
 MARGARET_API_KEY=…                    # its bearer token
-MARGARET_MODEL=…                      # optional
+MARGARET_MODEL=…                      # optional; overrides the provider default
 MARGARET_SYSTEM_PROMPT=…              # optional; overrides the persona in api/margaret.js
 ```
+
+`MARGARET_API_URL` + `MARGARET_API_KEY` win when both are set. An
+`api.anthropic.com` URL there is spoken to in Anthropic's own format.
 
 Environment variables are read at invocation, but a Vercel environment only
 picks up a new value on its next deployment — after editing them, redeploy the
@@ -588,6 +623,7 @@ outage. None of those fields carry the key itself.
 - The Compassion Player cannot guarantee music on arrival. Autoplay is a
   browser decision, not an app one; where it is refused, the first interaction
   anywhere on the page starts playback.
-- Margaret answers from the app's own navigation until `MARGARET_API_URL` and
-  `MARGARET_API_KEY` are set. Her offline answers are keyword matching, not a
+- Margaret answers from the app's own navigation until a provider key is set
+  (`ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, or `MARGARET_API_URL` +
+  `MARGARET_API_KEY`). Her offline answers are keyword matching, not a
   language model, and describe only this app.

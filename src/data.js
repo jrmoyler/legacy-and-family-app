@@ -139,7 +139,7 @@ export const ONBOARDING = {
   features: [
     { title: 'Six free books', body: 'The full Compassion series, ready to read in the app.' },
     { title: 'The Legacy Inventory', body: 'A free, printable worksheet for what your family will need to know.' },
-    { title: 'The shop', body: 'Full editions, workbooks, and group licences for your church or team.' },
+    { title: 'The shop', body: 'Full editions, the Companion Workbook, and The Compassion Legacy Journal.' },
   ],
   closing: 'Welcome home.',
 };
@@ -196,7 +196,10 @@ export const TAB_OF = {
   network: 'tools',
 };
 
-export const COMPASSION_API_URL =
+/* The wall is read and written through this origin first (api/messages.js);
+   the Edge Function is the fallback for a deployment without its Supabase key. */
+export const COMPASSION_API_URL = '/api/messages';
+export const COMPASSION_FALLBACK_URL =
   'https://qxeadbfvsagupoykirer.supabase.co/functions/v1/compassion-messages';
 
 export const INDIVIDUAL_EBOOK_PRICE = 7.99;
@@ -362,6 +365,9 @@ export const PRODUCTS = [
     cats: ['Free'],
     buyable: true,
     free: true,
+    /* Drawn in the browser by src/cards.js from the forty-seconds lesson, so
+       the free download is real and needs no email address. */
+    card: 'forty',
     assets: productCoverAssets('A-Cup-of-Compassion-40-Second-Compassion-Card'),
     note: 'One page · bulletin insert',
     about: 'A single page for a church bulletin or a break room wall: what forty seconds of real attention does for a person, and the four things to do with them.',
@@ -455,10 +461,19 @@ export const PRODUCTS = [
     price: 149,
     badge: '',
     cats: ['Collections'],
-    buyable: true,
+    // Not for sale: a group licence needs a fulfilment route — the licence
+    // document, the per-congregation copy counting, and the invoice — and none
+    // of that exists yet. Every other paid product resolves to downloadable
+    // editions through `assets`, `includes`, or `includesProducts`; this one
+    // resolves to cover art only, so selling it would take $149 and deliver no
+    // files. It is also absent from api/_catalog.js, which is what actually
+    // stops the charge. Restore `buyable: true` and the catalogue entry
+    // together, once fulfilment is real.
+    buyable: false,
+    status: 'Coming soon',
     assets: productCoverAssets('A-Cup-of-Compassion-Church-Small-Group-Licence'),
     note: '25 copies · one invoice',
-    about: 'Twenty-five copies of the collection for a congregation, a ministry, or a small group, on a single invoice. One study, one language, everybody on the same page.',
+    about: `Twenty-five copies of the collection for a congregation, a ministry, or a small group, on a single invoice. One study, one language, everybody on the same page. The licence is not on sale yet — write to ${BRAND.email} to hear when it opens.`,
   },
   {
     id: 'six-set',
