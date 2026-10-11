@@ -1,7 +1,7 @@
 'use strict';
 
 const crypto = require('node:crypto');
-const { DEFAULT_SUPABASE_URL, env } = require('./_admin');
+const { env, supabaseUrl } = require('./_admin');
 
 /**
  * The public Messages of Compassion wall, served from this origin.
@@ -25,7 +25,6 @@ const TIMEOUT = 8000;
 const MAX_BODY = 4096;
 const CONTACT = /(https?:\/\/|www\.|\b[^\s@]+@[^\s@]+\.[^\s@]+\b|\+?\d[\d\s().-]{7,}\d)/i;
 
-const supabaseUrl = () => (env('SUPABASE_URL') || DEFAULT_SUPABASE_URL).replace(/\/+$/, '');
 
 function reply(res, status, payload) {
   res.setHeader('Cache-Control', 'no-store');

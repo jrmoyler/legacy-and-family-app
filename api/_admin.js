@@ -14,11 +14,13 @@
  *   GOOGLE_CLIENT_ID          OAuth client (type "Web application")
  *   GOOGLE_CLIENT_SECRET      its secret
  *   ADMIN_EMAILS              comma-separated Google addresses allowed in
+ *                             (ADMIN_EMAIL is read as well)
  *   ADMIN_SESSION_SECRET      32+ random characters; encrypts the session
  *   SUPABASE_SERVICE_ROLE_KEY lets the dashboard moderate the message wall
  *
  * Optional:
  *   SUPABASE_URL              defaults to the project in supabase/config.toml
+ *                             (PROJECT_URL is read as well)
  *   PUBLIC_SITE_URL           fixes the OAuth redirect origin
  */
 
@@ -29,6 +31,11 @@ const STATE_COOKIE = 'ch_admin_state';
 const SESSION_HOURS = 12;
 const STATE_MINUTES = 10;
 const DEFAULT_SUPABASE_URL = 'https://qxeadbfvsagupoykirer.supabase.co';
+
+/** The Supabase project URL, under whichever name the deployment set it. */
+const supabaseUrl = () =>
+  (env('SUPABASE_URL') || env('PROJECT_URL') || env('SUPABASE_PROJECT_URL') || DEFAULT_SUPABASE_URL)
+    .replace(/\/+$/, '');
 
 const GOOGLE_SCOPES = [
   'openid',
@@ -41,7 +48,8 @@ const GOOGLE_SCOPES = [
 const env = (name) => (typeof process.env[name] === 'string' ? process.env[name].trim() : '');
 
 function adminEmails() {
-  return env('ADMIN_EMAILS')
+  /* ADMIN_EMAIL (singular) is accepted too: it is the name people reach for. */
+  return [env('ADMIN_EMAILS'), env('ADMIN_EMAIL')].filter(Boolean).join(',')
     .split(',')
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);
@@ -237,6 +245,7 @@ async function accessToken(session) {
 
 module.exports = {
   DEFAULT_SUPABASE_URL,
+  supabaseUrl,
   GOOGLE_SCOPES,
   SESSION_COOKIE,
   SESSION_HOURS,
