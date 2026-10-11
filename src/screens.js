@@ -14,7 +14,7 @@ import {
   LESSONS, FEATURED_LESSON, LESSON_TOTAL, lessonById,
   INVENTORY, INVENTORY_PRIVACY, STATUS_GROUPS,
   ABOUT_AUTHOR, PERSONAL_INVITATION, LEGAL_POSITIONING,
-  TOOLS, NETWORK, NETWORK_NOTE, SOCIAL_LINKS, AUTHOR_PORTRAIT, HOME_COVER,
+  TOOLS, NETWORK, NETWORK_NOTE, SOCIAL_LINKS, AUTHOR_PORTRAIT, HOME_COVER, WALL_STARTER_NOTES,
 } from './data.js';
 import {
   state, inventoryProgress, sectionDone, hasReadLesson,
@@ -308,20 +308,25 @@ export function compassionMessageList() {
   if (state.compassionMessagesStatus === 'error') {
     return `
     <div class="message-wall-state message-wall-error">
-      <p>The public messages could not be loaded.</p>
+      <p>The community wall is resting for a moment. Here are a few notes from us while it wakes up.</p>
       <button class="btn btn-ghost btn-auto" data-load-messages>Try again</button>
-    </div>`;
+    </div>
+    ${compassionNotes(WALL_STARTER_NOTES)}`;
   }
   if (!state.compassionMessages.length) {
     return '<p class="message-wall-state">No approved messages yet. Be the first to leave a little kindness.</p>';
   }
-  return state.compassionMessages.map((item) => `
+  return compassionNotes(state.compassionMessages);
+}
+
+function compassionNotes(notes) {
+  return notes.map((item) => `
     <article class="compassion-note">
       <span class="quote-mark" aria-hidden="true">“</span>
       <blockquote>${esc(item.message)}</blockquote>
       <footer>
         <span><strong>${esc(item.display_name)}</strong>${item.community ? ` <span class="community">${esc(item.community)}</span>` : ''}</span>
-        <time datetime="${esc(item.created_at)}">${esc(readableMessageDate(item.created_at))}</time>
+        ${item.created_at ? `<time datetime="${esc(item.created_at)}">${esc(readableMessageDate(item.created_at))}</time>` : ''}
       </footer>
       <button class="note-pass" type="button" data-pass-it-on="note" data-note-id="${esc(item.id)}" aria-label="Pass on this message from ${esc(item.display_name)} as a card">Pass it on</button>
     </article>`).join('');

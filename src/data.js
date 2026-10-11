@@ -202,6 +202,27 @@ export const COMPASSION_API_URL = '/api/messages';
 export const COMPASSION_FALLBACK_URL =
   'https://qxeadbfvsagupoykirer.supabase.co/functions/v1/compassion-messages';
 
+/**
+ * The six welcome notes the wall's migration seeds as approved. Shown, clearly
+ * labelled as notes from the Hub itself, when the live wall cannot be reached,
+ * so the page is never just an error. Kept word for word with
+ * supabase/migrations/20260818022152_create_compassion_messages.sql.
+ */
+export const WALL_STARTER_NOTES = [
+  'You are not alone in this season. Take a breath, release what you cannot carry, and trust that good days are still ahead.',
+  'May you remember that small steps still move you forward. Be gentle with yourself today.',
+  'You are deeply loved. Let that truth be the anchor that holds you steady no matter what comes.',
+  'Some days are harder than others. Keep choosing hope—one moment, one breath, one step at a time.',
+  'Kindness you show today may be the light someone else needs to keep going. Thank you for being that light.',
+  'There is purpose in your story. What you have been through can become a source of strength for someone else.',
+].map((message, i) => ({
+  id: `starter-${i + 1}`,
+  display_name: 'The Compassion Hub',
+  community: 'A note from us',
+  message,
+  created_at: '',
+}));
+
 export const INDIVIDUAL_EBOOK_PRICE = 7.99;
 
 /* ==========================================================================
