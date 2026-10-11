@@ -12,7 +12,7 @@ import { mountPlayer } from './src/player.js';
 import { mountMargaret } from './src/margaret.js';
 import { passItOn } from './src/cards.js';
 import {
-  BRAND, CATEGORIES, COMPASSION_API_URL, COMPASSION_FALLBACK_URL, PRODUCTS, FORMAT_SHORT,
+  BRAND, CATEGORIES, COMPASSION_API_URL, COMPASSION_FALLBACK_URL, WALL_STARTER_NOTES, PRODUCTS, FORMAT_SHORT,
   bookById, lessonById, productById, networkById,
 } from './src/data.js';
 import {
@@ -190,7 +190,8 @@ async function sharePassItOn(button) {
   const kind = button.dataset.passItOn;
   let payload = {};
   if (kind === 'note') {
-    const note = state.compassionMessages.find((item) => String(item.id) === button.dataset.noteId);
+    const note = [...state.compassionMessages, ...WALL_STARTER_NOTES]
+      .find((item) => String(item.id) === button.dataset.noteId);
     if (!note) return;
     payload = { message: note.message, name: note.display_name, community: note.community };
   }

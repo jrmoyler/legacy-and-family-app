@@ -213,3 +213,13 @@ test('the free card is a real download, not a promised email', () => {
   assert.match(card, /data-pass-it-on="forty"/);
   assert.ok(!card.includes('Check your email'), 'the card still promises an email that is never sent');
 });
+
+test('an unreachable wall shows the Hub’s own notes, never just an error', () => {
+  state.compassionMessagesStatus = 'error';
+  const wall = screens.messages();
+  assert.match(wall, /The community wall is resting/);
+  assert.match(wall, /You are not alone in this season/);
+  assert.match(wall, /data-pass-it-on="note" data-note-id="starter-1"/);
+  assert.ok(!wall.includes('undefined'));
+  state.compassionMessagesStatus = 'idle';
+});
