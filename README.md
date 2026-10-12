@@ -286,6 +286,27 @@ The 40-Second Compassion Card is now a real download drawn from the
 forty-seconds lesson. It no longer tells visitors to check an email that was
 never sent.
 
+## Digital business card
+
+Pamella's business card is its own page, `card.html`, served at **`/card`**
+(`cleanUrls`), so it can be texted or printed as a plain link. The app points
+at it from four places: a panel on Home under *Where to begin*, the top of the
+About sidebar, a gold link under the desktop sidebar's navigation, and a
+**Card** button beside the cart in the phone app bar.
+
+Everything on it can be downloaded:
+
+- `assets/card/Pamella-Grear.vcf` — the contact, as a static vCard (CRLF line
+  endings, `text/vcard`). It works without JavaScript and opens the Contacts
+  import on iOS and Android.
+- `assets/card/Pamella-Grear-digital-card.png` — the card as an image (also its
+  `og:image`). It is a 2x screenshot of the `.card` element in light mode with
+  the download links hidden; re-take it if the card's content changes.
+
+The page's script lives in `card.js` because the CSP allows scripts from
+`'self'` only; `tools/business-card.test.mjs` fails if an inline script, a
+missing file, or a lost entry point comes back.
+
 ## Admin dashboard
 
 `/admin` is a private dashboard for the site owner. It is not linked from the

@@ -3,3 +3,5 @@
 *.epub -text -diff -merge
 *.mp3 -text -diff -merge
 *.pdf -text -diff -merge
+# vCards must keep their CRLF line endings (RFC 6350).
+*.vcf -text -diff -merge

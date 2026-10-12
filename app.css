@@ -4556,3 +4556,93 @@ p a, .about-copy a { text-decoration: underline; }
 @media print {
   .widget-dock { display: none !important; }
 }
+
+/* --------------------------------------------------------------------------
+   Digital business card — entry points into /card
+   -------------------------------------------------------------------------- */
+.side-card-link {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 18px;
+  padding: 13px 14px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(229, 200, 121, .20) 0%, rgba(176, 141, 46, .14) 100%);
+  box-shadow: inset 0 0 0 1px rgba(208, 172, 76, .42);
+  color: var(--gold-soft);
+  transition: background .15s;
+}
+.side-card-link .t { display: block; font-weight: 700; font-size: 14px; color: #F5EFE3; }
+.side-card-link .s { display: block; font-size: 11.5px; color: #C4B4D2; margin-top: 2px; }
+@media (hover: hover) {
+  .side-card-link:hover { background: rgba(229, 200, 121, .26); }
+}
+.side-card-link:focus-visible { outline: 3px solid var(--gold-soft); outline-offset: 2px; }
+
+.card-btn {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 46px;
+  padding: 0 14px;
+  border-radius: 14px;
+  background: var(--card);
+  border: 1.5px solid rgba(176, 141, 46, .45);
+  color: var(--plum-900);
+  font-weight: 700;
+  font-size: 14px;
+}
+.card-btn:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+
+.bizcard {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(150deg, #2A231D 0%, #1F1A16 100%);
+  color: var(--on-dark);
+  box-shadow: var(--lift);
+}
+.bizcard-preview {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 14px 30px -16px rgba(0, 0, 0, .7);
+}
+/* A crop of the top of the card (name, title, call and email) keeps the
+   panel short; the full card is one tap away. */
+.bizcard-preview img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  object-position: top;
+}
+.bizcard-body h2 {
+  margin: 12px 0 0;
+  font-family: var(--serif);
+  font-weight: 600;
+  font-size: 21px;
+  line-height: 1.2;
+  color: #F8F0E4;
+}
+.bizcard-body p {
+  margin: 8px 0 0;
+  font-family: var(--serif);
+  font-size: 14px;
+  line-height: 1.55;
+  color: #CBC1B3;
+  max-width: 46ch;
+}
+.bizcard-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+.bizcard-actions .btn { flex: 1 1 auto; }
+@media (min-width: 720px) {
+  .bizcard:not(.about-bizcard) { grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr); align-items: center; padding: 24px; }
+}

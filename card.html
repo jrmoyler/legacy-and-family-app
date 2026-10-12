@@ -1,0 +1,419 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#1f1a16" />
+    <title>Pamella Grear — Author and Speaker</title>
+    <meta name="description" content="Pamella Grear’s digital business card: call, email, save the contact, or download the card." />
+    <link rel="canonical" href="https://thecompassionhub.org/card" />
+    <link rel="icon" href="/assets/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/assets/icon-192.png" />
+    <meta property="og:type" content="profile" />
+    <meta property="og:site_name" content="The Compassion Hub" />
+    <meta property="og:url" content="https://thecompassionhub.org/card" />
+    <meta property="og:title" content="Pamella Grear — Author and Speaker" />
+    <meta property="og:description" content="Compassion becomes legacy when we build it, document it, and pass it on." />
+    <meta property="og:image" content="https://thecompassionhub.org/assets/card/Pamella-Grear-digital-card.png" />
+    <meta property="og:image:alt" content="Pamella Grear’s digital business card" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <style>
+      :root {
+        color-scheme: light dark;
+        --page: #e8e1d6;
+        --paper: #f7f2e9;
+        --ink: #1f1a16;
+        --muted: #5c554d;
+        --green: #24523f;
+        --green-hover: #183d2d;
+        --gold: #c89a3d;
+        --gold-soft: #e5c879;
+        --rule: rgba(63, 50, 35, .18);
+        --soft: rgba(255, 255, 255, .52);
+        --shadow: 0 28px 75px rgba(54, 42, 28, .18), 0 3px 12px rgba(54, 42, 28, .10);
+        --focus: #9b6b16;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --page: #120f0d;
+          --paper: #211d19;
+          --ink: #f8f1e7;
+          --muted: #cbc1b3;
+          --green: #3e8063;
+          --green-hover: #4b9474;
+          --gold: #d8ac55;
+          --gold-soft: #ebce87;
+          --rule: rgba(255, 244, 224, .16);
+          --soft: rgba(255, 255, 255, .055);
+          --shadow: 0 28px 75px rgba(0, 0, 0, .45), 0 3px 12px rgba(0, 0, 0, .30);
+          --focus: #f0ca78;
+        }
+      }
+
+      * { box-sizing: border-box; }
+      html { min-width: 320px; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          linear-gradient(120deg, transparent 0 67%, rgba(200,154,61,.09) 67% 69%, transparent 69%),
+          var(--page);
+        color: var(--ink);
+        font-family: "Avenir Next", Avenir, "Segoe UI", sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      button, a { font: inherit; }
+      a { color: inherit; }
+      a:focus-visible, button:focus-visible {
+        outline: 3px solid var(--focus);
+        outline-offset: 3px;
+      }
+
+      .page {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: clamp(18px, 5vw, 64px);
+      }
+      .card {
+        width: min(980px, 100%);
+        display: grid;
+        grid-template-columns: minmax(260px, .78fr) minmax(0, 1.36fr);
+        background: var(--paper);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        border-radius: 6px 30px 6px 6px;
+      }
+
+      .brand {
+        position: relative;
+        min-height: 650px;
+        /* Matches the emblem artwork's own ground, so the image has no seam. */
+        background: #211b16;
+        color: #f7f0e5;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        overflow: hidden;
+      }
+      .brand::after {
+        content: "";
+        position: absolute;
+        width: 210px;
+        height: 210px;
+        border: 1px solid rgba(218, 178, 91, .24);
+        border-radius: 50%;
+        left: -92px;
+        bottom: -95px;
+        box-shadow: 0 0 0 22px rgba(218, 178, 91, .04), 0 0 0 44px rgba(218, 178, 91, .035);
+      }
+      .brand-art {
+        width: 100%;
+        height: 430px;
+        object-fit: cover;
+        object-position: center top;
+        display: block;
+      }
+      .brand-copy {
+        position: relative;
+        z-index: 1;
+        padding: 30px 34px 38px;
+      }
+      .brand-copy::before {
+        content: "";
+        display: block;
+        width: 42px;
+        height: 2px;
+        margin-bottom: 20px;
+        background: var(--gold);
+      }
+      .brand-copy p {
+        margin: 0;
+        max-width: 14ch;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(25px, 3.1vw, 34px);
+        line-height: 1.12;
+        color: #f8f0e4;
+      }
+
+      .content {
+        position: relative;
+        padding: clamp(34px, 5.4vw, 66px);
+        overflow: hidden;
+      }
+      .flower {
+        position: absolute;
+        width: 170px;
+        height: 170px;
+        right: 18px;
+        top: 12px;
+        opacity: .42;
+        color: var(--gold);
+        pointer-events: none;
+      }
+      .identity { position: relative; padding-right: 96px; }
+      h1 {
+        margin: 0;
+        max-width: 8ch;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: clamp(48px, 7vw, 78px);
+        font-weight: 400;
+        line-height: .96;
+        letter-spacing: -.045em;
+      }
+      .role {
+        margin: 20px 0 0;
+        color: var(--green);
+        font-size: clamp(14px, 2vw, 17px);
+        font-weight: 750;
+        letter-spacing: .09em;
+        text-transform: uppercase;
+      }
+      .statement {
+        margin: 22px 0 0;
+        color: var(--muted);
+        max-width: 44ch;
+        font-family: Georgia, "Times New Roman", serif;
+        font-size: 18px;
+        line-height: 1.55;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 34px;
+      }
+      .action {
+        min-height: 58px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 15px 18px;
+        border-radius: 8px;
+        border: 1px solid var(--rule);
+        background: var(--soft);
+        color: var(--ink);
+        text-decoration: none;
+        cursor: pointer;
+        transition: background .16s ease, border-color .16s ease, color .16s ease;
+      }
+      .action:hover { border-color: rgba(200, 154, 61, .62); background: rgba(200, 154, 61, .10); }
+      .action.primary {
+        background: var(--green);
+        border-color: var(--green);
+        color: #fff;
+      }
+      .action.primary:hover { background: var(--green-hover); border-color: var(--green-hover); }
+      .action svg { flex: 0 0 21px; width: 21px; height: 21px; }
+      .action strong { display: block; font-size: 15px; line-height: 1.1; }
+      .action small { display: block; margin-top: 4px; opacity: .78; font-size: 12px; }
+
+      .downloads {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 22px;
+        margin-top: 18px;
+      }
+      .downloads a, .downloads button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+        border: 0;
+        padding: 0;
+        background: none;
+        color: var(--green);
+        font-size: 14px;
+        font-weight: 700;
+        text-decoration: underline;
+        text-decoration-color: rgba(200,154,61,.72);
+        text-underline-offset: 4px;
+        cursor: pointer;
+      }
+      .downloads a:hover, .downloads button:hover { color: var(--green-hover); }
+      .downloads svg { width: 18px; height: 18px; flex: 0 0 18px; }
+
+      .details {
+        margin-top: 34px;
+        padding-top: 26px;
+        border-top: 1px solid var(--rule);
+      }
+      .detail-row {
+        display: grid;
+        grid-template-columns: 108px minmax(0, 1fr);
+        gap: 16px;
+        align-items: baseline;
+        padding: 9px 0;
+      }
+      .detail-row .label {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: .07em;
+        text-transform: uppercase;
+      }
+      .detail-row a, .detail-row button {
+        width: fit-content;
+        max-width: 100%;
+        border: 0;
+        padding: 0;
+        background: none;
+        color: var(--ink);
+        font-size: 15px;
+        line-height: 1.45;
+        text-align: left;
+        text-decoration-color: rgba(200,154,61,.72);
+        text-underline-offset: 4px;
+        overflow-wrap: anywhere;
+        cursor: pointer;
+      }
+      .detail-row button:hover, .detail-row a:hover { color: var(--green); }
+      .support {
+        margin-top: 22px;
+        padding: 18px 20px;
+        background: rgba(36,82,63,.09);
+        border-radius: 5px 16px 5px 5px;
+        font-size: 14px;
+        line-height: 1.45;
+      }
+      .support strong { color: var(--green); }
+      .support a { text-underline-offset: 3px; }
+
+      .toast {
+        position: fixed;
+        left: 50%;
+        bottom: max(20px, env(safe-area-inset-bottom));
+        transform: translate(-50%, 18px);
+        background: #1f1a16;
+        color: #fff;
+        padding: 11px 16px;
+        border-radius: 999px;
+        box-shadow: 0 10px 35px rgba(0,0,0,.26);
+        font-size: 14px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .18s ease, transform .18s ease;
+        z-index: 10;
+      }
+      .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+      @media (max-width: 720px) {
+        .page { display: block; padding: 0; background: var(--paper); }
+        .card { display: block; min-height: 100vh; border-radius: 0; box-shadow: none; }
+        .brand { min-height: 205px; display: block; }
+        .brand-art { width: 100%; height: 205px; object-fit: cover; object-position: center 33%; }
+        .brand-copy { display: none; }
+        .content { padding: 32px 22px calc(34px + env(safe-area-inset-bottom)); }
+        .flower { width: 120px; height: 120px; right: -4px; top: 10px; }
+        .identity { padding-right: 58px; }
+        h1 { font-size: clamp(46px, 15vw, 64px); }
+        .statement { font-size: 17px; }
+        .actions { grid-template-columns: 1fr; margin-top: 28px; }
+        .detail-row { grid-template-columns: 88px minmax(0,1fr); gap: 10px; }
+      }
+      @media (max-width: 380px) {
+        .identity { padding-right: 34px; }
+        .flower { width: 90px; height: 90px; opacity: .30; }
+        .detail-row { display: block; }
+        .detail-row .label { display: block; margin-bottom: 3px; }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after { transition-duration: .01ms !important; }
+      }
+      @media print {
+        body { background: #fff; }
+        .page { padding: 0; }
+        .card { box-shadow: none; border: 1px solid #ddd; }
+        .toast, .downloads { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <article class="card" aria-labelledby="person-name">
+        <section class="brand" aria-label="A Cup of Compassion">
+          <img class="brand-art" src="/assets/card/a-cup-of-compassion-emblem.png" alt="A Cup of Compassion emblem" />
+          <div class="brand-copy">
+            <p>Build Your Legacy.</p>
+          </div>
+        </section>
+
+        <section class="content">
+          <svg class="flower" viewBox="0 0 160 160" aria-hidden="true">
+            <g fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M78 75C51 71 42 49 51 31c18 4 31 17 31 40C87 44 101 29 120 28c7 18-3 38-28 48 25-5 43 5 49 23-15 13-38 10-58-8 13 22 10 44-6 56-17-11-21-33-8-55-20 18-43 20-58 7 6-18 24-28 49-23-20-10-30-28-24-46 19 1 33 17 36 44" />
+              <circle cx="78" cy="78" r="6" fill="currentColor" stroke="none" />
+              <path d="M91 93c21 16 29 36 25 59M113 136c12-9 21-10 30-7-5 10-14 15-28 16" />
+            </g>
+          </svg>
+
+          <header class="identity">
+            <h1 id="person-name">Pamella Grear</h1>
+            <p class="role">Author and Speaker</p>
+            <p class="statement">Compassion becomes legacy when we build it, document it, and pass it on.</p>
+          </header>
+
+          <nav class="actions" aria-label="Contact Pamella Grear">
+            <a class="action primary" href="tel:+13239432287">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M5.5 3.5h3l1.5 5-2.2 1.4a16 16 0 0 0 6.3 6.3l1.4-2.2 5 1.5v3A2 2 0 0 1 18.3 21C10 20.2 3.8 14 3 5.7a2 2 0 0 1 2.5-2.2Z"/></svg>
+              <span><strong>Call Pamella</strong><small>(323) 943-ACUP</small></span>
+            </a>
+            <a class="action" href="mailto:pamella@acupofcompassion.com">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m4 7 8 6 8-6"/></svg>
+              <span><strong>Email</strong><small>Start a conversation</small></span>
+            </a>
+            <a class="action" href="/">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 4.2 6 4.2 9S15 18 12 21c-3-3-4.2-6-4.2-9S9 6 12 3Z"/></svg>
+              <span><strong>Visit the Hub</strong><small>thecompassionhub.org</small></span>
+            </a>
+            <a class="action" id="save-contact" href="/assets/card/Pamella-Grear.vcf" download="Pamella-Grear.vcf">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3.5 19c.5-4 2.4-6 5.5-6s5 2 5.5 6M18 7v8m-4-4h8"/></svg>
+              <span><strong>Save Contact</strong><small>Download contact card</small></span>
+            </a>
+          </nav>
+
+          <nav class="downloads" aria-label="Download this card">
+            <a href="/assets/card/Pamella-Grear-digital-card.png" download="Pamella-Grear-digital-card.png">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M12 4v11m-5-5 5 5 5-5M5 20h14"/></svg>
+              Download this card (image)
+            </a>
+            <button type="button" id="share-card">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" aria-hidden="true"><path d="M8 12h8M12 8v8"/><rect x="3" y="3" width="18" height="18" rx="4"/></svg>
+              Share or copy link
+            </button>
+          </nav>
+
+          <div class="details" aria-label="Contact details">
+            <div class="detail-row">
+              <span class="label">Phone</span>
+              <a href="tel:+13239432287">(323) 943-ACUP (2287)</a>
+            </div>
+            <div class="detail-row">
+              <span class="label">Email</span>
+              <a href="mailto:pamella@acupofcompassion.com">pamella@acupofcompassion.com</a>
+            </div>
+            <div class="detail-row">
+              <span class="label">Instagram</span>
+              <button type="button" class="copy-handle" data-copy="@pamfoster5899" aria-label="Copy Instagram handle @pamfoster5899">@pamfoster5899</button>
+            </div>
+            <div class="detail-row">
+              <span class="label">YouTube</span>
+              <button type="button" class="copy-handle" data-copy="@acupofcompassion7490" aria-label="Copy YouTube handle @acupofcompassion7490">@acupofcompassion7490</button>
+            </div>
+          </div>
+
+          <aside class="support">
+            <strong>Support our 501(c)(3)</strong><br />
+            <a href="http://familykeepersoh.org" target="_blank" rel="noopener noreferrer">Family Keepers With Extended Care</a>
+          </aside>
+        </section>
+      </article>
+    </main>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <script src="/card.js" defer></script>
+  </body>
+</html>
