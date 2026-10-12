@@ -349,7 +349,7 @@ which never goes to the browser.
    | Variable | Value |
    |---|---|
    | `GOOGLE_CLIENT_ID` | from step 2 |
-   | `GOOGLE_CLIENT_SECRET` | from step 2 |
+   | `GOOGLE_CLIENT_SECRET` | from step 2 (`GOOGLE_SECRET_KEY` also works) |
    | `ADMIN_EMAILS` | your Gmail address (comma-separate to add more) |
    | `ADMIN_SESSION_SECRET` | 32+ random characters, e.g. `openssl rand -base64 48` |
    | `SUPABASE_SERVICE_ROLE_KEY` | from step 3 |

@@ -233,4 +233,8 @@ test('the admin list and project URL are read under their common names', async (
   await withEnv({ SUPABASE_URL: undefined, PROJECT_URL: 'https://other.supabase.co/' }, () => {
     assert.equal(admin.supabaseUrl(), 'https://other.supabase.co');
   });
+  await withEnv({ GOOGLE_CLIENT_ID: 'client.apps.googleusercontent.com', GOOGLE_CLIENT_SECRET: undefined, GOOGLE_SECRET_KEY: 'shh' }, () => {
+    assert.equal(admin.configuration().google, true);
+    assert.ok(!admin.missingConfiguration().includes('GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET'));
+  });
 });

@@ -12,7 +12,7 @@
  * Configure in Vercel (every value is server-side only):
  *
  *   GOOGLE_CLIENT_ID          OAuth client (type "Web application")
- *   GOOGLE_CLIENT_SECRET      its secret
+ *   GOOGLE_CLIENT_SECRET      its secret (GOOGLE_SECRET_KEY is read as well)
  *   ADMIN_EMAILS              comma-separated Google addresses allowed in
  *                             (ADMIN_EMAIL is read as well)
  *   ADMIN_SESSION_SECRET      32+ random characters; encrypts the session
@@ -47,6 +47,9 @@ const GOOGLE_SCOPES = [
 
 const env = (name) => (typeof process.env[name] === 'string' ? process.env[name].trim() : '');
 
+/** The Google OAuth client secret, under whichever name the deployment set it. */
+const googleClientSecret = () => env('GOOGLE_CLIENT_SECRET') || env('GOOGLE_SECRET_KEY');
+
 function adminEmails() {
   /* ADMIN_EMAIL (singular) is accepted too: it is the name people reach for. */
   return [env('ADMIN_EMAILS'), env('ADMIN_EMAIL')].filter(Boolean).join(',')
@@ -62,7 +65,7 @@ const isAdminEmail = (email) =>
 function configuration() {
   const secret = env('ADMIN_SESSION_SECRET');
   return {
-    google: Boolean(env('GOOGLE_CLIENT_ID') && env('GOOGLE_CLIENT_SECRET')),
+    google: Boolean(env('GOOGLE_CLIENT_ID') && googleClientSecret()),
     admins: adminEmails().length > 0,
     sessionSecret: secret.length >= 32,
     supabase: Boolean(env('SUPABASE_SERVICE_ROLE_KEY')),
@@ -182,7 +185,7 @@ async function exchangeCode(code, req) {
     body: new URLSearchParams({
       code,
       client_id: env('GOOGLE_CLIENT_ID'),
-      client_secret: env('GOOGLE_CLIENT_SECRET'),
+      client_secret: googleClientSecret(),
       redirect_uri: redirectUri(req),
       grant_type: 'authorization_code',
     }),
@@ -224,7 +227,7 @@ async function accessToken(session) {
     signal: AbortSignal.timeout(UPSTREAM_TIMEOUT),
     body: new URLSearchParams({
       client_id: env('GOOGLE_CLIENT_ID'),
-      client_secret: env('GOOGLE_CLIENT_SECRET'),
+      client_secret: googleClientSecret(),
       refresh_token: session.refreshToken,
       grant_type: 'refresh_token',
     }),
