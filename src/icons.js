@@ -113,6 +113,14 @@ export const shelfIcon = (size, stroke, w) => `
   <path class="stroke" d="M3.4 20.4h17.2" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round"/>
 </svg>`;
 
+/** A business card, for Pamella's digital card. */
+export const contactCardIcon = (size, stroke, w = 1.9) => `
+<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+  <rect class="stroke" x="2.8" y="5" width="18.4" height="14" rx="2.4" stroke="${stroke}" stroke-width="${w}"/>
+  <circle class="stroke" cx="8.6" cy="10.6" r="2" stroke="${stroke}" stroke-width="${w}"/>
+  <path class="stroke" d="M5.6 15.8c.5-1.6 1.6-2.4 3-2.4s2.5.8 3 2.4M14.2 10h4M14.2 13.6h3" stroke="${stroke}" stroke-width="${w}" stroke-linecap="round"/>
+</svg>`;
+
 /** A link leaving the app, for network profiles and social platforms. */
 export const externalIcon = (size, stroke) => `
 <svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" aria-hidden="true">

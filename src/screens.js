@@ -21,7 +21,7 @@ import {
   inCart, isSaved, owns, formatFor,
 } from './state.js';
 import {
-  backButton, brandFooter, brandLogo, coverArt, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
+  backButton, brandFooter, brandLogo, businessCardPanel, coverArt, hrefFor, hrefForBook, hrefForLesson, hrefForProduct,
 } from './components.js';
 import { cover, coverMini } from './covers.js';
 import { dailyCup } from './cards.js';
@@ -244,6 +244,8 @@ screens.home = () => {
         </span>
         ${chevron('#2A2113')}
       </a>
+
+      ${businessCardPanel('span-all')}
 
       <div class="quick-grid span-all">
         ${quickTile(hrefFor('read'), 'it-gold', bookIcon(22, '#96771F', 1.9), 'Free reading', `${read} of ${LESSON_TOTAL} read`)}
@@ -1425,7 +1427,9 @@ screens.about = () => `
     </div>
 
     <div>
-      <div class="aside-card">
+      ${businessCardPanel('about-bizcard')}
+
+      <div class="aside-card" style="margin-top:16px">
         <span class="cap">The positioning, plainly</span>
         <h2>${esc(LEGAL_POSITIONING)}</h2>
         <p>The Compassion Hub is an educational publishing and community resource. We do not draft wills, trusts, or any other legal instrument, and we never will. What we do is make sure you walk into an attorney’s office already knowing what you own, what you want, and who you want it to go to.</p>

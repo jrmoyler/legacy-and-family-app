@@ -70,6 +70,19 @@ const SERIES_YOUTUBE = {
  * @acupofcompassion is the series' own handle, not Pamella's personal one —
  * hers are PAMELLA_SOCIAL_LINKS, and her Network card carries those instead.
  */
+/**
+ * Pamella's digital business card. The card itself is a standalone page
+ * (card.html, served at /card) so it can be shared as a plain link; the app
+ * points at it from Home, About, the sidebar, and the phone app bar.
+ */
+export const BUSINESS_CARD = {
+  href: '/card',
+  image: '/assets/card/Pamella-Grear-digital-card.png',
+  imageName: 'Pamella-Grear-digital-card.png',
+  vcard: '/assets/card/Pamella-Grear.vcf',
+  vcardName: 'Pamella-Grear.vcf',
+};
+
 export const SOCIAL_LINKS = [
   {
     id: 'instagram',

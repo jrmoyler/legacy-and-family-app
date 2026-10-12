@@ -4,11 +4,11 @@
 
 import { esc, join } from './dom.js';
 import {
-  TABS, TOOLS, TAB_OF, BRAND, FOOTER_LINE, SOCIAL_LINKS, ONBOARDING,
+  TABS, TOOLS, TAB_OF, BRAND, BUSINESS_CARD, FOOTER_LINE, SOCIAL_LINKS, ONBOARDING,
 } from './data.js';
 import { state } from './state.js';
 import {
-  arrowLeft, cartIcon, bigCheck, closeIcon, chevron, toolsIcon,
+  arrowLeft, cartIcon, bigCheck, closeIcon, chevron, toolsIcon, contactCardIcon, downloadIcon,
 } from './icons.js';
 
 /** Hash route for a screen id. */
@@ -68,6 +68,13 @@ export function sidebar() {
     </a>`).join('')}
     ${toolsGroup(active)}
   </nav>
+  <a class="side-card-link" href="${esc(BUSINESS_CARD.href)}">
+    ${contactCardIcon(21, 'currentColor', 1.9)}
+    <span>
+      <span class="t">Pamella’s business card</span>
+      <span class="s">Call, save the contact, or download</span>
+    </span>
+  </a>
   <div class="side-foot">
     <nav class="side-minor" aria-label="Secondary">
       <a href="${hrefFor('about')}">About Pamella</a>
@@ -90,6 +97,10 @@ export function appbar() {
     ${brandLogo('app-logo')}
   </a>
   <span class="spacer"></span>
+  <a class="card-btn" href="${esc(BUSINESS_CARD.href)}" aria-label="${esc(BRAND.author)}’s digital business card">
+    ${contactCardIcon(20, '#4A2A63', 1.9)}
+    <span>Card</span>
+  </a>
   <a class="cart-btn" href="${hrefFor('cart')}" aria-label="Cart, ${state.cart.length} item${state.cart.length === 1 ? '' : 's'}">
     ${state.cart.length ? `<span class="dot" aria-hidden="true">${state.cart.length}</span>` : ''}
     ${cartIcon(20, '#B08D2E', 2)}
@@ -129,6 +140,27 @@ export const coverArt = (assets, alt, sizes = '160px', loading = 'lazy') => `
        width="640" height="1024"
        loading="${esc(loading)}"${loading === 'eager' ? ' fetchpriority="high"' : ''} decoding="async"
        alt="Cover of ${esc(alt)}">`;
+
+/**
+ * Pamella's digital business card as a panel: open it, download it as an
+ * image, or save her contact straight to a phone. Used on Home and About.
+ */
+export const businessCardPanel = (className = '') => `
+  <section class="bizcard${className ? ` ${className}` : ''}" aria-labelledby="bizcard-title${className ? `-${className}` : ''}">
+    <a class="bizcard-preview" href="${esc(BUSINESS_CARD.href)}" tabindex="-1" aria-hidden="true">
+      <img src="${esc(BUSINESS_CARD.image)}" alt="" width="1960" height="1768" loading="lazy" decoding="async">
+    </a>
+    <div class="bizcard-body">
+      <span class="pill pill-gold-soft">Digital business card</span>
+      <h2 id="bizcard-title${className ? `-${className}` : ''}">${esc(BRAND.author)} — Author and Speaker</h2>
+      <p>Call, email, or save Pamella’s contact in one tap — or download the card to share it.</p>
+      <div class="bizcard-actions">
+        <a class="btn btn-gold btn-auto" href="${esc(BUSINESS_CARD.href)}">${contactCardIcon(18, '#2A2113', 2)}Open the card</a>
+        <a class="btn btn-ghost-dark btn-auto" href="${esc(BUSINESS_CARD.image)}" download="${esc(BUSINESS_CARD.imageName)}">${downloadIcon(18, 'currentColor')}Download card</a>
+        <a class="btn btn-ghost-dark btn-auto" href="${esc(BUSINESS_CARD.vcard)}" download="${esc(BUSINESS_CARD.vcardName)}">${downloadIcon(18, 'currentColor')}Save contact</a>
+      </div>
+    </div>
+  </section>`;
 
 export const backButton = (screen, label = 'Back') =>
   `<a class="back-btn" href="${hrefFor(screen)}">${arrowLeft}${esc(label)}</a>`;
