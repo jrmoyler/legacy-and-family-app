@@ -6,6 +6,7 @@ const {
   clearCookie, cookie, env, exchangeCode, identityFrom, isAdminEmail, missingConfiguration,
   readCookies, redirectUri, seal, unseal,
 } = require('./_admin');
+const { storeAlertToken } = require('./_notify');
 
 /**
  * Google sign-in for the admin dashboard.
@@ -83,6 +84,13 @@ module.exports = async function adminAuth(req, res) {
     return back(res, 'not-allowed', [clearState]);
   }
   if (!tokens.refresh_token) return back(res, 'no-offline', [clearState]);
+
+  /* Lets the server email this admin when a visitor submits a note. */
+  try {
+    await storeAlertToken(identity.email, tokens.refresh_token);
+  } catch (error) {
+    console.error('Could not save the new-message alert token:', error.message);
+  }
 
   const ttl = SESSION_HOURS * 3600;
   const session = seal({ email: identity.email, name: identity.name, refreshToken: tokens.refresh_token }, ttl);

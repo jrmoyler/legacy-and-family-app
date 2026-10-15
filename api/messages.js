@@ -2,6 +2,7 @@
 
 const crypto = require('node:crypto');
 const { env, supabaseUrl } = require('./_admin');
+const { notifyNewMessage } = require('./_notify');
 
 /**
  * The public Messages of Compassion wall, served from this origin.
@@ -160,6 +161,8 @@ module.exports = async function compassionMessages(req, res) {
     return reply(res, 429, { error: 'You have shared several messages today. Please return tomorrow.' });
   }
   if (status !== 'pending') return reply(res, 502, { error: 'Your message could not be saved. Please try again.' });
+  /* Awaited so the function is not frozen mid-send; it never throws. */
+  await notifyNewMessage(clean, req);
   return reply(res, 202, { ok: true, status: 'pending' });
 };
 

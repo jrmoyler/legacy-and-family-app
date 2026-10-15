@@ -5,6 +5,7 @@ const {
   missingConfiguration, readSession, reply,
 } = require('./_admin');
 const { attachments, bodyText, buildRaw, gmail, header, isMessageId, summary } = require('./_gmail');
+const { hasAlertToken } = require('./_notify');
 const { readSecretKey } = require('./_stripe');
 
 /**
@@ -175,10 +176,11 @@ const settled = async (work) => {
 };
 
 async function overview(session) {
-  const [pending, inbox, profile] = await Promise.all([
+  const [pending, inbox, profile, alertsOn] = await Promise.all([
     settled(pendingMessageCount),
     settled(async () => gmail(await accessToken(session), '/labels/INBOX')),
     settled(async () => gmail(await accessToken(session), '/profile')),
+    settled(() => hasAlertToken(session.email)),
   ]);
 
   const stripe = readSecretKey();
@@ -192,6 +194,13 @@ async function overview(session) {
     alert('error', 'Supabase could not be reached', pending.error);
   } else if (pending.value > 0) {
     alert('warning', `${pending.value} message${pending.value === 1 ? '' : 's'} waiting for review`, 'Visitors are waiting to see their notes on the wall.', 'messages');
+  }
+
+  if (configuration().supabase && (!alertsOn.ok || !alertsOn.value)) {
+    alert('warning', 'Email alerts for new messages are off',
+      alertsOn.ok
+        ? 'Sign out and sign in again to turn them on.'
+        : 'Run the admin_alert_tokens migration in Supabase, then sign in again.');
   }
 
   if (!inbox.ok) {
