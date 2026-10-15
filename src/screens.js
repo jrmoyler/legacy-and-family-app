@@ -1005,6 +1005,7 @@ screens.about = () => `
         <span class="cap">Get in touch</span>
         <h2>Contact</h2>
         <p><a href="mailto:${esc(BRAND.email)}">${esc(BRAND.email)}</a><br>${esc(BRAND.site)}</p>
+        <a class="btn btn-gold" href="/assets/compassion-hub-contact.vcf" download="Pamella-Grear.vcf">Add to contacts</a>
         <p class="hint">${esc(BRAND.social)} — not yet confirmed claimed, so it is printed here and linked nowhere.</p>
       </div>
     </div>
