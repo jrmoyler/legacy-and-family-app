@@ -8,7 +8,7 @@
 
 import { esc, escBreakable, join } from './dom.js';
 import {
-  BRAND, BOOKS, BOOK_STATUS, bookById,
+  BRAND, COMPASSION_ESTATES_URL, BOOKS, BOOK_STATUS, bookById,
   PRODUCTS, CATEGORIES, productById, BOOK_PRODUCTS, titlesForProduct,
   FORMATS, FORMAT_SHORT, DEFAULT_FORMAT,
   LESSONS, FEATURED_LESSON, LESSON_TOTAL, lessonById,
@@ -242,6 +242,13 @@ screens.home = () => {
           <span class="t">Read the series</span>
           <span class="s">Six books on compassion, legacy, and what gets passed on</span>
         </span>
+        ${chevron('#2A2113')}
+      </a>
+
+      <a class="market-cta span-all" href="${esc(COMPASSION_ESTATES_URL)}" target="_blank" rel="noopener noreferrer">
+        <span class="icon-tile" aria-hidden="true">${externalIcon(24, '#2A2113', 2)}</span>
+        <span class="body"><span class="t">Explore Compassion Estates</span>
+          <span class="s">View and book properties curated by Pamella Grear · opens a new tab</span></span>
         ${chevron('#2A2113')}
       </a>
 

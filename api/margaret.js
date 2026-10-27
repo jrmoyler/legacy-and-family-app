@@ -102,6 +102,8 @@ const SYSTEM_PROMPT = [
   'Answer in plain, warm, unhurried language. Two or three short sentences is usually right. Name the page someone should open.',
 ].join('\n');
 
+const ESTATES_KNOWLEDGE = 'Compassion Estates is a separate website at https://compassion-estates.vercel.app/ where visitors can view and book from a curated list of properties provided by Pamella Grear. Direct visitors to the Home button or desktop sidebar link. Refer them to the website for current availability, pricing, property details and booking terms; never invent these or claim to make a booking.';
+
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const DEFAULT_MODELS = { anthropic: 'claude-haiku-5-5', openai: 'gpt-4o-mini' };
@@ -127,7 +129,7 @@ function provider() {
 
 /** The upstream request, in the shape the configured provider expects. */
 function upstreamRequest(config, messages) {
-  const system = envValue('MARGARET_SYSTEM_PROMPT') || SYSTEM_PROMPT;
+  const system = `${envValue('MARGARET_SYSTEM_PROMPT') || SYSTEM_PROMPT}\n\n${ESTATES_KNOWLEDGE}`;
   if (config.kind === 'anthropic') {
     return {
       headers: {
