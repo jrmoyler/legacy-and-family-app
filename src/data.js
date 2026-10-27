@@ -1209,7 +1209,7 @@ export const MARGARET_SUGGESTIONS = [
 export const MARGARET_TOPICS = [
   {
     id: 'compassion-estates',
-    keywords: ['compassion estates', 'property', 'properties', 'vacation', 'rental', 'rentals', 'book a stay', 'book a property', 'booking', 'lodging', 'accommodation', 'accommodations'],
+    keywords: ['compassion estates', 'browse properties', 'view properties', 'book properties', 'vacation', 'rental', 'rentals', 'book a stay', 'book a property', 'booking', 'lodging', 'accommodation', 'accommodations'],
     answer: 'Compassion Estates is a separate website where you can view and book from a curated list of properties provided by Pamella Grear. Open Compassion Estates from Home or the desktop sidebar, or visit https://compassion-estates.vercel.app/. Check the site for current property details, availability, prices, and booking terms.',
     links: ['home'],
     weight: 4,
