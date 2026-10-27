@@ -123,6 +123,22 @@ test('sign-in starts at Google with Gmail access, offline, and a sealed state', 
   assert.equal(shared.unseal(sealed).state, url.searchParams.get('state'));
 });
 
+test('production uses the .org callback and starts on its cookie host', async () => {
+  const previous = process.env.PUBLIC_SITE_URL;
+  try {
+    process.env.PUBLIC_SITE_URL = 'https://www.acupofcompassion.com';
+    assert.equal(shared.redirectUri({ headers: { host: 'www.acupofcompassion.org' } }), 'https://www.acupofcompassion.org/api/admin-auth');
+    const oldDomain = await call(adminAuth, { headers: { host: 'www.acupofcompassion.com' } });
+    assert.equal(oldDomain.headers.location, 'https://www.acupofcompassion.org/api/admin-auth');
+    assert.equal(oldDomain.headers['set-cookie'], undefined);
+    const start = await call(adminAuth, { headers: { host: 'www.acupofcompassion.org' } });
+    assert.equal(new URL(start.headers.location).searchParams.get('redirect_uri'), 'https://www.acupofcompassion.org/api/admin-auth');
+    assert.ok(start.headers['set-cookie']);
+  } finally {
+    process.env.PUBLIC_SITE_URL = previous;
+  }
+});
+
 test('a forged state never reaches Google', async () => {
   const cookie = `${shared.STATE_COOKIE}=${encodeURIComponent(shared.seal({ state: 'a'.repeat(32) }, 60))}`;
   await withFetch(() => assert.fail('must not exchange a code'), async () => {
