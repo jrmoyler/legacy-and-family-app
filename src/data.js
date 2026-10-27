@@ -35,6 +35,8 @@ import {
  * and it stays on every book footer, disclaimer, and copyright line, because
  * that is what is printed inside the editions themselves.
  */
+export const COMPASSION_ESTATES_URL = 'https://compassion-estates.vercel.app/';
+
 export const BRAND = {
   name: 'A Cup of Compassion',
   series: 'A Cup of Compassion',
@@ -1192,6 +1194,7 @@ export const MARGARET_BIO_HIGHLIGHT =
 
 /** Tapped straight into the composer — the fastest path to a useful answer. */
 export const MARGARET_SUGGESTIONS = [
+  'Where can I browse properties?',
   'What can I read for free?',
   'How do I use the Legacy Inventory?',
   'Where are my downloads?',
@@ -1204,6 +1207,13 @@ export const MARGARET_SUGGESTIONS = [
  * `weight` breaks ties when a question matches more than one topic.
  */
 export const MARGARET_TOPICS = [
+  {
+    id: 'compassion-estates',
+    keywords: ['compassion estates', 'property', 'properties', 'vacation', 'rental', 'rentals', 'book a stay', 'book a property', 'booking', 'lodging', 'accommodation', 'accommodations'],
+    answer: 'Compassion Estates is a separate website where you can view and book from a curated list of properties provided by Pamella Grear. Open Compassion Estates from Home or the desktop sidebar, or visit https://compassion-estates.vercel.app/. Check the site for current property details, availability, prices, and booking terms.',
+    links: ['home'],
+    weight: 4,
+  },
   {
     id: 'overview',
     keywords: ['what is this', 'about the app', 'compassion hub', 'help', 'hello', 'hi', 'start', 'what can you do', 'who are you'],

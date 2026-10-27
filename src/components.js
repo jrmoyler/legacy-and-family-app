@@ -4,11 +4,11 @@
 
 import { esc, join } from './dom.js';
 import {
-  TABS, TOOLS, TAB_OF, BRAND, BUSINESS_CARD, FOOTER_LINE, SOCIAL_LINKS, ONBOARDING,
+  TABS, TOOLS, TAB_OF, BRAND, BUSINESS_CARD, FOOTER_LINE, SOCIAL_LINKS, ONBOARDING, COMPASSION_ESTATES_URL,
 } from './data.js';
 import { state } from './state.js';
 import {
-  arrowLeft, cartIcon, bigCheck, closeIcon, chevron, toolsIcon, contactCardIcon, downloadIcon,
+  arrowLeft, cartIcon, bigCheck, closeIcon, chevron, toolsIcon, contactCardIcon, downloadIcon, externalIcon,
 } from './icons.js';
 
 /** Hash route for a screen id. */
@@ -67,6 +67,9 @@ export function sidebar() {
       ${tab.id === 'shop' && state.cart.length ? `<span class="badge">${state.cart.length}</span>` : ''}
     </a>`).join('')}
     ${toolsGroup(active)}
+    <a class="side-link" href="${esc(COMPASSION_ESTATES_URL)}" target="_blank" rel="noopener noreferrer">
+      ${externalIcon(21, 'currentColor', 1.9)}<span>Compassion Estates <small>(opens a new tab)</small></span>
+    </a>
   </nav>
   <a class="side-card-link" href="${esc(BUSINESS_CARD.href)}">
     ${contactCardIcon(21, 'currentColor', 1.9)}
