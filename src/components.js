@@ -4,7 +4,7 @@
 
 import { esc, join } from './dom.js';
 import {
-  TABS, TOOLS, TAB_OF, BRAND, BUSINESS_CARD, FOOTER_LINE, SOCIAL_LINKS, ONBOARDING, COMPASSION_ESTATES_URL,
+  TABS, TOOLS, TAB_OF, BRAND, BUSINESS_CARD, FOOTER_LINE, SOCIAL_LINKS, ONBOARDING, COMPASSION_ESTATES_URL, FUTURE_CHAMPS_URL,
 } from './data.js';
 import { state } from './state.js';
 import {
@@ -69,6 +69,9 @@ export function sidebar() {
     ${toolsGroup(active)}
     <a class="side-link" href="${esc(COMPASSION_ESTATES_URL)}" target="_blank" rel="noopener noreferrer">
       ${externalIcon(21, 'currentColor', 1.9)}<span>Compassion Estates <small>(opens a new tab)</small></span>
+    </a>
+    <a class="side-link" href="${esc(FUTURE_CHAMPS_URL)}" target="_blank" rel="noopener noreferrer">
+      ${externalIcon(21, 'currentColor', 1.9)}<span>Future Champs <small>(opens a new tab)</small></span>
     </a>
   </nav>
   <a class="side-card-link" href="${esc(BUSINESS_CARD.href)}">
