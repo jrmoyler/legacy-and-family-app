@@ -36,6 +36,7 @@ import {
  * that is what is printed inside the editions themselves.
  */
 export const COMPASSION_ESTATES_URL = 'https://compassion-estates.vercel.app/';
+export const FUTURE_CHAMPS_URL = 'https://future-champs-website.vercel.app/';
 
 export const BRAND = {
   name: 'A Cup of Compassion',
@@ -1195,6 +1196,7 @@ export const MARGARET_BIO_HIGHLIGHT =
 /** Tapped straight into the composer — the fastest path to a useful answer. */
 export const MARGARET_SUGGESTIONS = [
   'Where can I browse properties?',
+  'What is Future Champs?',
   'What can I read for free?',
   'How do I use the Legacy Inventory?',
   'Where are my downloads?',
@@ -1211,6 +1213,13 @@ export const MARGARET_TOPICS = [
     id: 'compassion-estates',
     keywords: ['compassion estates', 'browse properties', 'view properties', 'book properties', 'vacation', 'rental', 'rentals', 'book a stay', 'book a property', 'booking', 'lodging', 'accommodation', 'accommodations'],
     answer: 'Compassion Estates is a separate website where you can view and book from a curated list of properties provided by Pamella Grear. Open Compassion Estates from Home or the desktop sidebar, or visit https://compassion-estates.vercel.app/. Check the site for current property details, availability, prices, and booking terms.',
+    links: ['home'],
+    weight: 4,
+  },
+  {
+    id: 'future-champs',
+    keywords: ['future champs', 'future champ', 'compassion kids', 'the champs', 'meet the champs', 'children s books', 'childrens books', 'kids books', 'books for kids', 'books for children', 'coloring book', 'colouring book', 'in training for life', 'teachers and families'],
+    answer: 'Future Champs: The Compassion Kids is a children’s character series from Pamella Grear and The Compassion Hub, based in Bexley, Ohio — “In Training for Life.” It builds character, compassion, and kindness, and helps every child grow confidence for life, with books, a Meet the Champs page, and a Teachers & Families section. You can start with the free Meet the Future Champs guide and intro coloring book. Open Future Champs from Home or the desktop sidebar, or visit https://future-champs-website.vercel.app/.',
     links: ['home'],
     weight: 4,
   },

@@ -2708,6 +2708,14 @@ p a, .about-copy a { text-decoration: underline; }
   color: var(--muted);
   font-size: 13.5px;
 }
+
+.message-wall-tagline {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 14px;
+  font-style: italic;
+  text-align: center;
+}
 .message-refresh {
   flex: none;
   color: var(--teal-deep);

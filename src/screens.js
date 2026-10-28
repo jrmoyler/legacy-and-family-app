@@ -8,7 +8,7 @@
 
 import { esc, escBreakable, join } from './dom.js';
 import {
-  BRAND, COMPASSION_ESTATES_URL, BOOKS, BOOK_STATUS, bookById,
+  BRAND, COMPASSION_ESTATES_URL, FUTURE_CHAMPS_URL, BOOKS, BOOK_STATUS, bookById,
   PRODUCTS, CATEGORIES, productById, BOOK_PRODUCTS, titlesForProduct,
   FORMATS, FORMAT_SHORT, DEFAULT_FORMAT,
   LESSONS, FEATURED_LESSON, LESSON_TOTAL, lessonById,
@@ -252,6 +252,13 @@ screens.home = () => {
         ${chevron('#2A2113')}
       </a>
 
+      <a class="market-cta span-all" href="${esc(FUTURE_CHAMPS_URL)}" target="_blank" rel="noopener noreferrer">
+        <span class="icon-tile" aria-hidden="true">${externalIcon(24, '#2A2113', 2)}</span>
+        <span class="body"><span class="t">Meet the Future Champs</span>
+          <span class="s">The Compassion Kids · children’s books and free guides · opens a new tab</span></span>
+        ${chevron('#2A2113')}
+      </a>
+
       ${businessCardPanel('span-all')}
 
       <div class="quick-grid span-all">
@@ -432,6 +439,7 @@ screens.messages = () => `
         <div class="compassion-notes" data-compassion-list>
           ${compassionMessageList()}
         </div>
+        <p class="message-wall-tagline">Have a compassion story? Share it with the world</p>
       </section>
     </div>
     <div class="screen-foot"></div>

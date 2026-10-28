@@ -104,6 +104,8 @@ const SYSTEM_PROMPT = [
 
 const ESTATES_KNOWLEDGE = 'Compassion Estates is a separate website at https://compassion-estates.vercel.app/ where visitors can view and book from a curated list of properties provided by Pamella Grear. Direct visitors to the Home button or desktop sidebar link. Refer them to the website for current availability, pricing, property details and booking terms; never invent these or claim to make a booking.';
 
+const FUTURE_CHAMPS_KNOWLEDGE = 'Future Champs: The Compassion Kids is a children\u2019s character series from Pamella Grear and The Compassion Hub, based in Bexley, Ohio, with the tagline "In Training for Life." It aims to build character, compassion and kindness in every lesson and help every child build confidence for life. Its separate website at https://future-champs-website.vercel.app/ has the books, a Meet the Champs section, Our Story, a Teachers & Families section, and two free PDFs: a Meet the Future Champs guide and an intro coloring book. The original 1996 art is by Elmer Turner. Direct visitors to the Home button or desktop sidebar link. Refer them to the website for current titles, prices and details; never invent these.';
+
 const ANTHROPIC_URL = 'https://api.anthropic.com/v1/messages';
 const OPENAI_URL = 'https://api.openai.com/v1/chat/completions';
 const DEFAULT_MODELS = { anthropic: 'claude-haiku-5-5', openai: 'gpt-4o-mini' };
@@ -129,7 +131,7 @@ function provider() {
 
 /** The upstream request, in the shape the configured provider expects. */
 function upstreamRequest(config, messages) {
-  const system = `${envValue('MARGARET_SYSTEM_PROMPT') || SYSTEM_PROMPT}\n\n${ESTATES_KNOWLEDGE}`;
+  const system = `${envValue('MARGARET_SYSTEM_PROMPT') || SYSTEM_PROMPT}\n\n${ESTATES_KNOWLEDGE}\n\n${FUTURE_CHAMPS_KNOWLEDGE}`;
   if (config.kind === 'anthropic') {
     return {
       headers: {
