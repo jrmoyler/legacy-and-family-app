@@ -339,7 +339,7 @@ which never goes to the browser.
    Gmail address as a **test user** and add the scope
    `https://www.googleapis.com/auth/gmail.modify`.
 2. *Credentials → Create OAuth client ID → Web application.* Add the
-   authorized redirect URI `https://www.acupofcompassion.com/api/admin-auth`
+   authorized redirect URI `https://www.acupofcompassion.org/api/admin-auth`
    (and one per preview domain you want to sign in on).
 3. *Supabase → Project settings → API.* Copy the `service_role` key, and run the
    migration `supabase/migrations/20261004120000_admin_dashboard_delete_messages.sql`
@@ -353,7 +353,7 @@ which never goes to the browser.
    | `ADMIN_EMAILS` | your Gmail address (comma-separate to add more) |
    | `ADMIN_SESSION_SECRET` | 32+ random characters, e.g. `openssl rand -base64 48` |
    | `SUPABASE_SERVICE_ROLE_KEY` | from step 3 |
-   | `PUBLIC_SITE_URL` | `https://www.acupofcompassion.com` (recommended) |
+   | `PUBLIC_SITE_URL` | `https://www.acupofcompassion.org` (recommended) |
 
 5. Redeploy, open `/admin`, and choose **Sign in with Google**.
 

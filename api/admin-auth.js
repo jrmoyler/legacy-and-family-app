@@ -2,7 +2,7 @@
 
 const crypto = require('node:crypto');
 const {
-  GOOGLE_SCOPES, SESSION_COOKIE, SESSION_HOURS, STATE_COOKIE, STATE_MINUTES,
+  GOOGLE_SCOPES, PRODUCTION_ADMIN_ORIGIN, SESSION_COOKIE, SESSION_HOURS, STATE_COOKIE, STATE_MINUTES,
   clearCookie, cookie, env, exchangeCode, identityFrom, isAdminEmail, missingConfiguration,
   readCookies, redirectUri, seal, unseal,
 } = require('./_admin');
@@ -42,6 +42,12 @@ module.exports = async function adminAuth(req, res) {
   if (query.error) return back(res, 'cancelled', [clearState]);
 
   if (!query.code) {
+    // The state cookie is host-only. Start production sign-in on the same
+    // host that receives Google's callback, even when visited via the old domain.
+    const host = String(req.headers?.['x-forwarded-host'] || req.headers?.host || '').split(',')[0].trim().toLowerCase();
+    if (['acupofcompassion.com', 'www.acupofcompassion.com', 'acupofcompassion.org'].includes(host)) {
+      return redirect(res, `${PRODUCTION_ADMIN_ORIGIN}/api/admin-auth`);
+    }
     const state = crypto.randomBytes(24).toString('base64url');
     let location;
     try {

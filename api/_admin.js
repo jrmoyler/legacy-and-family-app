@@ -169,7 +169,14 @@ function siteOrigin(req) {
   return `${local ? 'http' : 'https'}://${host}`;
 }
 
-const redirectUri = (req) => `${siteOrigin(req)}/api/admin-auth`;
+const PRODUCTION_ADMIN_ORIGIN = 'https://www.acupofcompassion.org';
+
+function redirectUri(req) {
+  const origin = siteOrigin(req);
+  const host = new URL(origin).hostname.toLowerCase();
+  const production = ['acupofcompassion.com', 'www.acupofcompassion.com', 'acupofcompassion.org', 'www.acupofcompassion.org'].includes(host);
+  return `${production ? PRODUCTION_ADMIN_ORIGIN : origin}/api/admin-auth`;
+}
 
 /* --------------------------------------------------------------------------
    Google
@@ -250,6 +257,7 @@ module.exports = {
   DEFAULT_SUPABASE_URL,
   supabaseUrl,
   GOOGLE_SCOPES,
+  PRODUCTION_ADMIN_ORIGIN,
   SESSION_COOKIE,
   SESSION_HOURS,
   STATE_COOKIE,
