@@ -321,6 +321,9 @@ app and tells search engines not to index it.
   restore, reply, and send new mail from the owner's own address.
 - **Message wall** — approve, unpublish, or delete visitor notes in Supabase,
   instead of editing rows in the Studio SQL editor.
+- **Email alerts** — when a visitor submits a note, each signed-in admin gets an
+  email (from their own Gmail, to themselves) with the note and a link to
+  `/admin`. See [New-message email alerts](#new-message-email-alerts).
 
 **How access works**
 
@@ -361,6 +364,25 @@ While the Google app is in *Testing* mode, Google expires its grant after seven
 days, so you will be asked to sign in again weekly. Publishing the consent
 screen removes that, but Gmail's scopes then need Google's verification.
 Rotating `ADMIN_SESSION_SECRET` signs everyone out immediately.
+
+### New-message email alerts
+
+Visitors are anonymous, so the server has no admin session to send mail with at
+the moment a note arrives. Each time an admin signs in, the server therefore
+saves their Google refresh token in the `admin_alert_tokens` table, sealed with
+`ADMIN_SESSION_SECRET` (AES-256-GCM) and readable only through the service role.
+`/api/messages` then sends the alert through the Gmail API. No new Vercel
+variables are needed.
+
+To turn it on: run `supabase/migrations/20261015120000_admin_alert_tokens.sql`
+(`supabase db push`), redeploy, then **sign out and sign in once** at `/admin`.
+The dashboard shows a warning on Overview until alerts are on.
+
+- Only addresses still in `ADMIN_EMAILS` are alerted.
+- Alerts are best effort: a failure is logged and never blocks a submission.
+- Rotating `ADMIN_SESSION_SECRET`, or Google expiring the grant (every seven
+  days while the consent screen is in *Testing*), stops alerts until the admin
+  signs in again.
 
 ## The Compassion Player
 
